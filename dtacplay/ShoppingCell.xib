@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="10116" systemVersion="15E65" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <mutableArray key="DTAC2013_Rg.ttf">
+            <string>DTAC2013-Regular</string>
+            <string>DTAC2013-Regular</string>
+            <string>DTAC2013-Regular</string>
+            <string>DTAC2013-Regular</string>
+        </mutableArray>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="2em-vB-pxs" customClass="ShoppingCell">
+            <rect key="frame" x="0.0" y="0.0" width="162" height="306"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="162" height="306"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="default_image_02_L.jpg" translatesAutoresizingMaskIntoConstraints="NO" id="xBP-JM-UzH">
+                        <rect key="frame" x="0.0" y="0.0" width="162" height="162"/>
+                        <color key="backgroundColor" red="0.0019925820707070718" green="0.0019925820707070718" blue="0.0019925820707070718" alpha="1" colorSpace="calibratedRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="width" secondItem="xBP-JM-UzH" secondAttribute="height" multiplier="1:1" id="7ds-CJ-zrS"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="กระเป๋าถือ " lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CtK-Le-ter" customClass="DtacLabel">
+                        <rect key="frame" x="8" y="166" width="146" height="52"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="52" id="iEj-6d-iXH"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" name="DTAC2013-Regular" family="DTAC 2013" pointSize="14"/>
+                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="44900" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Iiq-nU-jh0">
+                        <rect key="frame" x="8" y="220" width="146" height="18"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="18" id="xSx-Yz-32u"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" name="DTAC2013-Regular" family="DTAC 2013" pointSize="14"/>
+                        <color key="textColor" red="0.92939366087344033" green="0.34247301893485982" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dtacplay_shopping_location" translatesAutoresizingMaskIntoConstraints="NO" id="rVW-yF-Aj2">
+                        <rect key="frame" x="8" y="250" width="20" height="20"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="20" id="9Jg-vU-0dL"/>
+                            <constraint firstAttribute="height" constant="20" id="V0Y-HC-YWb"/>
+                        </constraints>
+                    </imageView>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dtacplay_shopping_time" translatesAutoresizingMaskIntoConstraints="NO" id="me1-Cd-GPk">
+                        <rect key="frame" x="8" y="277" width="20" height="20"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="20" id="Ggn-Sw-bKf"/>
+                            <constraint firstAttribute="width" constant="20" id="wOb-Fg-3l1"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="วันนี้ 11:55 น." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xqs-cu-Hx1">
+                        <rect key="frame" x="32" y="273" width="114" height="26"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="26" id="ZuN-GK-aGU"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" name="DTAC2013-Regular" family="DTAC 2013" pointSize="12"/>
+                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="อ.เขตพญาไทจ.กรุงเทพมหานคร" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DUU-9R-erT">
+                        <rect key="frame" x="34" y="246" width="113" height="26"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="26" id="kFo-JT-YON"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" name="DTAC2013-Regular" family="DTAC 2013" pointSize="12"/>
+                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            </view>
+            <constraints>
+                <constraint firstItem="xqs-cu-Hx1" firstAttribute="top" secondItem="DUU-9R-erT" secondAttribute="bottom" constant="1" id="2Lp-7Y-Odi"/>
+                <constraint firstItem="CtK-Le-ter" firstAttribute="top" secondItem="xBP-JM-UzH" secondAttribute="bottom" constant="4" id="4ej-zx-JwO"/>
+                <constraint firstItem="DUU-9R-erT" firstAttribute="leading" secondItem="rVW-yF-Aj2" secondAttribute="trailing" constant="6" id="95V-yR-caH"/>
+                <constraint firstItem="CtK-Le-ter" firstAttribute="top" secondItem="xBP-JM-UzH" secondAttribute="bottom" constant="4" id="C52-gG-Fr9"/>
+                <constraint firstAttribute="trailing" secondItem="DUU-9R-erT" secondAttribute="trailing" constant="15" id="H5I-r8-3i0"/>
+                <constraint firstItem="rVW-yF-Aj2" firstAttribute="leading" secondItem="2em-vB-pxs" secondAttribute="leading" constant="8" id="IeA-Mk-Dm7"/>
+                <constraint firstItem="Iiq-nU-jh0" firstAttribute="top" secondItem="CtK-Le-ter" secondAttribute="bottom" constant="2" id="JN5-pl-F6c"/>
+                <constraint firstItem="me1-Cd-GPk" firstAttribute="top" secondItem="rVW-yF-Aj2" secondAttribute="bottom" constant="7" id="SNe-lO-tfK"/>
+                <constraint firstAttribute="trailing" secondItem="Iiq-nU-jh0" secondAttribute="trailing" constant="8" id="bgr-NE-fQv"/>
+                <constraint firstItem="xqs-cu-Hx1" firstAttribute="leading" secondItem="me1-Cd-GPk" secondAttribute="trailing" constant="4" id="cyg-8i-5Iv"/>
+                <constraint firstItem="DUU-9R-erT" firstAttribute="top" secondItem="Iiq-nU-jh0" secondAttribute="bottom" constant="8" id="ePs-Je-YXc"/>
+                <constraint firstItem="Iiq-nU-jh0" firstAttribute="leading" secondItem="2em-vB-pxs" secondAttribute="leading" constant="8" id="eZR-R8-j8Z"/>
+                <constraint firstAttribute="trailing" secondItem="xqs-cu-Hx1" secondAttribute="trailing" constant="16" id="iP1-9y-Dkz"/>
+                <constraint firstAttribute="trailing" secondItem="CtK-Le-ter" secondAttribute="trailing" constant="8" id="iUQ-v9-qZK"/>
+                <constraint firstItem="me1-Cd-GPk" firstAttribute="leading" secondItem="2em-vB-pxs" secondAttribute="leading" constant="8" id="jd2-Kl-sBO"/>
+                <constraint firstItem="rVW-yF-Aj2" firstAttribute="top" secondItem="Iiq-nU-jh0" secondAttribute="bottom" constant="12" id="oMD-fA-Bud"/>
+                <constraint firstItem="Iiq-nU-jh0" firstAttribute="top" secondItem="CtK-Le-ter" secondAttribute="bottom" constant="2" id="ouU-r0-Tq1"/>
+                <constraint firstItem="xBP-JM-UzH" firstAttribute="leading" secondItem="2em-vB-pxs" secondAttribute="leading" id="oz6-6W-d2g"/>
+                <constraint firstItem="CtK-Le-ter" firstAttribute="leading" secondItem="2em-vB-pxs" secondAttribute="leading" constant="8" id="wXW-zM-ucg"/>
+                <constraint firstAttribute="trailing" secondItem="xBP-JM-UzH" secondAttribute="trailing" id="yhm-oi-RCW"/>
+                <constraint firstItem="xBP-JM-UzH" firstAttribute="top" secondItem="2em-vB-pxs" secondAttribute="top" id="yrc-19-sI5"/>
+            </constraints>
+            <size key="customSize" width="162" height="306"/>
+            <connections>
+                <outlet property="address" destination="DUU-9R-erT" id="H9U-3d-Sqg"/>
+                <outlet property="date" destination="xqs-cu-Hx1" id="Jhv-th-Wv3"/>
+                <outlet property="imageView" destination="xBP-JM-UzH" id="6Rw-cq-ci2"/>
+                <outlet property="price" destination="Iiq-nU-jh0" id="mXT-RB-5wm"/>
+                <outlet property="title" destination="CtK-Le-ter" id="Cf2-Mw-J3V"/>
+            </connections>
+            <point key="canvasLocation" x="284" y="203"/>
+        </collectionViewCell>
+    </objects>
+    <resources>
+        <image name="default_image_02_L.jpg" width="256" height="256"/>
+        <image name="dtacplay_shopping_location" width="30" height="30"/>
+        <image name="dtacplay_shopping_time" width="30" height="30"/>
+    </resources>
+</document>

@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9532" systemVersion="14F27" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9530"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <mutableArray key="DTAC2013_Lt.ttf">
+            <string>DTAC2013-Light</string>
+            <string>DTAC2013-Light</string>
+            <string>DTAC2013-Light</string>
+            <string>DTAC2013-Light</string>
+        </mutableArray>
+        <mutableArray key="DTAC2013_Rg.ttf">
+            <string>DTAC2013-Regular</string>
+            <string>DTAC2013-Regular</string>
+            <string>DTAC2013-Regular</string>
+            <string>DTAC2013-Regular</string>
+            <string>DTAC2013-Regular</string>
+            <string>DTAC2013-Regular</string>
+            <string>DTAC2013-Regular</string>
+            <string>DTAC2013-Regular</string>
+            <string>DTAC2013-Regular</string>
+        </mutableArray>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="gTV-IL-0wX" customClass="LotteryCellCollectionViewCell">
+            <rect key="frame" x="0.0" y="0.0" width="410" height="376"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="410" height="376"/>
+                <subviews>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ผลสลากกินเเบ่งรัฐบาลงวดวันที่ 30 ธันวาคม 2558" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oSa-yJ-UR2">
+                        <rect key="frame" x="8" y="0.0" width="393" height="42"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="42" id="SYG-Gl-cIR"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" name="DTAC2013-Regular" family="DTAC 2013" pointSize="14"/>
+                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dcE-Ka-i1N" userLabel="รางวัลที่ 1">
+                        <rect key="frame" x="0.0" y="50" width="410" height="94"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="z9F-Y7-61F">
+                                <rect key="frame" x="8" y="35" width="394" height="51"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00827" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TOE-0m-EDp">
+                                        <rect key="frame" x="0.0" y="0.0" width="394" height="27"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="27" id="7JB-qg-HMK"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="DTAC2013-Light" family="DTAC 2013" pointSize="20"/>
+                                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="รางวัลละ 3.000.000 บาท" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wsl-Sj-Pow">
+                                        <rect key="frame" x="0.0" y="24" width="394" height="27"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="27" id="JEq-0K-PDb"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="DTAC2013-Regular" family="DTAC 2013" pointSize="14"/>
+                                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" red="0.89803921568627454" green="0.89803921568627454" blue="0.89803921568627454" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstItem="TOE-0m-EDp" firstAttribute="leading" secondItem="z9F-Y7-61F" secondAttribute="leading" id="6sk-JN-dLJ"/>
+                                    <constraint firstItem="wsl-Sj-Pow" firstAttribute="leading" secondItem="z9F-Y7-61F" secondAttribute="leading" id="Tlu-ZW-2MF"/>
+                                    <constraint firstAttribute="trailing" secondItem="wsl-Sj-Pow" secondAttribute="trailing" id="Vfp-fH-jzy"/>
+                                    <constraint firstAttribute="trailing" secondItem="TOE-0m-EDp" secondAttribute="trailing" id="bGc-EB-YnM"/>
+                                    <constraint firstAttribute="bottom" secondItem="wsl-Sj-Pow" secondAttribute="bottom" id="htK-3U-VjD"/>
+                                    <constraint firstItem="TOE-0m-EDp" firstAttribute="top" secondItem="z9F-Y7-61F" secondAttribute="top" id="nvL-V8-A4c"/>
+                                    <constraint firstAttribute="height" constant="51" id="rOH-v5-1i6"/>
+                                </constraints>
+                            </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="รางวัลที่ 1" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="JQx-qM-7ct">
+                                <rect key="frame" x="0.0" y="0.0" width="410" height="33"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="33" id="cC7-i4-fRn"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="DTAC2013-Regular" family="DTAC 2013" pointSize="14"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" red="0.96078431372549022" green="0.96078431372549022" blue="0.96078431372549022" alpha="1" colorSpace="calibratedRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="z9F-Y7-61F" secondAttribute="bottom" constant="8" id="C9P-vr-P3t"/>
+                            <constraint firstItem="z9F-Y7-61F" firstAttribute="leading" secondItem="dcE-Ka-i1N" secondAttribute="leading" constant="8" id="cis-78-qRa"/>
+                            <constraint firstItem="JQx-qM-7ct" firstAttribute="top" secondItem="dcE-Ka-i1N" secondAttribute="top" id="eko-vj-0d7"/>
+                            <constraint firstAttribute="height" constant="94" id="fff-Ob-Bjk"/>
+                            <constraint firstItem="JQx-qM-7ct" firstAttribute="leading" secondItem="dcE-Ka-i1N" secondAttribute="leading" id="g7C-fK-sBb"/>
+                            <constraint firstAttribute="trailing" secondItem="z9F-Y7-61F" secondAttribute="trailing" constant="8" id="llA-yK-ZkF"/>
+                            <constraint firstAttribute="trailing" secondItem="JQx-qM-7ct" secondAttribute="trailing" id="xfe-VE-OA6"/>
+                        </constraints>
+                    </view>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ljd-Hm-WIg">
+                        <rect key="frame" x="0.0" y="154" width="200" height="94"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="เลขหน้า 3 ตัว" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TCP-To-3qi">
+                                <rect key="frame" x="0.0" y="0.0" width="200" height="33"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="TCP-To-3qi" secondAttribute="height" multiplier="200:33" id="7nh-XW-k1W"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="DTAC2013-Regular" family="DTAC 2013" pointSize="14"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5MF-zk-QAT">
+                                <rect key="frame" x="8" y="35" width="184" height="51"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00827" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rS0-xU-cPZ">
+                                        <rect key="frame" x="0.0" y="0.0" width="184" height="27"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="27" id="Wcn-Jq-se0"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="DTAC2013-Light" family="DTAC 2013" pointSize="20"/>
+                                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="รางวัลละ 2,000 บาท" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="skI-OI-o2o">
+                                        <rect key="frame" x="0.0" y="24" width="184" height="27"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="27" id="nBy-3o-gc4"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="DTAC2013-Regular" family="DTAC 2013" pointSize="14"/>
+                                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" red="0.89803921568627454" green="0.89803921568627454" blue="0.89803921568627454" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="51" id="0TI-sS-nuk"/>
+                                    <constraint firstAttribute="trailing" secondItem="rS0-xU-cPZ" secondAttribute="trailing" id="6N5-H9-Vs8"/>
+                                    <constraint firstAttribute="bottom" secondItem="skI-OI-o2o" secondAttribute="bottom" id="72J-re-SPj"/>
+                                    <constraint firstItem="skI-OI-o2o" firstAttribute="leading" secondItem="5MF-zk-QAT" secondAttribute="leading" id="9vs-4c-Ef6"/>
+                                    <constraint firstAttribute="trailing" secondItem="skI-OI-o2o" secondAttribute="trailing" id="FzO-2J-DMd"/>
+                                    <constraint firstItem="rS0-xU-cPZ" firstAttribute="top" secondItem="5MF-zk-QAT" secondAttribute="top" id="G7E-Cg-lfh"/>
+                                    <constraint firstItem="rS0-xU-cPZ" firstAttribute="leading" secondItem="5MF-zk-QAT" secondAttribute="leading" id="uz6-Z9-6sL"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" red="0.96078431372549022" green="0.96078431372549022" blue="0.96078431372549022" alpha="1" colorSpace="calibratedRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="TCP-To-3qi" secondAttribute="trailing" id="7IP-sw-hJE"/>
+                            <constraint firstItem="5MF-zk-QAT" firstAttribute="leading" secondItem="ljd-Hm-WIg" secondAttribute="leading" constant="8" id="SvQ-86-8rr"/>
+                            <constraint firstAttribute="height" constant="94" id="Tn5-kQ-jGP"/>
+                            <constraint firstItem="TCP-To-3qi" firstAttribute="leading" secondItem="ljd-Hm-WIg" secondAttribute="leading" id="UFf-XT-O9n"/>
+                            <constraint firstAttribute="bottom" secondItem="5MF-zk-QAT" secondAttribute="bottom" constant="8" id="cRF-FH-OZ0"/>
+                            <constraint firstAttribute="trailing" secondItem="5MF-zk-QAT" secondAttribute="trailing" constant="8" id="g12-XK-0hh"/>
+                            <constraint firstItem="TCP-To-3qi" firstAttribute="top" secondItem="ljd-Hm-WIg" secondAttribute="top" id="mV2-S0-ZVf"/>
+                        </constraints>
+                    </view>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="evi-fd-kbd">
+                        <rect key="frame" x="210" y="154" width="200" height="94"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Unm-fz-S59">
+                                <rect key="frame" x="8" y="35" width="184" height="51"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00827" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ont-0U-Quf">
+                                        <rect key="frame" x="0.0" y="0.0" width="184" height="27"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="27" id="znu-O7-HUt"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="DTAC2013-Light" family="DTAC 2013" pointSize="20"/>
+                                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="รางวัลละ 2,000 บาท" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wxt-T0-6Wz">
+                                        <rect key="frame" x="0.0" y="24" width="184" height="27"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="27" id="mpG-pc-N3f"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="DTAC2013-Regular" family="DTAC 2013" pointSize="14"/>
+                                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" red="0.89803921568627454" green="0.89803921568627454" blue="0.89803921568627454" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstItem="wxt-T0-6Wz" firstAttribute="leading" secondItem="Unm-fz-S59" secondAttribute="leading" id="MGm-IN-HMF"/>
+                                    <constraint firstItem="Ont-0U-Quf" firstAttribute="leading" secondItem="Unm-fz-S59" secondAttribute="leading" id="RC2-gM-dX4"/>
+                                    <constraint firstAttribute="bottom" secondItem="wxt-T0-6Wz" secondAttribute="bottom" id="ahp-B1-Njb"/>
+                                    <constraint firstAttribute="trailing" secondItem="wxt-T0-6Wz" secondAttribute="trailing" id="cns-6I-Cpr"/>
+                                    <constraint firstAttribute="height" constant="51" id="edz-bw-YIz"/>
+                                    <constraint firstItem="Ont-0U-Quf" firstAttribute="top" secondItem="Unm-fz-S59" secondAttribute="top" id="reV-tw-Zcb"/>
+                                    <constraint firstAttribute="trailing" secondItem="Ont-0U-Quf" secondAttribute="trailing" id="xtZ-FB-bMt"/>
+                                </constraints>
+                            </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="เลขท้าย 3 ตัว" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="auV-az-BSc">
+                                <rect key="frame" x="0.0" y="0.0" width="200" height="33"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="auV-az-BSc" secondAttribute="height" multiplier="200:33" id="PXG-Bo-zZd"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="DTAC2013-Regular" family="DTAC 2013" pointSize="14"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" red="0.96078431372549022" green="0.96078431372549022" blue="0.96078431372549022" alpha="1" colorSpace="calibratedRGB"/>
+                        <constraints>
+                            <constraint firstItem="auV-az-BSc" firstAttribute="top" secondItem="evi-fd-kbd" secondAttribute="top" id="AS2-m7-AV4"/>
+                            <constraint firstItem="auV-az-BSc" firstAttribute="leading" secondItem="evi-fd-kbd" secondAttribute="leading" id="Afq-tK-Cat"/>
+                            <constraint firstAttribute="trailing" secondItem="auV-az-BSc" secondAttribute="trailing" id="Hyg-hm-2Eb"/>
+                            <constraint firstItem="Unm-fz-S59" firstAttribute="leading" secondItem="evi-fd-kbd" secondAttribute="leading" constant="8" id="SMk-1O-m44"/>
+                            <constraint firstAttribute="height" constant="94" id="Ugt-uq-xv2"/>
+                            <constraint firstAttribute="trailing" secondItem="Unm-fz-S59" secondAttribute="trailing" constant="8" id="gOZ-19-VSx"/>
+                            <constraint firstAttribute="bottom" secondItem="Unm-fz-S59" secondAttribute="bottom" constant="8" id="uOE-Fm-0KJ"/>
+                        </constraints>
+                    </view>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Sot-7K-9Mx">
+                        <rect key="frame" x="0.0" y="258" width="410" height="94"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="f1R-6d-tyl">
+                                <rect key="frame" x="8" y="35" width="394" height="51"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00827" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="san-aY-xAq">
+                                        <rect key="frame" x="0.0" y="0.0" width="394" height="27"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="27" id="gfg-Ar-kpz"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="DTAC2013-Light" family="DTAC 2013" pointSize="20"/>
+                                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="รางวัลละ 3.000.000 บาท" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="50V-am-NRy">
+                                        <rect key="frame" x="0.0" y="24" width="394" height="27"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="27" id="vgO-Zp-LrK"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" name="DTAC2013-Regular" family="DTAC 2013" pointSize="14"/>
+                                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" red="0.89803921568627454" green="0.89803921568627454" blue="0.89803921568627454" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstItem="50V-am-NRy" firstAttribute="leading" secondItem="f1R-6d-tyl" secondAttribute="leading" id="9As-EV-e1B"/>
+                                    <constraint firstItem="san-aY-xAq" firstAttribute="top" secondItem="f1R-6d-tyl" secondAttribute="top" id="GbE-Ro-iYv"/>
+                                    <constraint firstAttribute="bottom" secondItem="50V-am-NRy" secondAttribute="bottom" id="UIK-8e-HB9"/>
+                                    <constraint firstAttribute="trailing" secondItem="san-aY-xAq" secondAttribute="trailing" id="VGh-bm-fzU"/>
+                                    <constraint firstAttribute="trailing" secondItem="50V-am-NRy" secondAttribute="trailing" id="eM3-kt-EZz"/>
+                                    <constraint firstItem="san-aY-xAq" firstAttribute="leading" secondItem="f1R-6d-tyl" secondAttribute="leading" id="ek7-ec-Erf"/>
+                                    <constraint firstAttribute="height" constant="51" id="ohO-HG-8bq"/>
+                                </constraints>
+                            </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="เลขท้าย 2 ตัว" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="F1A-Cb-7Rz">
+                                <rect key="frame" x="0.0" y="0.0" width="410" height="33"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="33" id="1Pc-Et-286"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="DTAC2013-Regular" family="DTAC 2013" pointSize="14"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" red="0.96078431372549022" green="0.96078431372549022" blue="0.96078431372549022" alpha="1" colorSpace="calibratedRGB"/>
+                        <constraints>
+                            <constraint firstItem="F1A-Cb-7Rz" firstAttribute="top" secondItem="Sot-7K-9Mx" secondAttribute="top" id="4ct-Vx-KRf"/>
+                            <constraint firstItem="f1R-6d-tyl" firstAttribute="leading" secondItem="Sot-7K-9Mx" secondAttribute="leading" constant="8" id="XYt-3G-a7n"/>
+                            <constraint firstItem="F1A-Cb-7Rz" firstAttribute="leading" secondItem="Sot-7K-9Mx" secondAttribute="leading" id="cPf-g9-CCE"/>
+                            <constraint firstAttribute="bottom" secondItem="f1R-6d-tyl" secondAttribute="bottom" constant="8" id="epi-wt-VgA"/>
+                            <constraint firstAttribute="height" constant="94" id="gfN-4E-aRf"/>
+                            <constraint firstAttribute="trailing" secondItem="F1A-Cb-7Rz" secondAttribute="trailing" id="h7n-Pu-c8F"/>
+                            <constraint firstAttribute="trailing" secondItem="f1R-6d-tyl" secondAttribute="trailing" constant="8" id="uDc-eP-g2a"/>
+                        </constraints>
+                    </view>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="IJB-9G-ilN" userLabel="line">
+                        <rect key="frame" x="0.0" y="375" width="410" height="1"/>
+                        <color key="backgroundColor" red="0.0" green="0.56862745100000001" blue="0.85882352939999995" alpha="1" colorSpace="calibratedRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="1" id="FKw-5T-7V2"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            </view>
+            <constraints>
+                <constraint firstAttribute="trailing" secondItem="oSa-yJ-UR2" secondAttribute="trailing" constant="9" id="197-qq-tUP"/>
+                <constraint firstItem="ljd-Hm-WIg" firstAttribute="width" secondItem="evi-fd-kbd" secondAttribute="width" id="418-oa-Pcm"/>
+                <constraint firstItem="Sot-7K-9Mx" firstAttribute="top" secondItem="evi-fd-kbd" secondAttribute="bottom" constant="10" id="6VL-WG-t94"/>
+                <constraint firstItem="evi-fd-kbd" firstAttribute="top" secondItem="dcE-Ka-i1N" secondAttribute="bottom" constant="10" id="6q2-qB-VEW"/>
+                <constraint firstItem="ljd-Hm-WIg" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="8BQ-XB-sQ2"/>
+                <constraint firstItem="IJB-9G-ilN" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="BiF-CZ-7sV"/>
+                <constraint firstAttribute="trailing" secondItem="IJB-9G-ilN" secondAttribute="trailing" id="DeQ-nA-uVL"/>
+                <constraint firstAttribute="trailing" secondItem="evi-fd-kbd" secondAttribute="trailing" id="HJv-7E-Vk2"/>
+                <constraint firstAttribute="trailing" secondItem="Sot-7K-9Mx" secondAttribute="trailing" id="Ugi-qS-3ft"/>
+                <constraint firstItem="oSa-yJ-UR2" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="bmx-cR-PQS"/>
+                <constraint firstItem="dcE-Ka-i1N" firstAttribute="top" secondItem="oSa-yJ-UR2" secondAttribute="bottom" constant="8" id="dlV-Mc-KGk"/>
+                <constraint firstAttribute="trailing" secondItem="dcE-Ka-i1N" secondAttribute="trailing" id="g6o-9g-2nI"/>
+                <constraint firstItem="Sot-7K-9Mx" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="heS-yl-6LS"/>
+                <constraint firstItem="evi-fd-kbd" firstAttribute="leading" secondItem="ljd-Hm-WIg" secondAttribute="trailing" constant="10" id="iVa-4B-m1P"/>
+                <constraint firstItem="dcE-Ka-i1N" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="plz-hV-AhV"/>
+                <constraint firstItem="ljd-Hm-WIg" firstAttribute="top" secondItem="dcE-Ka-i1N" secondAttribute="bottom" constant="10" id="q1l-1D-4HS"/>
+                <constraint firstItem="evi-fd-kbd" firstAttribute="leading" secondItem="ljd-Hm-WIg" secondAttribute="trailing" constant="10" id="qtW-mD-vRr"/>
+                <constraint firstItem="oSa-yJ-UR2" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" constant="8" id="u6k-d3-Ojy"/>
+                <constraint firstAttribute="bottom" secondItem="IJB-9G-ilN" secondAttribute="bottom" id="zB7-PY-YaJ"/>
+            </constraints>
+            <size key="customSize" width="409" height="375"/>
+            <connections>
+                <outlet property="line" destination="IJB-9G-ilN" id="gKa-nm-b4C"/>
+                <outlet property="number_1" destination="TOE-0m-EDp" id="9cl-dD-N2x"/>
+                <outlet property="number_2" destination="san-aY-xAq" id="45w-Mp-Fi1"/>
+                <outlet property="number_3_back" destination="Ont-0U-Quf" id="cjU-NJ-nyK"/>
+                <outlet property="number_3_front" destination="rS0-xU-cPZ" id="M56-An-0y6"/>
+                <outlet property="reward_1" destination="wsl-Sj-Pow" id="5xy-sU-oXK"/>
+                <outlet property="reward_2" destination="50V-am-NRy" id="lmf-sO-SVn"/>
+                <outlet property="reward_3_back" destination="wxt-T0-6Wz" id="j2S-dR-4qf"/>
+                <outlet property="reward_3_front" destination="skI-OI-o2o" id="Qa2-N4-fQC"/>
+                <outlet property="title" destination="oSa-yJ-UR2" id="WrL-xQ-S4Y"/>
+                <outlet property="view1" destination="dcE-Ka-i1N" id="3ab-9L-EH4"/>
+                <outlet property="view2" destination="ljd-Hm-WIg" id="q7f-Wo-eiI"/>
+                <outlet property="view3" destination="evi-fd-kbd" id="57m-AA-afN"/>
+                <outlet property="view4" destination="Sot-7K-9Mx" id="IAA-JG-clG"/>
+            </connections>
+            <point key="canvasLocation" x="352" y="364"/>
+        </collectionViewCell>
+    </objects>
+</document>

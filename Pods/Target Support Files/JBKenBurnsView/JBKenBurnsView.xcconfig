@@ -1,0 +1,1 @@
+JBKENBURNSVIEW_OTHER_LDFLAGS = -framework "QuartzCore"

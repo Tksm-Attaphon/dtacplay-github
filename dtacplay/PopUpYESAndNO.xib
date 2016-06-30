@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="10116" systemVersion="15E65" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <mutableArray key="DTAC2013_Rg.ttf">
+            <string>DTAC2013-Regular</string>
+        </mutableArray>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="mMv-DD-R81" customClass="PopUpYESAndNO">
+            <rect key="frame" x="0.0" y="0.0" width="257" height="124"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="คุณต้องการลบข้อความทั้งหมดใช่หรือไม่" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kQA-2U-upn">
+                    <rect key="frame" x="0.0" y="0.0" width="257" height="62"/>
+                    <constraints>
+                        <constraint firstAttribute="width" secondItem="kQA-2U-upn" secondAttribute="height" multiplier="257:62" id="9XS-YM-3Sa"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" name="DTAC2013-Regular" family="DTAC 2013" pointSize="16"/>
+                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <view contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9nF-ub-JLn">
+                    <rect key="frame" x="65" y="58" width="130" height="57"/>
+                    <subviews>
+                        <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OCw-d8-vXg">
+                            <rect key="frame" x="0.0" y="12" width="61" height="34"/>
+                            <color key="backgroundColor" red="0.87450980389999999" green="0.0" blue="0.27058823529999998" alpha="1" colorSpace="calibratedRGB"/>
+                            <state key="normal" title="ใช่">
+                                <color key="titleColor" red="0.99184806020000005" green="0.98304419769999996" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                            </state>
+                            <connections>
+                                <action selector="yesAction:" destination="mMv-DD-R81" eventType="touchUpInside" id="dyZ-2z-qu0"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="siu-fu-GkQ">
+                            <rect key="frame" x="69" y="12" width="61" height="34"/>
+                            <color key="backgroundColor" red="0.87450980389999999" green="0.0" blue="0.27058823529999998" alpha="1" colorSpace="calibratedRGB"/>
+                            <state key="normal" title="ไม่">
+                                <color key="titleColor" red="0.99184806020000005" green="0.98304419769999996" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                            </state>
+                            <connections>
+                                <action selector="noAction:" destination="mMv-DD-R81" eventType="touchUpInside" id="jxK-7s-0nR"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="130" id="RxY-yz-MK1"/>
+                        <constraint firstAttribute="height" constant="57" id="asj-7U-RP8"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="kQA-2U-upn" firstAttribute="leading" secondItem="mMv-DD-R81" secondAttribute="leading" id="Bpw-rw-wXZ"/>
+                <constraint firstAttribute="trailing" secondItem="kQA-2U-upn" secondAttribute="trailing" id="FHE-Xn-Pv6"/>
+                <constraint firstAttribute="bottom" secondItem="9nF-ub-JLn" secondAttribute="bottom" constant="9" id="Ruu-22-jiq"/>
+                <constraint firstItem="kQA-2U-upn" firstAttribute="top" secondItem="mMv-DD-R81" secondAttribute="top" id="XxW-mo-PtS"/>
+                <constraint firstItem="9nF-ub-JLn" firstAttribute="top" secondItem="mMv-DD-R81" secondAttribute="top" constant="58" id="ayK-Dg-96Y"/>
+                <constraint firstItem="9nF-ub-JLn" firstAttribute="centerX" secondItem="mMv-DD-R81" secondAttribute="centerX" id="pi6-6O-bVX"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="274.5" y="170"/>
+        </view>
+    </objects>
+</document>

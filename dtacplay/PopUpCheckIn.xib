@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="10116" systemVersion="15E65" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="NJ9-l6-TbR" customClass="PopUpCheckIn">
+            <rect key="frame" x="0.0" y="0.0" width="240" height="373"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="0vY-Hr-WYd">
+                    <rect key="frame" x="0.0" y="0.0" width="240" height="373"/>
+                    <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                </imageView>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="YLt-ck-lZE">
+                    <rect key="frame" x="213" y="0.0" width="27" height="25"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="25" id="IC6-O6-D1b"/>
+                        <constraint firstAttribute="width" constant="27" id="QOg-4m-ytV"/>
+                    </constraints>
+                    <state key="normal" image="dtacplay_close_blue"/>
+                    <connections>
+                        <action selector="closePopUp:" destination="NJ9-l6-TbR" eventType="touchUpInside" id="XpN-eW-Lmh"/>
+                    </connections>
+                </button>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="0vY-Hr-WYd" firstAttribute="leading" secondItem="NJ9-l6-TbR" secondAttribute="leading" id="2Zf-dt-sqv"/>
+                <constraint firstAttribute="trailing" secondItem="0vY-Hr-WYd" secondAttribute="trailing" id="AXa-ln-pHg"/>
+                <constraint firstItem="YLt-ck-lZE" firstAttribute="top" secondItem="NJ9-l6-TbR" secondAttribute="top" id="Pki-PT-xyu"/>
+                <constraint firstAttribute="trailing" secondItem="YLt-ck-lZE" secondAttribute="trailing" id="QTK-ut-hrk"/>
+                <constraint firstAttribute="bottom" secondItem="0vY-Hr-WYd" secondAttribute="bottom" id="boA-yL-CE0"/>
+                <constraint firstItem="0vY-Hr-WYd" firstAttribute="top" secondItem="NJ9-l6-TbR" secondAttribute="top" id="ezv-fo-oUh"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <nil key="simulatedTopBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <connections>
+                <outlet property="image" destination="0vY-Hr-WYd" id="Un9-3R-SUY"/>
+            </connections>
+            <point key="canvasLocation" x="287" y="357.5"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="dtacplay_close_blue" width="25" height="25"/>
+    </resources>
+</document>
