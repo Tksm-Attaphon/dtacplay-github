@@ -16,4 +16,5 @@
 @property(nonatomic,strong)DtacSubCategory *news_music;
 @property(nonatomic,strong)DtacSubCategory *video;
 @property(nonatomic,strong)DtacSubCategory *talkofthetown;
+
 @end

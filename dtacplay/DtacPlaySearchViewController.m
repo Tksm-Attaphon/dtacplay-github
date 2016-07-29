@@ -34,17 +34,29 @@
 #import "PromotionDetailViewController.h"
 #import "SVPullToRefresh.h"
 #import "SportDetailViewController.h"
-@interface DtacPlaySearchViewController ()<UITableViewDataSource,UITableViewDelegate,iCarouselDataSource,iCarouselDelegate>
+#import "BannerView.h"
+@interface DtacPlaySearchViewController ()<UITableViewDataSource,UITableViewDelegate>
 {
     UIPageControl *pageControl;
     NSTimer *timer;
     NSMutableArray *searchData;
     int page;
     UILabel* showDescLabel;
+    
+    BannerView *bannerView;
 }
 @end
 
 @implementation DtacPlaySearchViewController
+-(void)viewWillAppear:(BOOL)animated{
+    if(!timer)
+        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
+                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [timer invalidate];
+    timer = nil;
+}
 
 -(void)refreshPage{
     page++;
@@ -216,33 +228,16 @@
     UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight]+30)];
     [headerView setBackgroundColor:[UIColor whiteColor]];
     
-    if(!_carousel)
-        _carousel = [[iCarousel alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
-    
-    _carousel.delegate = self;
-    _carousel.dataSource = self;
-    _carousel.type = iCarouselTypeLinear;
-    _carousel.backgroundColor = [UIColor clearColor];
+    if(!bannerView)
+        bannerView = [[BannerView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
+    bannerView.backgroundColor = [UIColor clearColor];
     //_carousel.
-    [headerView addSubview:_carousel];
+    [headerView addSubview:bannerView];
     
+ 
+    bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
     
-    
-    
-    // Page Control
-    if(!pageControl)
-        pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (self.carousel.frame.size.height-20), self.carousel.frame.size.width, 20.0f)];
-    pageControl.numberOfPages = [[Manager sharedManager]bannerArray].count;
-    pageControl.currentPage = 0;
-    pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-    pageControl.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-    pageControl.userInteractionEnabled = NO;
-    [_carousel addSubview:pageControl];
-    [timer invalidate];
-    timer = nil;
-    timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
-                                              target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
-    
+    [bannerView.carousel reloadData];
     
     showDescLabel= [[UILabel alloc]initWithFrame:CGRectMake(10, [[Manager sharedManager]bannerHeight]+10,self.view.frame.size.width-20, 25)];
     showDescLabel.lineBreakMode = NSLineBreakByTruncatingTail;
@@ -762,22 +757,7 @@
     }
     else if(cateSearch.cateID == LIFESTYLE){
   NSString *contentID = [NSString stringWithFormat:@"%d",obj.conID];
-        if(obj.subCateID >=26){// ดวงง
-            HoroViewController *articleView= [[HoroViewController alloc]init];
-            articleView.titlePage =  @"ไลฟ์สไตล์";
-            articleView.themeColor = [UIColor colorWithHexString:COLOR_LIFESTYLE];
-            articleView.pageType = LIFESTYLE;
-            articleView.contentID = contentID;
-            UIBarButtonItem *newBackButton =
-            [[UIBarButtonItem alloc] initWithTitle:@" "
-                                             style:UIBarButtonItemStyleBordered
-                                            target:nil
-                                            action:nil];
-            [self.navigationItem setBackBarButtonItem:newBackButton];
-            self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-            [self.navigationController pushViewController:articleView animated:YES];
-        }
-        else{
+       
             ArticleViewController *articleView= [[ArticleViewController alloc]init];
             articleView.titlePage =  @"ไลฟ์สไตล์";
             articleView.themeColor = [UIColor colorWithHexString:COLOR_LIFESTYLE];
@@ -792,15 +772,12 @@
             [self.navigationItem setBackBarButtonItem:newBackButton];
             self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
             [self.navigationController pushViewController:articleView animated:YES];
-        }
-        
 
     }
     else if(cateSearch.cateID == SPORT){
          NSString *contentID = [NSString stringWithFormat:@"%d",obj.conID];
         SportDetailViewController* articleView= [[SportDetailViewController alloc]init];
-    
-        
+
         articleView.contentID = contentID;
         articleView.pageType = SPORT;
         articleView.themeColor = [UIColor colorWithHexString:COLOR_LIFESTYLE];
@@ -1080,79 +1057,12 @@
 
 -(void)runLoop:(NSTimer*)NSTimer{
     
-    if(_carousel)
-        [_carousel scrollToItemAtIndex:self.carousel.currentItemIndex+1 animated:YES];
+    if(bannerView.carousel)
+        [bannerView.carousel scrollToItemAtIndex:bannerView.carousel.currentItemIndex+1 animated:YES];
     
     
     
 }
-#pragma mark -
-#pragma mark iCarousel methods
-
-- (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
-{
-    if([[Manager sharedManager]bannerArray]){
-        return [[Manager sharedManager]bannerArray].count;
-    }else{
-        return 0;
-    }
-}
-- (NSUInteger)numberOfVisibleItemsInCarousel:(iCarousel *)carousel
-{
-    //limit the number of items views loaded concurrently (for performance reasons)
-    return 4;
-}
-- (void)scrollToItemAtIndex:(NSInteger)index
-                   duration:(NSTimeInterval)scrollDuration{
-    
-    
-}
-- (void)carouselCurrentItemIndexDidChange:(__unused iCarousel *)carousel
-{
-    //NSLog(@"Index: %@", @(self.carousel.currentItemIndex));
-    pageControl.currentPage = self.carousel.currentItemIndex;
-}
-- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
-{
-    UIImageView *viewsImage = [[UIImageView alloc] initWithFrame:_carousel.frame];
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-    [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-                       
-                          options:0
-                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                             // progression tracking code
-                         }
-                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                            if (image) {
-                                viewsImage.image = image;
-                            }
-                            
-                            
-                            
-                        }];
-    
-    [viewsImage setContentMode:UIViewContentModeScaleToFill];
-    return viewsImage;
-}
-- (BOOL)carouselShouldWrap:(iCarousel *)carousel
-{
-    //wrap all carousels
-    return NO;
-}
-- (CGFloat)carousel:(iCarousel *)carousel valueForOption:(iCarouselOption)option withDefault:(CGFloat)value
-{
-    
-    if (option == iCarouselOptionWrap) {
-        return YES;
-    }
-    return value;
-}
-- (void)carousel:(iCarousel *)carousel didSelectItemAtIndex:(NSInteger)index{
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:temp.link]];
-}
-
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.

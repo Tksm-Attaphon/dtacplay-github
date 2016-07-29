@@ -51,6 +51,7 @@
     
     NavigationViewController *navigationController = [[NavigationViewController alloc] initWithRootViewController:[[DtacHomeViewController alloc] init]];
     SideBarViewController *menuController = [[SideBarViewController alloc] init];
+    
     // set the selected icon color
     [[UITabBar appearance] setTintColor:[UIColor colorWithHexString:SIDE_BAR_COLOR]];
     [[UITabBar appearance] setSelectedImageTintColor:[UIColor whiteColor]];
@@ -75,6 +76,8 @@
     frostedViewController.liveBlurBackgroundStyle = REFrostedViewControllerLiveBackgroundStyleLight;
     [frostedViewController.navigationItem.leftBarButtonItem setTintColor:[UIColor colorWithHexString:SIDE_BAR_COLOR]];
     frostedViewController.menuViewSize = CGSizeMake(280, [[UIScreen mainScreen] bounds].size.height);
+    
+    
     if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
         
     {

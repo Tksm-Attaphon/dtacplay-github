@@ -49,11 +49,18 @@
 @property(nonatomic,assign)BOOL userLive;
 
 @property(nonatomic,strong)NSString *accessID;
+@property(nonatomic,strong)NSString *userID;
+
 @property(nonatomic,assign)DTACPLAY_Language language;// thai = 1
 @property(nonatomic,assign)DeviceType deviceType;
 @property(nonatomic,strong)NSString *server;
 @property(nonatomic,strong)NSString *phoneNumber;
 @property(nonatomic,assign)float bannerHeight;
+
+ @property(nonatomic,strong)NSMutableArray* menu_HOME;
+@property(nonatomic,strong)NSMutableArray *freezoneMenu;
+
+
 @property(nonatomic,strong)NSMutableArray *bannerArray;
 
 @property(nonatomic,strong)NSMutableArray *bannerArrayNews;
@@ -64,15 +71,17 @@
 @property(nonatomic,strong)NSMutableArray *bannerArrayFreezone;
 @property(nonatomic,strong)NSMutableArray *bannerArraySport;
 @property(nonatomic,strong)NSMutableArray *bannerArrayShopping;
+@property(nonatomic,strong)NSMutableArray *bannerArrayPrivilageGame;
 
 @property(nonatomic,assign)BOOL isNormalState;
 @property(nonatomic,assign)BOOL isRecAppAvaliable;
-
+@property(nonatomic,assign)BOOL isFreeMusicAvaliable;
 @property(nonatomic,assign)BOOL isServerDown;
 @property(nonatomic,assign)BOOL isFirstTimeAccessID;
 
 @property(nonatomic,assign)int smrtAdsRefIdNews;
 @property(nonatomic,assign)int smrtAdsRefIdEntertainment;
+@property(nonatomic,assign)int smrtAdsRefIdPrivilageGame;
 @property(nonatomic,assign)int smrtAdsRefIdPromotion;
 @property(nonatomic,assign)int smrtAdsRefIdLifestyle;
 @property(nonatomic,assign)int smrtAdsRefIdDownload;
@@ -83,6 +92,7 @@
 @property(nonatomic,strong)NewsCategory *newsCategory;
 @property(nonatomic,strong)EntertainmentCategory *entertainmentCategory;
 @property(nonatomic,strong)DtacCategory *promotionCategory;
+@property(nonatomic,strong)DtacCategory *privilageGameCategory;
 @property(nonatomic,strong)LifestyleCategory *lifestyleCategory;
 @property(nonatomic,strong)DownloadCategory *downloadCategory;
 @property(nonatomic,strong)FreezoneCategory *freezoneCategory;

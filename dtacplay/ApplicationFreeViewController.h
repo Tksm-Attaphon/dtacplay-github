@@ -13,7 +13,7 @@
 #import "Constant.h"
 
 @interface ApplicationFreeViewController : DtacPlayViewController
-@property (strong, nonatomic) iCarousel *carousel;
+
 @property (strong, nonatomic) AppContent *appObject;
 @property(nonatomic,strong)UICollectionView *collectionView;
 

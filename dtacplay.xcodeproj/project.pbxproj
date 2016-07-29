@@ -65,8 +65,15 @@
 		832C19511CCA0FDF0018E3CF /* CPACollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 832C194F1CCA0FDF0018E3CF /* CPACollectionViewCell.xib */; };
 		832C19531CCA26320018E3CF /* CPACollectionViewCell2Line.xib in Resources */ = {isa = PBXBuildFile; fileRef = 832C19521CCA26320018E3CF /* CPACollectionViewCell2Line.xib */; };
 		833B7EFA1CE9EC3D00B9B474 /* CPAContent.m in Sources */ = {isa = PBXBuildFile; fileRef = 833B7EF91CE9EC3D00B9B474 /* CPAContent.m */; };
+		833FB95E1D3F330700708B66 /* BannerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 833FB95D1D3F330700708B66 /* BannerView.m */; };
+		833FB9611D3F963700708B66 /* RelateContent.m in Sources */ = {isa = PBXBuildFile; fileRef = 833FB9601D3F963700708B66 /* RelateContent.m */; };
 		834144E11BCE591E009322EB /* GallaryObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 834144E01BCE591E009322EB /* GallaryObject.m */; };
 		8341928E1D0932D100138284 /* banner_wiki.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 8341928D1D0932D100138284 /* banner_wiki.jpg */; };
+		83485D201D3496470017426B /* BannerCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 83485D1F1D3496470017426B /* BannerCollectionViewCell.m */; };
+		83485D251D349F950017426B /* banner_dob_game.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 83485D221D349F950017426B /* banner_dob_game.jpg */; };
+		83485D261D349F950017426B /* banner_dob_home.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 83485D231D349F950017426B /* banner_dob_home.jpg */; };
+		83485D2D1D34C7320017426B /* PrivllageGameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 83485D2C1D34C7320017426B /* PrivllageGameViewController.m */; };
+		83485D301D34C84E0017426B /* PrivilageGame.m in Sources */ = {isa = PBXBuildFile; fileRef = 83485D2F1D34C84E0017426B /* PrivilageGame.m */; };
 		83497A3B1CC637EA0091F06C /* dtacPlay.entitlements in Resources */ = {isa = PBXBuildFile; fileRef = 83497A3A1CC632CD0091F06C /* dtacPlay.entitlements */; };
 		834CC1AC1C10047A00C172AE /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 834CC1AB1C10047A00C172AE /* MediaPlayer.framework */; };
 		834CC1AE1C10048400C172AE /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 834CC1AD1C10048400C172AE /* CoreAudio.framework */; };
@@ -457,9 +464,21 @@
 		833B7EF91CE9EC3D00B9B474 /* CPAContent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CPAContent.m; sourceTree = "<group>"; };
 		833D085A1BC6711C00EB9233 /* facebook_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = facebook_icon.png; sourceTree = "<group>"; };
 		833D085C1BC6711C00EB9233 /* share_icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = share_icon.png; sourceTree = "<group>"; };
+		833FB95C1D3F330700708B66 /* BannerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BannerView.h; sourceTree = "<group>"; };
+		833FB95D1D3F330700708B66 /* BannerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BannerView.m; sourceTree = "<group>"; };
+		833FB95F1D3F963700708B66 /* RelateContent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RelateContent.h; sourceTree = "<group>"; };
+		833FB9601D3F963700708B66 /* RelateContent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RelateContent.m; sourceTree = "<group>"; };
 		834144DF1BCE591E009322EB /* GallaryObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GallaryObject.h; sourceTree = "<group>"; };
 		834144E01BCE591E009322EB /* GallaryObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GallaryObject.m; sourceTree = "<group>"; };
 		8341928D1D0932D100138284 /* banner_wiki.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = banner_wiki.jpg; sourceTree = "<group>"; };
+		83485D1E1D3496470017426B /* BannerCollectionViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BannerCollectionViewCell.h; sourceTree = "<group>"; };
+		83485D1F1D3496470017426B /* BannerCollectionViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BannerCollectionViewCell.m; sourceTree = "<group>"; };
+		83485D221D349F950017426B /* banner_dob_game.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = banner_dob_game.jpg; sourceTree = "<group>"; };
+		83485D231D349F950017426B /* banner_dob_home.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = banner_dob_home.jpg; sourceTree = "<group>"; };
+		83485D2B1D34C7320017426B /* PrivllageGameViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PrivllageGameViewController.h; sourceTree = "<group>"; };
+		83485D2C1D34C7320017426B /* PrivllageGameViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PrivllageGameViewController.m; sourceTree = "<group>"; };
+		83485D2E1D34C84E0017426B /* PrivilageGame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PrivilageGame.h; sourceTree = "<group>"; };
+		83485D2F1D34C84E0017426B /* PrivilageGame.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PrivilageGame.m; sourceTree = "<group>"; };
 		83497A3A1CC632CD0091F06C /* dtacPlay.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = dtacPlay.entitlements; sourceTree = "<group>"; };
 		834CC1AB1C10047A00C172AE /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		834CC1AD1C10048400C172AE /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
@@ -996,6 +1015,24 @@
 			name = "social detail page";
 			sourceTree = "<group>";
 		};
+		833FB95B1D3F32CE00708B66 /* Banner Slide */ = {
+			isa = PBXGroup;
+			children = (
+				833FB95C1D3F330700708B66 /* BannerView.h */,
+				833FB95D1D3F330700708B66 /* BannerView.m */,
+			);
+			name = "Banner Slide";
+			sourceTree = "<group>";
+		};
+		83485D271D34A1EF0017426B /* Privl Game */ = {
+			isa = PBXGroup;
+			children = (
+				83485D2B1D34C7320017426B /* PrivllageGameViewController.h */,
+				83485D2C1D34C7320017426B /* PrivllageGameViewController.m */,
+			);
+			name = "Privl Game";
+			sourceTree = "<group>";
+		};
 		835D02F01BC3858D0052A630 /* Article */ = {
 			isa = PBXGroup;
 			children = (
@@ -1096,6 +1133,8 @@
 		836E3F301BB1688900825CD6 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				83485D221D349F950017426B /* banner_dob_game.jpg */,
+				83485D231D349F950017426B /* banner_dob_home.jpg */,
 				8341928D1D0932D100138284 /* banner_wiki.jpg */,
 				832BD7541D14061600A6D6A8 /* default_screenshot.jpg */,
 				83E0D95A1CE484010087E7EF /* CPA IMAGE */,
@@ -1151,6 +1190,7 @@
 				83D3594D1C0329FF002E55DF /* popup register freezone */,
 				837405401BFF00B100451D8B /* social */,
 				83AAA4901BD72EF500A852AF /* WebView */,
+				833FB95B1D3F32CE00708B66 /* Banner Slide */,
 				8389FE501BBB84D500427012 /* CELL */,
 				836DC3D81BB24AD8004E514E /* Manager */,
 				836DC3D01BB24886004E514E /* Constant.h */,
@@ -1179,6 +1219,8 @@
 				83D572DA1CFC573500E40F91 /* EntertainmentCategory.m */,
 				83D572DC1CFC590000E40F91 /* LifestyleCategory.h */,
 				83D572DD1CFC590000E40F91 /* LifestyleCategory.m */,
+				83485D2E1D34C84E0017426B /* PrivilageGame.h */,
+				83485D2F1D34C84E0017426B /* PrivilageGame.m */,
 				83D572DF1CFC59B700E40F91 /* FreezoneCategory.h */,
 				83D572E01CFC59B700E40F91 /* FreezoneCategory.m */,
 				83D572E51CFC5AF100E40F91 /* DownloadCategory.h */,
@@ -1209,6 +1251,8 @@
 				835D02F21BC38B330052A630 /* ArticleContent.m */,
 				83BED1F01BC769C4008750D2 /* ContentDetail.h */,
 				83BED1F11BC769C4008750D2 /* ContentDetail.m */,
+				833FB95F1D3F963700708B66 /* RelateContent.h */,
+				833FB9601D3F963700708B66 /* RelateContent.m */,
 				839D4C251BCCA74400E9E55C /* ParagraphContent.h */,
 				839D4C261BCCA74400E9E55C /* ParagraphContent.m */,
 				3B35EF081BCD5C7E0089F4C3 /* ParagraphPromotion.h */,
@@ -1360,6 +1404,7 @@
 		8389FE4F1BBB84C500427012 /* Category */ = {
 			isa = PBXGroup;
 			children = (
+				83485D271D34A1EF0017426B /* Privl Game */,
 				83ACBF171C6B3FC000A3E8CF /* Sport */,
 				8380C1011C44A57C0049F1BA /* Download */,
 				8370372E1BFC834200CA6A00 /* Shopping */,
@@ -1412,6 +1457,8 @@
 				837908831BE0C44600F625A0 /* DtacPlayPromotionCollectionViewCell.m */,
 				837703361BE1EA3300EC9519 /* DtacPlayHeaderHoloCollectionViewCell.h */,
 				837703371BE1EA3300EC9519 /* DtacPlayHeaderHoloCollectionViewCell.m */,
+				83485D1E1D3496470017426B /* BannerCollectionViewCell.h */,
+				83485D1F1D3496470017426B /* BannerCollectionViewCell.m */,
 			);
 			name = CELL;
 			sourceTree = "<group>";
@@ -2132,6 +2179,7 @@
 				836DC3D71BB249D5004E514E /* DTAC2013_Rg.ttf in Resources */,
 				83ABA3B01C23FAB00025A7F8 /* DtacUnderConstruction_iOS.png in Resources */,
 				83E0DA381CE484320087E7EF /* Lotto_th_icon_L.png in Resources */,
+				83485D251D349F950017426B /* banner_dob_game.jpg in Resources */,
 				83925D7B1BB3E79600778FBA /* image.xcassets in Resources */,
 				839319D51BF0AE7200826651 /* default_image_01_M.jpg in Resources */,
 				83E0DA771CE484320087E7EF /* Sport_XL.png in Resources */,
@@ -2149,6 +2197,7 @@
 				83E0DA791CE484320087E7EF /* vip_clip_M.png in Resources */,
 				83E0DA5D1CE484320087E7EF /* horo_M.png in Resources */,
 				83E0DA571CE484320087E7EF /* economic_XL.png in Resources */,
+				83485D261D349F950017426B /* banner_dob_home.jpg in Resources */,
 				8301EE901CEC7C1E00A88B44 /* reccomend_Register_2.png in Resources */,
 				83E0DA171CE484320087E7EF /* Lotto_icon_XL.png in Resources */,
 				83E0DA4F1CE484320087E7EF /* beauty&travel_XL.png in Resources */,
@@ -2228,6 +2277,7 @@
 				83FC9E161BCD1DCB00AFB363 /* ContentPreviewPromotion.m in Sources */,
 				83C17B5B1BEB055200E75AD6 /* MusicCell.m in Sources */,
 				836901DE1C9AB6FA00641955 /* PopUpYESAndNO.m in Sources */,
+				833FB9611D3F963700708B66 /* RelateContent.m in Sources */,
 				8361168C1BFF28FB0038B3F0 /* ShoppingDetailViewController.m in Sources */,
 				8326B7361BC5250700E86E66 /* PromotionViewController.m in Sources */,
 				83F170C51CFE9FB20032A50F /* HoroCPA.m in Sources */,
@@ -2246,6 +2296,8 @@
 				836E3F351BB1688900825CD6 /* AppDelegate.m in Sources */,
 				831FCEE51BF4752700357291 /* GameContent.m in Sources */,
 				83A9E9AD1BC4BDFC001DE990 /* SearchTableViewCell.m in Sources */,
+				833FB95E1D3F330700708B66 /* BannerView.m in Sources */,
+				83485D301D34C84E0017426B /* PrivilageGame.m in Sources */,
 				838BE2FC1C439D6000073CBA /* ListContentEntertainmentViewController.m in Sources */,
 				83D019751C50E428007CBCF7 /* LotteryCellCollectionViewCell.m in Sources */,
 				838242101C1EBD2F0085679D /* SearchItem.m in Sources */,
@@ -2273,6 +2325,7 @@
 				83D572D01CFC37DD00E40F91 /* DtacCategory.m in Sources */,
 				83F170BF1CFE9D450032A50F /* NewsCPA.m in Sources */,
 				835D02F31BC38B330052A630 /* ArticleContent.m in Sources */,
+				83485D2D1D34C7320017426B /* PrivllageGameViewController.m in Sources */,
 				83895D1F1C995297007433C4 /* FreeSMSCollectionViewCell.m in Sources */,
 				83F170C81CFEA00B0032A50F /* LuckyNumberCPA.m in Sources */,
 				838340E61C0424FA0037BC53 /* PopUp.m in Sources */,
@@ -2319,6 +2372,7 @@
 				83BED1F21BC769C4008750D2 /* ContentDetail.m in Sources */,
 				83987FB71C06AA1B00B0E4EE /* Line.m in Sources */,
 				83987FB81C06AA1B00B0E4EE /* LKLineActivity.m in Sources */,
+				83485D201D3496470017426B /* BannerCollectionViewCell.m in Sources */,
 				837908871BE0F32D00F625A0 /* FlowLifestyle.m in Sources */,
 				835D02EC1BC36C5B0052A630 /* ArticleBox.m in Sources */,
 				837405481BFF012500451D8B /* SocialView.m in Sources */,
@@ -2483,7 +2537,7 @@
 				CODE_SIGN_ENTITLEMENTS = dtacplay/dtacPlay.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				ENABLE_BITCODE = NO;
+				ENABLE_BITCODE = YES;
 				INFOPLIST_FILE = dtacplay/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -2492,7 +2546,7 @@
 					"$(PROJECT_DIR)/GoogleAnalyticsServicesiOS_3.13",
 					"$(PROJECT_DIR)/GoogleAnalyticsServicesiOS_3.15",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = th.co.ThinkSmart.Dev.01;
+				PRODUCT_BUNDLE_IDENTIFIER = th.co.dtac.dtacplay;
 				PRODUCT_NAME = dtacPlay;
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -2508,7 +2562,7 @@
 				CODE_SIGN_ENTITLEMENTS = dtacplay/dtacPlay.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				ENABLE_BITCODE = NO;
+				ENABLE_BITCODE = YES;
 				INFOPLIST_FILE = dtacplay/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -2517,7 +2571,7 @@
 					"$(PROJECT_DIR)/GoogleAnalyticsServicesiOS_3.13",
 					"$(PROJECT_DIR)/GoogleAnalyticsServicesiOS_3.15",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = th.co.ThinkSmart.Dev.01;
+				PRODUCT_BUNDLE_IDENTIFIER = th.co.dtac.dtacplay;
 				PRODUCT_NAME = dtacPlay;
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";

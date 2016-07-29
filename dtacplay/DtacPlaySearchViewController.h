@@ -11,7 +11,7 @@
 #import "DtacPlayViewController.h"
 @interface DtacPlaySearchViewController : UIViewController
 @property(nonatomic,strong)UITableView *searchTable;
-@property (strong, nonatomic) iCarousel *carousel;
+
 @property (strong, nonatomic) NSString *word;
 @property (strong, nonatomic) NSString *descriptionWord;
 @property (assign, nonatomic) BOOL isShowMoreButton;

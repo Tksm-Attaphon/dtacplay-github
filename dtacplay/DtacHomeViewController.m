@@ -61,7 +61,7 @@
 #import "DownloadCPAViewController.h"
 #import "CPACell.h"
 #import "DtacCategory.h"
-
+#import "BannerCollectionViewCell.h"
 #import "NewsCategory.h"
 #import "EntertainmentCategory.h"
 #import "LifestyleCategory.h"
@@ -76,8 +76,8 @@
 #import "LifeStyleCPA.h"
 #import "SportCPA.h"
 #import "ClipCPA.h"
-
-
+#import "PrivllageGameViewController.h"
+#import "BannerView.h"
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 @interface DtacHomeViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,UICollectionViewDelegate,UIGestureRecognizerDelegate,iCarouselDataSource,iCarouselDelegate,RegisterFreeZoneDelegate,PopUpDelegate,PopUpCheckInDelegate>
@@ -108,7 +108,7 @@
     NSMutableArray* shop_array;
     NSMutableArray* download_array;
     NSMutableArray* sport_array;
-    
+    NSMutableArray* menu_HOME;
     
     BOOL isKeyboardShow;
     RegisterFreeZone *views;
@@ -122,14 +122,116 @@
     
     UIImageView *imageErrorPage;
     int homeBannerID;
-    int news_tag,entertain_tag,promotion_tag,lifestyle_tag,download_tag,freezone_tag,sport_tag,regisfreezone_tag,shopping_tag;
+    
+    BannerView *bannerView;
+    BOOL privilageGameShow;
+    NSURL *urlPrivilage;
 }
 
 @end
 
 @implementation DtacHomeViewController
+-(void)viewWillAppear:(BOOL)animated{
+    if(!timer)
+        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
+                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [timer invalidate];
+    timer = nil;
+    
+}
+-(void)getPrivilageGameBanner{
+    NSString *jsonString =
+    [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getConstant\", \"params\":{\"name\":\"ButtonPrivilegeGame\"}}"];
+    
+    NSString *valueHeader;
+    
+    valueHeader = [NSString stringWithFormat:@"x-tksm-lang=1;"];
+    
+    NSMutableURLRequest *requestHTTP = [Manager createRequestHTTP:jsonString cookieValue:valueHeader];
+    AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:requestHTTP];
+    
+    op.responseSerializer = [AFJSONResponseSerializer serializer];
+    [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
+            
+            NSDictionary *result = [responseObject objectForKey:@"result"];
+            NSString *urlBanner = [result objectForKey:@"val"];
+            if(urlBanner){
+                urlPrivilage = [NSURL URLWithString:urlBanner];
+                [self.collectionView reloadData];
+            }
+        }
+        
+        //  ...
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        //[self change_server];
+    }];
+    [op start];
+}
+-(void)testCheckUpdateContent:(int) cateID{
+    
+    NSString *jsonString =
+    [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"checkContent\", \"params\":{\"cateId\":%d,\"subCateId\":null}}",cateID];
+    
+    NSString *valueHeader;
+    
+    valueHeader = [NSString stringWithFormat:@"x-tksm-lang=1;"];
+    
+    NSMutableURLRequest *requestHTTP = [Manager createRequestHTTP:jsonString cookieValue:valueHeader];
+    AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:requestHTTP];
+    
+    op.responseSerializer = [AFJSONResponseSerializer serializer];
+    [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
+            
+            NSDictionary *dic = [responseObject objectForKey:@"result"];
+            BOOL status = [[dic objectForKey:@"status"] boolValue];
+            privilageGameShow = status;
+            [self getALLCategory];
+            [self getALLCPACategory];
+        }
+        
+        //  ...
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        //[self change_server];
+    }];
+    [op start];
+    
 
-
+}
+-(void)musicCheckUpdateContent{
+    
+    NSString *jsonString =
+    [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"checkContent\", \"params\":{\"cateId\":null,\"subCateId\":%ld}}",(long)FREEZONE_MUSIC];
+    
+    NSString *valueHeader;
+    
+    valueHeader = [NSString stringWithFormat:@"x-tksm-lang=1;"];
+    
+    NSMutableURLRequest *requestHTTP = [Manager createRequestHTTP:jsonString cookieValue:valueHeader];
+    AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:requestHTTP];
+    
+    op.responseSerializer = [AFJSONResponseSerializer serializer];
+    [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
+            NSDictionary *dic = [responseObject objectForKey:@"result"];
+            if(dic){
+            BOOL status = [[dic objectForKey:@"status"] boolValue];
+            
+            [[Manager sharedManager] setIsFreeMusicAvaliable:status];
+            }
+        }
+        
+        //  ...
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        //[self change_server];
+    }];
+    [op start];
+    
+    
+}
 -(void)callSideBar:(id)sender{
     [self.frostedViewController presentMenuViewController];
 }
@@ -237,23 +339,29 @@
                     
                    
                     BOOL isOnReview = ![[item objectForKey:@"iOSsubmitApp"] boolValue];
-                    if(isOnReview){
-                        news_tag = 0;
-                        entertain_tag = 1;
-                        promotion_tag = 2;
-                        lifestyle_tag = 3;
-                        download_tag = -1;
-                        freezone_tag = 4;
-                        sport_tag = 5;
-                        regisfreezone_tag =6 ;
-                        shopping_tag =7;
-                    }
+               
                     [[Manager sharedManager] setIsNormalState:!isOnReview];//iOSsubmitApp
                     [self TestCookie];
                     
+                    [self testCheckUpdateContent:10];// check privilage game
                     
-                    [self getALLCategory];
-                    [self getALLCPACategory];
+                    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                        NSString *phoneWeb = URL_GET_PHONE_NUMBER;
+                        NSURL *phoneUrl = [NSURL URLWithString:phoneWeb];
+                        NSError *error;
+                        NSString *phoneNumber = [NSString stringWithContentsOfURL:phoneUrl
+                                                                         encoding:NSASCIIStringEncoding
+                                                                            error:&error];
+                        if(phoneNumber.length>0){
+                         [[NSUserDefaults standardUserDefaults] setObject:phoneNumber forKey:@"phoneNumber"];
+                        
+                        [[Manager sharedManager] setPhoneNumber:phoneNumber];
+                        if(phoneNumber.length>0){
+                            [self LogIn];
+                        }
+                        }
+                    });
+                    
                 }
                 else{
                     [[Manager sharedManager] showServerError:self];
@@ -308,6 +416,8 @@
     }
     
 }
+
+
 -(void)getALLCPACategory{
     NSString *jsonString =
     [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaCategory\" ,\"params\":{\"cpaCateId\":null }}"];
@@ -386,6 +496,7 @@
         if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
             NSDictionary *dic_result = [responseObject objectForKey:@"result"];
             
+            menu_HOME = [[NSMutableArray alloc]init];
             for(NSDictionary* dic in dic_result){
                 
                 
@@ -403,24 +514,44 @@
                     
                     NewsCategory *cate = [[NewsCategory alloc]initWithDictionary:dic];
                         [[Manager sharedManager] setNewsCategory:cate];
+                    
+                    if(cate.isDisable == NO){
+                        [menu_HOME addObject:@(HOME_NEWS)];
+                    }
                 }
                 else if(cate.cateID == 2){
                     int smartID = [[dic objectForKey:@"smrtAdsRefId"] isEqual:[NSNull null]] ? 0 :[[dic objectForKey:@"smrtAdsRefId"] intValue] ;
                     [[Manager sharedManager] setSmrtAdsRefIdEntertainment:smartID];
                      EntertainmentCategory *cate = [[EntertainmentCategory alloc]initWithDictionary:dic];
                     [[Manager sharedManager] setEntertainmentCategory:cate];
+                    
+                    if(cate.isDisable == NO){
+                        [menu_HOME addObject:@(HOME_ENTERTAINMENT)];
+                    }
+                    
+                   
+                    
                 }
                 else if(cate.cateID == 3){
                     int smartID = [[dic objectForKey:@"smrtAdsRefId"] isEqual:[NSNull null]] ? 0 :[[dic objectForKey:@"smrtAdsRefId"] intValue] ;
                     [[Manager sharedManager] setSmrtAdsRefIdLifestyle:smartID];
                      LifestyleCategory *cate = [[LifestyleCategory alloc]initWithDictionary:dic];
                           [[Manager sharedManager] setLifestyleCategory:cate];
+                    
+                    if(cate.isDisable == NO){
+                        [menu_HOME addObject:@(HOME_LIFESTYLE)];
+                    }
                 }
                 else if(cate.cateID == 4){
                     int smartID = [[dic objectForKey:@"smrtAdsRefId"] isEqual:[NSNull null]] ? 0 :[[dic objectForKey:@"smrtAdsRefId"] intValue] ;
                     [[Manager sharedManager] setSmrtAdsRefIdFreezone:smartID];
                      FreezoneCategory *cate = [[FreezoneCategory alloc]initWithDictionary:dic];
                      [[Manager sharedManager] setFreezoneCategory:cate];
+                    
+                    if(cate.isDisable == NO){
+                        [menu_HOME addObject:@(HOME_FREEZONE)];
+                    }
+                    
                 }
                 else if(cate.cateID == 5){
                     int smartID = [[dic objectForKey:@"smrtAdsRefId"] isEqual:[NSNull null]] ? 0 :[[dic objectForKey:@"smrtAdsRefId"] intValue] ;
@@ -428,17 +559,31 @@
                     
                      SportCategory *cate = [[SportCategory alloc]initWithDictionary:dic];
                      [[Manager sharedManager] setSportCategory:cate];
+                    // cate.isDisable = YES;
+                    if(cate.isDisable == NO){
+                        [menu_HOME addObject:@(HOME_SPORT)];
+                    }
+                    
+                    
                 }
                 else if(cate.cateID == 6){
                     int smartID = [[dic objectForKey:@"smrtAdsRefId"] isEqual:[NSNull null]] ? 0 :[[dic objectForKey:@"smrtAdsRefId"] intValue] ;
                     [[Manager sharedManager] setSmrtAdsRefIdShopping:smartID];
                     
                     [[Manager sharedManager] setShoppingCategory:cate];
+                   // cate.isDisable = YES;
+                    if(cate.isDisable == NO){
+                        [menu_HOME addObject:@(HOME_SHOPPING)];
+                    }
                 }
                 else if(cate.cateID == 7){
                     int smartID = [[dic objectForKey:@"smrtAdsRefId"] isEqual:[NSNull null]] ? 0 :[[dic objectForKey:@"smrtAdsRefId"] intValue] ;
                     [[Manager sharedManager] setSmrtAdsRefIdPromotion:smartID];
                      [[Manager sharedManager] setPromotionCategory:cate];
+                     // cate.isDisable = YES;
+                    if(cate.isDisable == NO){
+                        [menu_HOME addObject:@(HOME_PROMOTION)];
+                    }
                 }
                 else if(cate.cateID == 8){
                     
@@ -446,9 +591,31 @@
                     [[Manager sharedManager] setSmrtAdsRefIdDownload:smartID];
                      DownloadCategory *cate = [[DownloadCategory alloc]initWithDictionary:dic];
                      [[Manager sharedManager] setDownloadCategory:cate];
+                    
+                    if(cate.isDisable == NO){
+                        if([[Manager sharedManager] isNormalState] == YES)
+                            [menu_HOME addObject:@(HOME_DOWNLOAD)];
+                    }
                 }
-                
+                else if(cate.cateID == 10 && privilageGameShow == YES){
+                    int smartID = [[dic objectForKey:@"smrtAdsRefId"] isEqual:[NSNull null]] ? 0 :[[dic objectForKey:@"smrtAdsRefId"] intValue] ;
+                    [[Manager sharedManager] setSmrtAdsRefIdPrivilageGame:smartID];
+                    [[Manager sharedManager] setPrivilageGameCategory:cate];
+                    // cate.isDisable = YES;
+                    if(cate.isDisable == NO){
+                        [menu_HOME addObject:@(HOME_PRIVILAGE)];
+                        
+                    }
+                    
+                }
             }
+            
+             [menu_HOME addObject:@(HOME_REGISTERFREEZONE)];
+            
+            NSSortDescriptor *LowToHi = [NSSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];
+           [menu_HOME sortUsingDescriptors:[NSArray arrayWithObject:LowToHi]];
+            
+            [[Manager sharedManager] setMenu_HOME:menu_HOME];
             
                 all_array = [[NSMutableArray alloc]init];
                 
@@ -472,6 +639,9 @@
                 
                 
                 shop_array = [[NSMutableArray alloc]init];
+            
+                [[Manager sharedManager] setIsFreeMusicAvaliable:YES];
+                [self musicCheckUpdateContent];
                 [self getShopping];///shopping
                 //[self getHilight];
                 [self getRecAppAtIndex];
@@ -514,7 +684,9 @@
             }
             
             [[Manager sharedManager] setBannerArray:bannerArray];
-            [_carousel reloadData];
+            bannerView.bannerArray = [[Manager sharedManager] bannerArray];
+            [bannerView.carousel reloadData];
+            
             [self.collectionView reloadData];
         }
         
@@ -552,39 +724,33 @@
 }
 -(void)getRecAppAtIndex{
     NSString *jsonString =
-    [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getApplication\",\"params\":{\"subCateId\":%ld,\"page\":%d,\"limit\":14 ,\"suggest\":false}}",FREEZONE_RECOMMENDED_APPLICATION,1];
+    [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"checkContent\", \"params\":{\"cateId\":null,\"subCateId\":%ld}}",(long)FREEZONE_RECOMMENDED_APPLICATION];
     
     NSString *valueHeader;
+    
+    valueHeader = [NSString stringWithFormat:@"x-tksm-lang=1;"];
+    
     NSMutableURLRequest *requestHTTP = [Manager createRequestHTTP:jsonString cookieValue:valueHeader];
     AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:requestHTTP];
     
     op.responseSerializer = [AFJSONResponseSerializer serializer];
     [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-        
         if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
+            NSDictionary *dic = [responseObject objectForKey:@"result"];
+            BOOL status = [[dic objectForKey:@"status"] boolValue];
             
-            NSDictionary *result =[responseObject objectForKey:@"result"] ;
-            NSArray * content = [result objectForKey:@"contents"] ;
-            if(content.count > 0){
-                [[Manager sharedManager] setIsRecAppAvaliable:YES];
-            }
-            else{
-                [[Manager sharedManager] setIsRecAppAvaliable:NO];
-            }
-            
+            [[Manager sharedManager] setIsRecAppAvaliable:status];
         }
-        
-        [self.collectionView reloadData];
         
         //  ...
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        
+        //[self change_server];
     }];
     [op start];
     
 }
 -(void)getHilight{
-    
+    [self getPrivilageGameBanner];
     NSString *jsonString =
     [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getHighlight\", \"params\":{\"cateId\":null}}"];
     
@@ -636,6 +802,7 @@
                         
                     }
                     [all_array addObject:ent_array];
+                    [all_array addObject:[NSNull null]];
                 }
                 if(cateID == 5){
                     
@@ -727,15 +894,16 @@
                         
                     }
                     if([[Manager sharedManager] isNormalState ]== NO){
-                        news_tag = 0;
-                        entertain_tag = 1;
-                        promotion_tag = 2;
-                        lifestyle_tag = 3;
-                        download_tag = -1;
-                        freezone_tag = 4;
-                        sport_tag = 5;
-                        regisfreezone_tag =6 ;
-                        shopping_tag =7;
+//                        news_tag = 0;
+//                        entertain_tag = 1;
+//                        dobgame_tag = 2;
+//                        promotion_tag = 3;
+//                        lifestyle_tag = 4;
+//                        download_tag = -1;
+//                        freezone_tag = 5;
+//                        sport_tag = 6;
+//                        regisfreezone_tag =7 ;
+//                        shopping_tag =8;
                     }
                    
                     [all_array addObject:download_array];
@@ -1157,19 +1325,66 @@
 - (BOOL)connected {
     return [AFNetworkReachabilityManager sharedManager].reachable;
 }
+-(void)LogIn{
+    
+    NSString *phoneNumber = [[[Manager sharedManager] phoneNumber] substringWithRange:NSMakeRange(1, [[[Manager sharedManager] phoneNumber] length]-1)];
+    phonNumber_Mssid =  [NSString stringWithFormat:@"66%@", phoneNumber];
+    
+    NSString *jsonString =
+    [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"msisdnLogin\",\"params\":{ \"msisdn\":%@, \"channel\":1, \"verifyMsg\":null, \"verifyCode\":null}}",phonNumber_Mssid ];
+    
+    
+    NSString *valueHeader;
+//    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+//    [hud setColor:[UIColor whiteColor]];
+//    [hud setActivityIndicatorColor:[UIColor colorWithHexString:SIDE_BAR_COLOR]];
+    NSMutableURLRequest *requestHTTP = [Manager createRequestHTTP:jsonString cookieValue:valueHeader];
+    AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:requestHTTP];
+    
+    op.responseSerializer = [AFJSONResponseSerializer serializer];
+    [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        //[hud hide:YES];
+        if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]] && [responseObject objectForKey:@"result"]) {
+            
+            NSDictionary *result = [responseObject objectForKey:@"result"];
+            
+            if(![[result objectForKey:@"userId"] isEqual:[NSNull null]]){
+         
+
+                [[Manager sharedManager] setUserID:[[result objectForKey:@"userId"] stringValue]];
+
+                
+            }
+        }
+        else{
+        }
+        //  ...
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+       // [hud hide:YES];
+        
+    }];
+    [op start];
+    
+}
+
 -(void)viewDidLoad{
     [super viewDidLoad];
-    news_tag = 0;
-    entertain_tag = 1;
-    promotion_tag = 2;
-    lifestyle_tag = 3;
-    download_tag = 4;
-    freezone_tag = 5;
-    sport_tag = 6;
-    regisfreezone_tag =7 ;
-    shopping_tag =8;
-    
+//    news_tag = 0;
+//    entertain_tag = 1;
+//    dobgame_tag = 2;
+//    promotion_tag = 3;
+//    lifestyle_tag = 4;
+//    download_tag = 5;
+//    freezone_tag = 6;
+//    sport_tag = 7;
+//    regisfreezone_tag =8 ;
+//    shopping_tag =9;
   
+   
+  
+    if([[Manager sharedManager] menu_HOME]){
+        menu_HOME = [[Manager sharedManager] menu_HOME];
+    }
     [[AFNetworkReachabilityManager sharedManager] startMonitoring];
     [[AFNetworkReachabilityManager sharedManager] setReachabilityStatusChangeBlock:^(AFNetworkReachabilityStatus status) {
         NSLog(@"Reachability: %@", AFStringFromNetworkReachabilityStatus(status));
@@ -1221,15 +1436,7 @@
     
     [self getAccessIDAndDevice];
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSString *phoneWeb = URL_GET_PHONE_NUMBER;
-        NSURL *phoneUrl = [NSURL URLWithString:phoneWeb];
-        NSError *error;
-        NSString *phoneNumber = [NSString stringWithContentsOfURL:phoneUrl
-                                                         encoding:NSASCIIStringEncoding
-                                                            error:&error];
-        [[Manager sharedManager] setPhoneNumber:phoneNumber];
-    });
+  
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardDidShow:)
                                                  name:UIKeyboardDidShowNotification
@@ -1308,6 +1515,9 @@
     [_collectionView registerClass:[UICollectionReusableView class]
         forSupplementaryViewOfKind: UICollectionElementKindSectionHeader
                withReuseIdentifier:@"Header8"];
+    [_collectionView registerClass:[UICollectionReusableView class]
+        forSupplementaryViewOfKind: UICollectionElementKindSectionHeader
+               withReuseIdentifier:@"Header9"];
     UINib *nib = [UINib nibWithNibName:@"BannerSlideCollectionViewCell" bundle: nil];
     [self.collectionView registerNib:nib forCellWithReuseIdentifier:@"BannerSlideCollectionViewCell"];
     
@@ -1320,7 +1530,7 @@
     [_collectionView registerClass:[DtacPlayBlockCollectionViewCell class] forCellWithReuseIdentifier:@"SmallCell"];
     [_collectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"RegisFreeZone"];
     [_collectionView registerClass:[CPACell class] forCellWithReuseIdentifier:@"CPACell"];
-    
+    [_collectionView registerClass:[BannerCollectionViewCell class] forCellWithReuseIdentifier:@"BannerCollectionViewCell"];
     [_collectionView setBackgroundColor:[UIColor whiteColor]];
     [self.view addSubview:_collectionView];
     
@@ -1550,26 +1760,50 @@
     
 }
 -(void)runLoop:(NSTimer*)NSTimer{
-    if(_carousel)
-        [_carousel scrollToItemAtIndex:_carousel.currentItemIndex+1 animated:YES];
+    if(bannerView.carousel)
+        [bannerView.carousel scrollToItemAtIndex:bannerView.carousel.currentItemIndex+1 animated:YES];
     
 }
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
-    if(section == 0){
-        if ( IDIOM == IPAD ) {
-            
-            
+    
+    
+    switch ([menu_HOME[section] intValue]) {
+        case HOME_NEWS:
             return CGSizeMake( screenWidth, [[Manager sharedManager]bannerHeight]+40);
-        }
-        else{
+            break;
+        case HOME_ENTERTAINMENT:
+            return CGSizeMake( screenWidth,35);
+            break;
+        case HOME_PRIVILAGE:
+            return CGSizeZero;
+            break;
             
-            
-            return CGSizeMake( screenWidth, [[Manager sharedManager]bannerHeight]+40);
-        }
+        case HOME_PROMOTION:
+            return CGSizeMake( screenWidth,35);
+            break;
+        case HOME_LIFESTYLE:
+            return CGSizeMake( screenWidth,35);
+            break;
+        case HOME_DOWNLOAD:
+            return CGSizeMake( screenWidth,35);
+            break;
+        case HOME_FREEZONE:
+            return CGSizeMake( screenWidth,35);
+            break;
+        case HOME_SPORT:
+            return CGSizeMake( screenWidth,35);
+            break;
+        case HOME_REGISTERFREEZONE:
+            return CGSizeMake( screenWidth,35);
+            break;
+        case HOME_SHOPPING:
+            return CGSizeMake( screenWidth,35);
+            break;
+        default:
+            return CGSizeZero;
+            break;
     }
-    else{
-        return CGSizeMake( screenWidth,35);
-    }
+
 }
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath
@@ -1585,36 +1819,18 @@
             
             [headerView setBackgroundColor:[UIColor whiteColor]];
             
-            if(!_carousel)
-                _carousel = [[iCarousel alloc]initWithFrame:CGRectMake(0, 0, screenWidth, [[Manager sharedManager]bannerHeight] )];
-            
-            _carousel.delegate = self;
-            _carousel.dataSource = self;
-            _carousel.type = iCarouselTypeLinear;
-            _carousel.backgroundColor = [UIColor clearColor];
+            if(!bannerView)
+                bannerView = [[BannerView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
+            bannerView.backgroundColor = [UIColor clearColor];
             //_carousel.
-            [headerView addSubview:_carousel];
+            [headerView addSubview:bannerView];
+       
+                bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
             
-            
-            
-            
-            // Page Control
-            if(!pageControl)
-                pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (self.carousel.frame.size.height-20), self.carousel.frame.size.width, 20.0f)];
-            pageControl.numberOfPages = [[Manager sharedManager]bannerArray].count;
-            pageControl.currentPage = 0;
-            pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-            pageControl.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-            pageControl.userInteractionEnabled = NO;
-            [_carousel addSubview:pageControl];
-            [timer invalidate];
-            timer = nil;
-            timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
-                                                      target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
-            
+            [bannerView.carousel reloadData];
             
             //header
-            UIView *line = [[UIView alloc]initWithFrame:CGRectMake(10, _carousel.frame.size.height+10, screenWidth-20, 1)];
+            UIView *line = [[UIView alloc]initWithFrame:CGRectMake(10, bannerView.frame.size.height+10, screenWidth-20, 1)];
             [line setBackgroundColor:[UIColor colorWithHexString:COLOR_NEWS]];
             
             [headerView addSubview:line];
@@ -1646,55 +1862,55 @@
             UIImage *imageIcon;
             UIImage *imageMore;
             NSString *header;
-            if([[Manager sharedManager]isNormalState]==YES)
-                switch (indexPath.section) {
-                    case 1:
+         
+                switch ([menu_HOME[indexPath.section] intValue]) {
+                    case HOME_ENTERTAINMENT:
                         color = [UIColor colorWithHexString:COLOR_ENTERTAINMENT];
                         titleHeader =[Manager getCateName:ENTERTAINMENT withThai:YES];
                         imageIcon = [UIImage imageNamed:@"dtacplay_home_entertainment"];
                         imageMore = [UIImage imageNamed:@"dtacplay_home_more_entertainment"];
                         
                         break;
-                    case 2:
+                    case HOME_PROMOTION:
                         color = [UIColor colorWithHexString:COLOR_PROMOTION];
                         titleHeader = [Manager getCateName:PROMOTION withThai:YES];
                         imageIcon = [UIImage imageNamed:@"dtacplay_home_promotion"];
                         imageMore = [UIImage imageNamed:@"dtacplay_home_more_promotion"];
                         break;
-                    case 3:
+                    case HOME_LIFESTYLE:
                         color = [UIColor colorWithHexString:COLOR_LIFESTYLE];
                         titleHeader = [Manager getCateName:LIFESTYLE withThai:YES];
                         imageIcon = [UIImage imageNamed:@"dtacplay_home_lifestyle"];
                         imageMore = [UIImage imageNamed:@"dtacplay_home_more_lifestyle"];
                         
                         break;
-                    case 4:
+                    case HOME_DOWNLOAD:
                         color = [UIColor colorWithHexString:COLOR_DOWNLOAD];
                         titleHeader = [Manager getCateName:DOWNLOAD withThai:YES];
                         imageIcon = [UIImage imageNamed:@"dtacplay_home_download"];
                         imageMore = [UIImage imageNamed:@"dtacplay_home_more_download"];
                         
                         break;
-                    case 5:
+                    case HOME_FREEZONE:
                         color = [UIColor colorWithHexString:COLOR_FREEZONE];
                         titleHeader = [Manager getCateName:FREEZONE withThai:YES];
                         imageIcon = [UIImage imageNamed:@"dtacplay_home_freezone"];
                         imageMore = [UIImage imageNamed:@"dtacplay_home_more_freezone"];
                         break;
-                    case 6:
+                    case HOME_SPORT:
                         color = [UIColor colorWithHexString:COLOR_SPORT];
                         titleHeader = [Manager getCateName:SPORT withThai:YES];
                         imageIcon = [UIImage imageNamed:@"dtacplay_home_sport"];
                         imageMore = [UIImage imageNamed:@"dtacplay_home_more_sport"];
                         break;
-                    case 7:
+                    case HOME_REGISTERFREEZONE:
                         color = [UIColor colorWithHexString:COLOR_FREEZONE];
                         titleHeader = @"สมัครฟรีโซน";
                         imageIcon = [UIImage imageNamed:@"dtacplay_home_free_regis"];
                         //imageMore = [UIImage imageNamed:@"dtacplay_home_more_freezone"];
                         break;
                         
-                    case 8:
+                    case HOME_SHOPPING:
                         color = [UIColor colorWithHexString:COLOR_SHOPPING];
                         titleHeader = [Manager getCateName:SHOPPING withThai:YES];
                         imageIcon = [UIImage imageNamed:@"dtacplay_home_shopping"];
@@ -1703,57 +1919,7 @@
                     default:
                         break;
                 }
-            else
-                switch (indexPath.section) {
-                    case 1:
-                        color = [UIColor colorWithHexString:COLOR_ENTERTAINMENT];
-                        titleHeader = [Manager getCateName:ENTERTAINMENT withThai:YES];
-                        imageIcon = [UIImage imageNamed:@"dtacplay_home_entertainment"];
-                        imageMore = [UIImage imageNamed:@"dtacplay_home_more_entertainment"];
-                        
-                        break;
-                    case 2:
-                        color = [UIColor colorWithHexString:COLOR_PROMOTION];
-                        titleHeader =[Manager getCateName:PROMOTION withThai:YES];
-                        imageIcon = [UIImage imageNamed:@"dtacplay_home_promotion"];
-                        imageMore = [UIImage imageNamed:@"dtacplay_home_more_promotion"];
-                        break;
-                    case 3:
-                        color = [UIColor colorWithHexString:COLOR_LIFESTYLE];
-                        titleHeader = [Manager getCateName:LIFESTYLE withThai:YES];
-                        imageIcon = [UIImage imageNamed:@"dtacplay_home_lifestyle"];
-                        imageMore = [UIImage imageNamed:@"dtacplay_home_more_lifestyle"];
-                        
-                        break;
-                        
-                    case 4:
-                        color = [UIColor colorWithHexString:COLOR_FREEZONE];
-                        titleHeader = [Manager getCateName:FREEZONE withThai:YES];
-                        imageIcon = [UIImage imageNamed:@"dtacplay_home_freezone"];
-                        imageMore = [UIImage imageNamed:@"dtacplay_home_more_freezone"];
-                        break;
-                    case 5:
-                        color = [UIColor colorWithHexString:COLOR_SPORT];
-                        titleHeader =[Manager getCateName:SPORT withThai:YES];
-                        imageIcon = [UIImage imageNamed:@"dtacplay_home_sport"];
-                        imageMore = [UIImage imageNamed:@"dtacplay_home_more_sport"];
-                        break;
-                    case 6:
-                        color = [UIColor colorWithHexString:COLOR_FREEZONE];
-                        titleHeader = @"สมัครฟรีโซน";
-                        imageIcon = [UIImage imageNamed:@"dtacplay_home_free_regis"];
-                        //imageMore = [UIImage imageNamed:@"dtacplay_home_more_freezone"];
-                        break;
-                        
-                    case 7:
-                        color = [UIColor colorWithHexString:COLOR_SHOPPING];
-                        titleHeader = [Manager getCateName:SHOPPING withThai:YES];
-                        imageIcon = [UIImage imageNamed:@"dtacplay_home_shopping"];
-                        imageMore = [UIImage imageNamed:@"dtacplay_home_more_shopping"];
-                        break;
-                    default:
-                        break;
-                }
+        
             
             header = [NSString stringWithFormat:@"Header%ld" ,(long)indexPath.section];
             UICollectionReusableView * headerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader
@@ -1797,7 +1963,7 @@
 -(void)touchHeader:(UIButton*)button{
     self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
     
-    if(button.tag == promotion_tag){
+    if([menu_HOME[button.tag] intValue] == HOME_PROMOTION){
         PromotionViewController*   promotionPage= [[PromotionViewController alloc] init];
         navigation.viewControllers = @[promotionPage];
         
@@ -1805,7 +1971,7 @@
         self.frostedViewController.contentViewController = navigation;
         [self.frostedViewController hideMenuViewController];
     }
-    else if(button.tag == lifestyle_tag){
+    else if([menu_HOME[button.tag] intValue] == HOME_LIFESTYLE){
         LifeStyleViewController *catePage= [[LifeStyleViewController alloc] init];
         catePage.nameMenu = [NSArray arrayWithObjects:[NSNumber numberWithInteger:LIFESTYLE_TRAVEL] , [NSNumber numberWithInteger:LIFESTYLE_RESTAURANT], [NSNumber numberWithInteger:LIFESTYLE_HOROSCOPE], nil];
         catePage.indexPage = 0;
@@ -1817,7 +1983,7 @@
         self.frostedViewController.contentViewController = navigation;
         [self.frostedViewController hideMenuViewController];
     }
-    else if(button.tag == news_tag){
+    else if([menu_HOME[button.tag] intValue] == HOME_NEWS){
         NewsViewController *catePage= [[NewsViewController alloc] init];
         catePage.nameMenu = [NSArray arrayWithObjects: [NSNumber numberWithInteger:NEWS_HOT_NEWS],[NSNumber numberWithInteger:NEWS_INTER_NEWS],[NSNumber numberWithInteger:NEWS_WIKI], [NSNumber numberWithInteger:NEWS_FINANCE], [NSNumber numberWithInteger:NEWS_TECHNOLOGY],[NSNumber numberWithInteger:NEWS_LOTTO],[NSNumber numberWithInteger:NEWS_LOTTERRY],[NSNumber numberWithInteger:NEWS_GAS_PRICE],[NSNumber numberWithInteger:NEWS_GOLD_PRICE], nil];
         catePage.indexPage = 0;
@@ -1830,7 +1996,7 @@
         self.frostedViewController.contentViewController = navigation;
         [self.frostedViewController hideMenuViewController];
     }
-    else if(button.tag == download_tag){
+    else if([menu_HOME[button.tag] intValue] == HOME_DOWNLOAD){
         if([[Manager sharedManager] isNormalState] == YES){
             
             DownloadViewController *catePage= [[DownloadViewController alloc] init];
@@ -1860,11 +2026,12 @@
         }
         
     }
-    else if(button.tag == freezone_tag ){
+    else if([menu_HOME[button.tag] intValue] == HOME_FREEZONE ){
         NSMutableArray *menu = [[NSMutableArray alloc]init];
         
         if([[Manager sharedManager] isNormalState] == YES){
-            [menu addObject:[NSNumber numberWithInteger:FREEZONE_MUSIC]];
+            if([[Manager sharedManager]isFreeMusicAvaliable] == YES)
+                [menu addObject:[NSNumber numberWithInteger:FREEZONE_MUSIC]];
             [menu addObject:[NSNumber numberWithInteger:FREEZONE_GAME]];
         }
         [menu addObject:[NSNumber numberWithInteger:FREEZONE_APPLICATION]];
@@ -1890,9 +2057,9 @@
         [self.frostedViewController hideMenuViewController];
     }
     
-    else if(button.tag == entertain_tag){
+    else if([menu_HOME[button.tag] intValue] == HOME_ENTERTAINMENT){
         EntertainmentViewController *catePage= [[EntertainmentViewController alloc] init];
-        catePage.nameMenu = [NSArray arrayWithObjects:[NSNumber numberWithInteger:ENTERTAINMENT_NEWS] ,/* [NSNumber numberWithInteger:ENTERTAINMENT_MOVIE],*/ [NSNumber numberWithInteger:ENTERTAINMENT_VIDEO]/*,[NSNumber numberWithInteger:ENTERTAINMENT_TV]*/, nil];
+        catePage.nameMenu = [NSArray arrayWithObjects:[NSNumber numberWithInteger:ENTERTAINMENT_NEWS] , [NSNumber numberWithInteger:ENTERTAINMENT_MOVIE_TRAILER], [NSNumber numberWithInteger:ENTERTAINMENT_VIDEO]/*,[NSNumber numberWithInteger:ENTERTAINMENT_TV]*/, nil];
         catePage.indexPage = 0;
         catePage.pageType = ENTERTAINMENT;
         
@@ -1903,7 +2070,7 @@
         self.frostedViewController.contentViewController = navigation;
         [self.frostedViewController hideMenuViewController];
     }
-    else if(button.tag == sport_tag){
+    else if([menu_HOME[button.tag] intValue] == HOME_SPORT){
         SportViewController *catePage= [[SportViewController alloc] init];
         catePage.nameMenu = [NSArray arrayWithObjects:[NSNumber numberWithInteger:SPORT_NEWS]/*,[NSNumber numberWithInteger:SPORT_INTER_FOOTBALL],[NSNumber numberWithInteger:SPORT_THAI_FOOTBALL]*/, nil];
         catePage.indexPage = 0;
@@ -1915,7 +2082,7 @@
         self.frostedViewController.contentViewController = navigation;
         [self.frostedViewController hideMenuViewController];
     }
-    else if(button.tag == shopping_tag){
+    else if( [menu_HOME[button.tag] intValue] == HOME_SHOPPING){
         ShoppingViewController*   shopping= [[ShoppingViewController alloc] init];
         navigation.viewControllers = @[shopping];
         
@@ -1929,73 +2096,47 @@
     
 }
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
-    return all_array.count;
+    return menu_HOME.count;
 }
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
-    if([[Manager sharedManager]isNormalState]==YES)
-        switch (section) {
-            case 0:
+ 
+        switch ([menu_HOME[section] intValue] ) {
+            case HOME_NEWS:
                 return news_array.count>3 ? 3 : news_array.count;
                 break;
-            case 1:
+            case HOME_ENTERTAINMENT:
                 return ent_array.count>3 ? 3 : ent_array.count;
                 break;
-            case 2:
+            case HOME_PRIVILAGE:
+                return 1;//DOB
+                break;
+            case HOME_PROMOTION:
                 return 1;//promotion
                 break;
-            case 3:
+            case HOME_LIFESTYLE:
                 return life_array.count>3 ? 3 : life_array.count;
                 break;
-            case 4:// download
+            case HOME_DOWNLOAD:// download
                 return download_array.count>4 ? 4 : download_array.count;
                 break;
-            case 5:
+            case HOME_FREEZONE:
                 return free_array.count>4 ? 4 : free_array.count;
                 break;
-            case 6:
+            case HOME_SPORT:
                 return sport_array.count>3 ? 3 : sport_array.count;
                 break;
-            case 7:
+            case HOME_REGISTERFREEZONE:
                 return 1;
                 break;
-            case 8:
+            case HOME_SHOPPING:
                 return shop_array.count>4 ? 4 : shop_array.count;
                 break;
             default:
                 return 0;
                 break;
         }
-    else
-        switch (section) {
-            case 0:
-                return news_array.count>3 ? 3 : news_array.count;
-                break;
-            case 1:
-                return ent_array.count>3 ? 3 : ent_array.count;
-                break;
-            case 2:
-                return 1;//promotion
-                break;
-            case 3:
-                return life_array.count>3 ? 3 : life_array.count;
-                break;
-            case 4:
-                return free_array.count>4 ? 4 : free_array.count;
-                break;
-            case 5:
-                return sport_array.count>3 ? 3 : sport_array.count;
-                break;
-            case 6:
-                return 1;
-                break;
-            case 7:
-                return shop_array.count>4 ? 4 : shop_array.count;
-                break;
-            default:
-                return 0;
-                break;
-        }
+
     return 0;
 }
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section {
@@ -2008,7 +2149,7 @@
 - (UIEdgeInsets)collectionView:
 (UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
     
-    if(section != 6){
+    if([menu_HOME[section] intValue] == HOME_REGISTERFREEZONE){
         UIEdgeInsets inset = UIEdgeInsetsMake(10,10,10,10);
         return inset;
     }
@@ -2024,7 +2165,20 @@
     ContentPreview *temp ;
     NSInteger section  = indexPath.section;
     
-    if(section == 2){
+    if([menu_HOME[section] intValue] == HOME_PRIVILAGE){
+        
+        BannerCollectionViewCell *cell=(BannerCollectionViewCell*)[collectionView dequeueReusableCellWithReuseIdentifier:@"BannerCollectionViewCell" forIndexPath:indexPath];
+       
+        [cell.imageView sd_setImageWithURL:urlPrivilage
+                              placeholderImage:nil
+                                     completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                                         
+                                     }];
+        
+        
+        return cell;
+    }
+    else if([menu_HOME[section] intValue] == HOME_PROMOTION){
         NSString *identifier = @"BannerSlideCollectionViewCell";
         
         UINib *nib = [UINib nibWithNibName:@"BannerSlideCollectionViewCell" bundle: nil];
@@ -2040,10 +2194,10 @@
         cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
         return cell;
     }
-    else if(section == download_tag || section ==freezone_tag){
+    else if([menu_HOME[section] intValue] == HOME_DOWNLOAD || [menu_HOME[section] intValue] == HOME_FREEZONE){
         
         ContentPreview* content;
-        if(section == download_tag){
+        if([menu_HOME[section] intValue] == HOME_DOWNLOAD ){
             content = download_array[indexPath.row];
         }
         else{
@@ -2167,7 +2321,7 @@
             return cell;
         }
     }
-    else if (indexPath.section == regisfreezone_tag){
+    else if ([menu_HOME[section] intValue] == HOME_REGISTERFREEZONE){
         NSString *identify = @"RegisFreeZone";
         UICollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
         UIImageView *img = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, cell.frame.size.width, cell.frame.size.height)];
@@ -2222,7 +2376,7 @@
         
         return cell;
     }
-    else if(indexPath.section == shopping_tag){
+    else if([menu_HOME[section] intValue] == HOME_SHOPPING){
         ShoppingCell *cell=(ShoppingCell*)[collectionView dequeueReusableCellWithReuseIdentifier:@"ShoppingCell" forIndexPath:indexPath];
         NSString* imageFromURL;
         
@@ -2279,9 +2433,9 @@
         return cell;
     }
     else{
-        if([[Manager sharedManager] isNormalState]==YES)
-            switch (section) {
-                case 0:
+        
+            switch ([menu_HOME[section] intValue]) {
+                case HOME_NEWS:
                     if(news_array.count>indexPath.row){
                         temp = news_array[indexPath.row];
                     }
@@ -2289,7 +2443,7 @@
                         temp = nil;
                     }
                     break;
-                case 1:
+                case HOME_ENTERTAINMENT:
                     if(ent_array.count >indexPath.row){
                         temp = ent_array[indexPath.row];
                     }
@@ -2297,7 +2451,7 @@
                         temp = nil;
                     }
                     break;
-                case 3:
+                case HOME_LIFESTYLE:
                     if(life_array.count >indexPath.row){
                         temp = life_array[indexPath.row];
                     }
@@ -2305,7 +2459,7 @@
                         temp = nil;
                     }
                     break;
-                case 4:
+                case HOME_DOWNLOAD:
                     if(download_array.count >indexPath.row){
                         temp = download_array[indexPath.row];
                     }
@@ -2313,7 +2467,7 @@
                         temp = nil;
                     }
                     break;
-                case 6:
+                case HOME_SPORT:
                     if(sport_array.count>indexPath.row){
                         temp = sport_array[indexPath.row];
                     }
@@ -2324,45 +2478,7 @@
                 default:
                     break;
             }
-        else{
-            switch (section) {
-                case 0:
-                    if(news_array.count>indexPath.row){
-                        temp = news_array[indexPath.row];
-                    }
-                    else{
-                        temp = nil;
-                    }
-                    break;
-                case 1:
-                    if(ent_array.count >indexPath.row){
-                        temp = ent_array[indexPath.row];
-                    }
-                    else{
-                        temp = nil;
-                    }
-                    break;
-                case 3:
-                    if(life_array.count >indexPath.row){
-                        temp = life_array[indexPath.row];
-                    }
-                    else{
-                        temp = nil;
-                    }
-                    break;
-                    
-                case 5:
-                    if(sport_array.count>indexPath.row){
-                        temp = sport_array[indexPath.row];
-                    }
-                    else{
-                        temp = nil;
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
+
         if(indexPath.row == 0){
             NSString *identify = @"BigCell";
             DtacPlayBlockCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
@@ -2422,7 +2538,7 @@
     float w = screenWidth-20;
     float w_half = w/2-5;
     float labelH = (IPAD == IDIOM )? labelIPAD : labelIPHONE;
-    if(indexPath.section == 0 || indexPath.section == 1 ||indexPath.section == 3 ||indexPath.section == sport_tag){
+    if([menu_HOME[indexPath.section] intValue] == HOME_NEWS || [menu_HOME[indexPath.section] intValue] == HOME_ENTERTAINMENT ||[menu_HOME[indexPath.section] intValue] == HOME_LIFESTYLE ||[menu_HOME[indexPath.section] intValue] == HOME_SPORT){
         switch (indexPath.row) {
             case 0:
                 return CGSizeMake(w,cellBigImageHeight +labelH );
@@ -2437,14 +2553,17 @@
                 break;
         }
     }
-    else if(indexPath.section == freezone_tag || indexPath.section == download_tag  ){
+    else if([menu_HOME[indexPath.section] intValue] == HOME_FREEZONE || [menu_HOME[indexPath.section] intValue] == HOME_DOWNLOAD  ){
         return CGSizeMake(w_half,w_half + labelH);
     }
-    else if(indexPath.section == regisfreezone_tag){
+    else if([menu_HOME[indexPath.section] intValue] == HOME_REGISTERFREEZONE){
         return CGSizeMake(w,(w*500)/750);
     }
-    else if (indexPath.section == shopping_tag){
+    else if ([menu_HOME[indexPath.section] intValue] == HOME_SHOPPING){
         return CGSizeMake(w_half,w_half+142);
+    }
+    else if ([menu_HOME[indexPath.section] intValue] == HOME_PRIVILAGE){
+        return CGSizeMake(screenWidth,(w*100)/320);
     }
     else{
         return CGSizeMake(screenWidth,(w*330)/1000);
@@ -2455,7 +2574,7 @@
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
     
-    if(indexPath.section == news_tag){
+    if([menu_HOME[indexPath.section] intValue] == HOME_NEWS){
         NewsDetailViewController *articleView= [[NewsDetailViewController alloc]init];
         
         articleView.titlePage =  [Manager getCateName:NEWS withThai:YES];
@@ -2476,7 +2595,7 @@
         self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
         [self.navigationController pushViewController:articleView animated:YES];
     }
-    else if(indexPath.section == entertain_tag){
+    else if([menu_HOME[indexPath.section] intValue] == HOME_ENTERTAINMENT){
         EntertainmentDetailViewController *articleView= [[EntertainmentDetailViewController alloc]init];
         
         articleView.titlePage =  [Manager getCateName:ENTERTAINMENT withThai:YES];
@@ -2494,27 +2613,11 @@
         self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
         [self.navigationController pushViewController:articleView animated:YES];
     }
-    else if(indexPath.section == lifestyle_tag){
+    else if([menu_HOME[indexPath.section] intValue] == HOME_LIFESTYLE){
         ContentPreview* temp;
         
         temp= life_array[indexPath.row];
-        
-        if(temp.subCateID >=26){// ดวงง
-            HoroViewController *articleView= [[HoroViewController alloc]init];
-            articleView.titlePage =  [Manager getCateName:LIFESTYLE withThai:YES];
-            articleView.themeColor = [UIColor colorWithHexString:COLOR_LIFESTYLE];
-            articleView.pageType = LIFESTYLE;
-            articleView.contentID = temp.contentID;
-            UIBarButtonItem *newBackButton =
-            [[UIBarButtonItem alloc] initWithTitle:@" "
-                                             style:UIBarButtonItemStyleBordered
-                                            target:nil
-                                            action:nil];
-            [self.navigationItem setBackBarButtonItem:newBackButton];
-            self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-            [self.navigationController pushViewController:articleView animated:YES];
-        }
-        else{
+
             ArticleViewController *articleView= [[ArticleViewController alloc]init];
             articleView.titlePage = [Manager getCateName:LIFESTYLE withThai:YES];
             articleView.themeColor = [UIColor colorWithHexString:COLOR_LIFESTYLE];
@@ -2529,10 +2632,10 @@
             [self.navigationItem setBackBarButtonItem:newBackButton];
             self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
             [self.navigationController pushViewController:articleView animated:YES];
-        }
+        
         
     }
-    else if (indexPath.section==download_tag){
+    else if ([menu_HOME[indexPath.section] intValue] == HOME_DOWNLOAD){
         ContentPreview* content = download_array[indexPath.row];
         if((content.subCateID == DOWNLOAD_MUSIC_HIT || content.subCateID == DOWNLOAD_MUSIC_INTER|| content.subCateID == DOWNLOAD_MUSIC_LOOKTHOONG ||  content.subCateID == DOWNLOAD_MUSIC_NEW )){// music
             [self getMusicByID:content.contentID];
@@ -2545,7 +2648,7 @@
              [[UIApplication sharedApplication] openURL:[NSURL URLWithString:content.aocLink]];
         }
     }
-    else if (indexPath.section==freezone_tag){
+    else if ([menu_HOME[indexPath.section] intValue] == HOME_FREEZONE){
         ContentPreview* content = free_array[indexPath.row];
         if(content.subCateID == 27){// music
             [self getMusicByID:content.contentID];
@@ -2573,7 +2676,7 @@
         }
         
     }
-    else if(indexPath.section == sport_tag){
+    else if([menu_HOME[indexPath.section] intValue] == HOME_SPORT){
         SportDetailViewController *articleView= [[SportDetailViewController alloc]init];
         
         articleView.titlePage =  [Manager getCateName:SPORT withThai:YES];;
@@ -2591,7 +2694,19 @@
         self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
         [self.navigationController pushViewController:articleView animated:YES];
     }
-    else if(indexPath.section == shopping_tag){
+    else if([menu_HOME[indexPath.section] intValue] == HOME_PRIVILAGE){
+        PrivllageGameViewController *articleView= [[PrivllageGameViewController alloc]init];
+
+        UIBarButtonItem *newBackButton =
+        [[UIBarButtonItem alloc] initWithTitle:@" "
+                                         style:UIBarButtonItemStyleBordered
+                                        target:nil
+                                        action:nil];
+        [self.navigationItem setBackBarButtonItem:newBackButton];
+        self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
+        [self.navigationController pushViewController:articleView animated:YES];
+    }
+    else if([menu_HOME[indexPath.section] intValue] == HOME_SHOPPING){
         ShoppingItem *item = shop_array[indexPath.row];
         [self getShoppingByID:item.shoppingID];
     }
@@ -2977,73 +3092,5 @@
     return size.height;
 }
 
-
-
-#pragma mark -
-#pragma mark iCarousel methods
-
-- (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
-{
-    if([[Manager sharedManager]bannerArray]){
-        return [[Manager sharedManager]bannerArray].count;
-    }else{
-        return 0;
-    }
-}
-- (NSUInteger)numberOfVisibleItemsInCarousel:(iCarousel *)carousel
-{
-    //limit the number of items views loaded concurrently (for performance reasons)
-    return 4;
-}
-- (void)scrollToItemAtIndex:(NSInteger)index
-                   duration:(NSTimeInterval)scrollDuration{
-    
-    
-}
-- (void)carouselCurrentItemIndexDidChange:(__unused iCarousel *)carousel
-{
-    //NSLog(@"Index: %@", @(self.carousel.currentItemIndex));
-    pageControl.currentPage = self.carousel.currentItemIndex;
-}
-- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
-{
-    UIImageView *viewsImage = [[UIImageView alloc] initWithFrame:_carousel.frame];
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-    [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-                         
-                          options:0
-                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                             // progression tracking code
-                         }
-                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                            if (image) {
-                                viewsImage.image = image;
-                            }
-                            
-                            
-                            
-                        }];
-    
-    [viewsImage setContentMode:UIViewContentModeScaleToFill];
-    return viewsImage;
-}
-- (BOOL)carouselShouldWrap:(iCarousel *)carousel
-{
-    //wrap all carousels
-    return NO;
-}
-- (CGFloat)carousel:(iCarousel *)carousel valueForOption:(iCarouselOption)option withDefault:(CGFloat)value
-{
-    
-    if (option == iCarouselOptionWrap) {
-        return YES;
-    }
-    return value;
-}
-- (void)carousel:(iCarousel *)carousel didSelectItemAtIndex:(NSInteger)index{
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:temp.link]];
-}
 
 @end

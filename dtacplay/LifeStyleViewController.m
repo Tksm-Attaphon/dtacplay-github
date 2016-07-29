@@ -101,7 +101,7 @@
     number = number + 1;
     pageArray[current] = [NSNumber numberWithInt:number];
     SubCategorry subcate = [self.nameMenu[current] intValue] ;
-
+    
     if(subcate != LIFESTYLE_HOROSCOPE){
         NSString *jsonString =
         [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getContentBySubCateId\",\"params\":{ \"subCateId\":%ld, \"page\":%d,\"limit\":14 }}",(long)subcate,number];
@@ -178,7 +178,7 @@
                 for(NSDictionary* temp in content){
                     ContentPreview *preview = [[ContentPreview alloc]initWithDictionary:temp];
                     if(objectArray.count==3)
-                    [objectArray[2] addObject:preview];
+                        [objectArray[2] addObject:preview];
                     
                 }
             }
@@ -208,7 +208,7 @@
 }
 
 -(void)GetContentLifeStyle:(int)index AndSubcate:(int)subcate{
-
+    
     if(subcate != LIFESTYLE_HOROSCOPE){
         NSString *jsonString =
         [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getContentBySubCateId\",\"params\":{ \"subCateId\":%ld, \"page\":1,\"limit\":14 }}",(long)subcate];
@@ -284,7 +284,7 @@
             //  ...
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"JSON responseObject: %@ ",error);
-             [hud hide:YES];
+            [hud hide:YES];
         }];
         [op start];
     }else{
@@ -301,10 +301,10 @@
         op.responseSerializer = [AFJSONResponseSerializer serializer];
         [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
             [hud hide:YES];
-             NSMutableArray *objectArray = [[NSMutableArray alloc]init];
+            NSMutableArray *objectArray = [[NSMutableArray alloc]init];
             if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
                 
-               
+                
                 NSDictionary *result =[responseObject objectForKey:@"result"] ;
                 NSArray * content = [result objectForKey:@"contents"] ;
                 
@@ -326,8 +326,46 @@
                 [objectArray addObject:[[NSMutableArray alloc] init]];
                 allObjectArray[index] = objectArray;
             }
+            NSString *jsonString =
+            [NSString stringWithFormat:@"{ \"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getContentByFeedId\",\"params\":{ \"feedIds\":[21],\"page\":1,\"limit\":12 }}"];
+            
+            NSString *valueHeader;
+            MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+            [hud setColor:[UIColor whiteColor]];
+            [hud setActivityIndicatorColor:[UIColor colorWithHexString:SIDE_BAR_COLOR]];
+            NSMutableURLRequest *requestHTTP = [Manager createRequestHTTP:jsonString cookieValue:valueHeader];
+            AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:requestHTTP];
+            
+            op.responseSerializer = [AFJSONResponseSerializer serializer];
+            [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+                [hud hide:YES];
+                if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
+                    
+                    NSDictionary *result =[responseObject objectForKey:@"result"] ;
+                    NSArray * content = [result objectForKey:@"contents"] ;
+                    
+                    
+                    NSMutableArray*  tempArray ;
+                    
+                    tempArray = [[NSMutableArray alloc]init];
+                    [tempArray addObject:[NSNull null]];
+                    
+                    for(NSDictionary* temp in content){
+                        ContentPreview *preview = [[ContentPreview alloc]initWithDictionary:temp];
+                        [tempArray addObject:preview];
+                        
+                        NSString* data = preview.dateString;
+                        
+                        tempArray[0] = data != nil ? data : [NSNull null];
+                    }
+                    [objectArray addObject:tempArray];
+                }
+                else{
+                    [objectArray addObject:[[NSMutableArray alloc] init]];
+                    allObjectArray[index] = objectArray;
+                }
                 NSString *jsonString =
-                [NSString stringWithFormat:@"{ \"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getContentByFeedId\",\"params\":{ \"feedIds\":[21],\"page\":1,\"limit\":12 }}"];
+                [NSString stringWithFormat:@"{ \"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getContentByFeedId\",\"params\":{ \"feedIds\":[22,23,24],\"page\":1,\"limit\":6 }}"];
                 
                 NSString *valueHeader;
                 MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
@@ -341,6 +379,7 @@
                     [hud hide:YES];
                     if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
                         
+                        
                         NSDictionary *result =[responseObject objectForKey:@"result"] ;
                         NSArray * content = [result objectForKey:@"contents"] ;
                         
@@ -349,84 +388,45 @@
                         
                         tempArray = [[NSMutableArray alloc]init];
                         [tempArray addObject:[NSNull null]];
-                        
                         for(NSDictionary* temp in content){
                             ContentPreview *preview = [[ContentPreview alloc]initWithDictionary:temp];
                             [tempArray addObject:preview];
-                            
                             NSString* data = preview.dateString;
                             
                             tempArray[0] = data != nil ? data : [NSNull null];
                         }
                         [objectArray addObject:tempArray];
-                    }
-                    else{
-                        [objectArray addObject:[[NSMutableArray alloc] init]];
-                        allObjectArray[index] = objectArray;
-                    }
-                        NSString *jsonString =
-                        [NSString stringWithFormat:@"{ \"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getContentByFeedId\",\"params\":{ \"feedIds\":[22,23,24],\"page\":1,\"limit\":6 }}"];
                         
-                        NSString *valueHeader;
-                        MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
-                        [hud setColor:[UIColor whiteColor]];
-                        [hud setActivityIndicatorColor:[UIColor colorWithHexString:SIDE_BAR_COLOR]];
-                        NSMutableURLRequest *requestHTTP = [Manager createRequestHTTP:jsonString cookieValue:valueHeader];
-                        AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:requestHTTP];
                         
-                        op.responseSerializer = [AFJSONResponseSerializer serializer];
-                        [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-                            [hud hide:YES];
-                            if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
-                                
-                                
-                                NSDictionary *result =[responseObject objectForKey:@"result"] ;
-                                NSArray * content = [result objectForKey:@"contents"] ;
-                                
-                                
-                                NSMutableArray*  tempArray ;
-                                
-                                tempArray = [[NSMutableArray alloc]init];
-                                [tempArray addObject:[NSNull null]];
-                                for(NSDictionary* temp in content){
-                                    ContentPreview *preview = [[ContentPreview alloc]initWithDictionary:temp];
-                                    [tempArray addObject:preview];
-                                    NSString* data = preview.dateString;
-                                    
-                                    tempArray[0] = data != nil ? data : [NSNull null];
-                                }
-                                [objectArray addObject:tempArray];
-                                
-                                
-                                
-                            }
-                            allObjectArray[index] = objectArray;
-                            
-                            [self.collectionView reloadData];
-                            
-                            //  ...
-                        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                            NSLog(@"JSON responseObject: %@ ",error);
-                        }];
-                        [op start];
-                    
-                    
+                        
+                    }
+                    allObjectArray[index] = objectArray;
                     
                     [self.collectionView reloadData];
                     
                     //  ...
                 } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                     NSLog(@"JSON responseObject: %@ ",error);
-                     [hud hide:YES];
                 }];
                 [op start];
                 
+                
+                
+                [self.collectionView reloadData];
+                
+                //  ...
+            } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                NSLog(@"JSON responseObject: %@ ",error);
+                [hud hide:YES];
+            }];
+            [op start];
+            
             [self.collectionView reloadData];
             
             //  ...
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"JSON responseObject: %@ ",error);
-             [hud hide:YES];
+            [hud hide:YES];
         }];
         [op start];
     }
@@ -434,7 +434,7 @@
 -(void)setup{
     allObjectArray = [[NSMutableArray alloc]init];
     pageArray = [[NSMutableArray alloc]init];
-     lastStatPage = self.indexPage ;
+    lastStatPage = self.indexPage ;
     for (int i = 0; i < self.nameMenu.count; i++) {
         [allObjectArray addObject:[[NSMutableArray alloc]init]];
         [pageArray addObject:[NSNumber numberWithInt:1]];
@@ -445,8 +445,8 @@
         [self GetContentLifeStyle:i AndSubcate:[self.nameMenu[i] intValue]];
         
     }
-[Manager savePageView:3 orSubCate:0];
-
+    [Manager savePageView:3 orSubCate:0];
+    
     //initial submenu
     menuArray = self.nameMenu;
     
@@ -560,10 +560,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-     if(![[Manager sharedManager]bannerArrayLifeStyle])
-         [self getBanner];
-     [self setCateID:LIFESTYLE];
-     //[Manager savePageView:3];
+    if(![[Manager sharedManager]bannerArrayLifeStyle])
+        [self getBanner];
+    [self setCateID:LIFESTYLE];
+    //[Manager savePageView:3];
     //
     //    for (int i = 0 ; i <50; i++) {
     //        NSInteger randomNumber = arc4random() %1000000;
@@ -649,9 +649,9 @@
     //                                    isLandscape:YES];
     
     [_swipeView addSubview:imageHeader];
- 
+    
     //[self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:LIFESTYLE withSubCate:[self.nameMenu[self.indexPage] intValue] :nil]}];
-
+    
     if(IDIOM == IPAD){
         menuView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, imageHeader.frame.origin.y+imageHeader.frame.size.height,self.view.frame.size.width, 55)];
         
@@ -813,12 +813,12 @@
         NSString *identify = @"BlockCollectionViewCell";
         DtacPlayBlockCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
         
-    
+        
         [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
-                              placeholderImage:[UIImage imageNamed:@"default_image_01_L.jpg"]
-                                     completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                                         
-                                     }];
+                          placeholderImage:[UIImage imageNamed:@"default_image_01_L.jpg"]
+                                 completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                                     
+                                 }];
         NSLog(@"%@",articleTemp.images.imageThumbnailL);
         [cell.label setText:articleTemp.previewTitle];
         //
@@ -872,7 +872,7 @@
                 default:
                     break;
             }
-
+            
             
             return cell;
         }
@@ -884,13 +884,13 @@
             NSString *identify = @"BlockCollectionViewCell";
             DtacPlayBlockCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
             
-      
-                [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
-                                  placeholderImage:[UIImage imageNamed:@"default_image_01_L.jpg"]
-                                         completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                                             
-                                         }];
-         
+            
+            [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
+                              placeholderImage:[UIImage imageNamed:@"default_image_01_L.jpg"]
+                                     completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                                         
+                                     }];
+            
             
             [cell.label setText:articleTemp.previewTitle];
             [cell.imageView setBackgroundColor:[UIColor blackColor]];
@@ -938,27 +938,27 @@
     }
 }
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
-
-        self.articleView= [[ArticleViewController alloc]init];
-        NSArray *object = allObjectArray[currentPage];
-        NSMutableArray *temp =  object[indexPath.section];
-        ContentPreview *preview = temp[indexPath.row];
-        
-        self.articleView.contentID = preview.contentID;
-        self.articleView.pageType = self.pageType;
-        self.articleView.themeColor = self.themeColor;
-        self.articleView.subCateType = self.subeType;
-        NSString *nameMenu =[Manager getSubcateName:[self.nameMenu[collectionView.tag]  intValue] withThai:YES];
-        self.articleView.titlePage = nameMenu;
-        UIBarButtonItem *newBackButton =
-        [[UIBarButtonItem alloc] initWithTitle:@" "
-                                         style:UIBarButtonItemStyleBordered
-                                        target:nil
-                                        action:nil];
-        [self.navigationItem setBackBarButtonItem:newBackButton];
-        self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-        [self.navigationController pushViewController:self.articleView animated:YES];
- 
+    
+    self.articleView= [[ArticleViewController alloc]init];
+    NSArray *object = allObjectArray[currentPage];
+    NSMutableArray *temp =  object[indexPath.section];
+    ContentPreview *preview = temp[indexPath.row];
+    
+    self.articleView.contentID = preview.contentID;
+    self.articleView.pageType = self.pageType;
+    self.articleView.themeColor = self.themeColor;
+    self.articleView.subCateType = self.subeType;
+    NSString *nameMenu =[Manager getSubcateName:[self.nameMenu[collectionView.tag]  intValue] withThai:YES];
+    self.articleView.titlePage = nameMenu;
+    UIBarButtonItem *newBackButton =
+    [[UIBarButtonItem alloc] initWithTitle:@" "
+                                     style:UIBarButtonItemStyleBordered
+                                    target:nil
+                                    action:nil];
+    [self.navigationItem setBackBarButtonItem:newBackButton];
+    self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
+    [self.navigationController pushViewController:self.articleView animated:YES];
+    
 }
 - (CGSize)collectionView:(UICollectionView *)collectionView
                   layout:(UICollectionViewLayout *)collectionViewLayout
@@ -1095,15 +1095,15 @@ referenceSizeForFooterInSection:(NSInteger)section
         [weakSelf insertRowAtTop];
     }];
     self.collectionView.showsInfiniteScrolling = YES;
-   
+    
 }
 - (void)swipeViewDidEndDecelerating:(SwipeView *)swipeView{
     if(swipeView.currentItemIndex != lastStatPage){
         //
-
+        
         [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:LIFESTYLE withSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue] :nil]}];
         [Manager savePageView:0 orSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue]];
-  
+        
         lastStatPage = (int)swipeView.currentItemIndex;
     }
     
@@ -1169,9 +1169,9 @@ referenceSizeForFooterInSection:(NSInteger)section
         temp  = [[Manager sharedManager] bannerArrayLifeStyle ][index];
     }
     SDWebImageManager *manager = [SDWebImageManager sharedManager];
-
+    
     [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-                      
+     
                           options:0
                          progress:^(NSInteger receivedSize, NSInteger expectedSize) {
                              // progression tracking code

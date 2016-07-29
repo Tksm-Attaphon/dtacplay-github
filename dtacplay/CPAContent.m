@@ -28,7 +28,7 @@
         self.images = [[DtacImage alloc]initWithDictionary:imageDic];
 
         _descriptionContent = [self clearEntityHtml:_descriptionContent];
-   
+        _aocLink = [_aocLink stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     }
     return self;
 }

@@ -40,6 +40,7 @@
 #import "FreeSMSCollectionViewCell.h"
 #import "PopUpYESAndNO.h"
 #import <CommonCrypto/CommonDigest.h>
+#import "BannerView.h"
 @interface FreeZoneViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,RegisterFreeZoneDelegate,PopUpDelegate,RegisterFreeZoneDelegate,UITextViewDelegate,PopUpYESAndNODelegate>
 {
     NSMutableArray *sizeArray;
@@ -89,19 +90,31 @@
     FreeSMSCollectionViewCell *tempCell;
     
     int freeZoneValue;
+    
+    BannerView *bannerView;
 }
 @property (nonatomic) CGFloat lastContentOffset;
 @end
 
 @implementation FreeZoneViewController
+
+-(void)viewWillAppear:(BOOL)animated{
+    if(!timer)
+        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
+                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+}
 -(void)viewWillDisappear:(BOOL)animated{
-    [super viewWillDisappear:animated];
+    [timer invalidate];
+    timer = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self
                                                     name:@"alert"
                                                   object:nil];
 }
+
+
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
+    NSLog(@"%f",scrollView.contentOffset.y);
     if(scrollView.contentOffset.x==0){
         if(self.lastContentOffset <=posTopCollectionView ){
             
@@ -119,11 +132,11 @@
         }
         
         imageHeader.frame = CGRectMake(0,1-scrollView.contentOffset.y, imageHeader.frame.size.width, imageHeader.frame.size.height);
-         NSLog(@"%f",imageHeader.frame.origin.y);
+        NSLog(@"%f",imageHeader.frame.origin.y);
         if(scrollView.contentOffset.y == 0){
             self.collectionView.contentOffset = CGPointMake(0, 0);
         }
-       
+        
         self.lastContentOffset =scrollView.contentOffset.y;
     }
 }
@@ -141,7 +154,7 @@
             break;
         case FREEZONE_GAME:
             subcate = FREEZONE_GAME;
-            jsonString = [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getGame\",\"params\":{\"subCateId\":%ld,\"page\":%d,\"limit\":14 ,\"suggest\":false,\"opera\":null}}",(long)FREEZONE_GAME,number];
+            jsonString = [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getGame\",\"params\":{\"cateId\":null,\"subCateId\":%ld,\"page\":%d,\"limit\":14 ,\"suggest\":false,\"opera\":null}}",(long)FREEZONE_GAME,number];
             break;
         case FREEZONE_APPLICATION:
             subcate = FREEZONE_APPLICATION;
@@ -271,7 +284,7 @@
 }
 -(void)getGameAtIndex:(int)index{
     NSString *jsonString =
-    [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getGame\",\"params\":{\"subCateId\":%ld,\"page\":%d,\"limit\":14 ,\"suggest\":false,\"opera\":null}}",(long)FREEZONE_GAME,1];
+    [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getGame\",\"params\":{\"cateId\":null,\"subCateId\":%ld,\"page\":%d,\"limit\":14 ,\"suggest\":false,\"opera\":null}}",(long)FREEZONE_GAME,1];
     
     NSString *valueHeader;
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
@@ -482,7 +495,7 @@
             articleView.appObject = obj;
             articleView.cate = obj.cate;
             articleView.subcate = obj.subcate;
-
+            
             UIBarButtonItem *newBackButton =
             [[UIBarButtonItem alloc] initWithTitle:@" "
                                              style:UIBarButtonItemStyleBordered
@@ -545,7 +558,7 @@
 -(void)setup{
     allObjectArray = [[NSMutableArray alloc]init];
     pageArray = [[NSMutableArray alloc]init];
-     lastStatPage = self.indexPage ;
+    lastStatPage = self.indexPage ;
     
     for (int i = 0; i < self.nameMenu.count; i++) {
         [allObjectArray addObject:[[NSMutableArray alloc]init]];
@@ -610,13 +623,13 @@
                 
                 break;
             case FREEZONE_FREESMS:
-         
+                
                 [fooCollection registerNib:[UINib nibWithNibName:@"FreeSMS" bundle:nil] forCellWithReuseIdentifier:@"FreeSMSCell"];
                 
                 break;
             default:
                 
-            
+                
                 break;
         }
         
@@ -658,9 +671,7 @@
     });
     
 }
--(void)viewWillAppear:(BOOL)animated{
-    //[_swipeView scrollToItemAtIndex:self.indexPage duration:0.25];
-}
+
 -(void)getBanner{
     
     NSString *jsonString =
@@ -686,8 +697,8 @@
             }
             
             [[Manager sharedManager] setBannerArrayFreezone:bannerArray];
-            pageControl.numberOfPages = [[Manager sharedManager] bannerArrayFreezone].count;
-            [_carousel reloadData];
+            bannerView.bannerArray = [[Manager sharedManager] bannerArrayFreezone];
+            [bannerView.carousel reloadData];
             // [self.collectionView reloadData];
         }
         
@@ -705,7 +716,7 @@
     [self setCateID:FREEZONE];
     if(![[Manager sharedManager]bannerArrayFreezone])
         [self getBanner];
-     //[Manager savePageView:4];
+    //[Manager savePageView:4];
     //
     //    for (int i = 0 ; i <50; i++) {
     //        NSInteger randomNumber = arc4random() %1000000;
@@ -768,42 +779,25 @@
     imageHeader.clipsToBounds = YES;
     imageHeaderColor = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, imageHeader.frame.size.height )];
     
-    
-    if(!_carousel)
-        _carousel = [[iCarousel alloc] initWithFrame:CGRectMake(0.0f, 0.0f, imageHeader.frame.size.width, imageHeader.frame.size.height)];
-    _carousel.delegate = self;
-    _carousel.dataSource = self;
-    _carousel.type = iCarouselTypeLinear;
-    _carousel.backgroundColor = [UIColor clearColor];
+    if(!bannerView)
+        bannerView = [[BannerView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
+    bannerView.backgroundColor = [UIColor clearColor];
     //_carousel.
-    [imageHeader addSubview:_carousel];
+    [imageHeader addSubview:bannerView];
     
-    
-    
-    
-    // Page Control
-    if(!pageControl)
-        pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (self.carousel.frame.size.height-20), self.carousel.frame.size.width, 20.0f)];
-    pageControl.numberOfPages = [[Manager sharedManager] bannerArrayFreezone].count >0  ? [[Manager sharedManager] bannerArrayFreezone].count : [[Manager sharedManager] bannerArray].count;
-    pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-    pageControl.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-    pageControl.userInteractionEnabled = NO;
-    [_carousel addSubview:pageControl];
-    [timer invalidate];
-    timer = nil;
-    timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
-                                              target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];    //            imageHeaderImage = [[JBKenBurnsView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 300 )];
-    //            [imageHeaderImage animateWithImages:@[[UIImage imageNamed:@"banner_dtacplay.png"]]
-    //                             transitionDuration:50
-    //                                   initialDelay:0
-    //                                           loop:YES
-    //                                    isLandscape:YES];
+    if([[Manager sharedManager] bannerArrayFreezone]){
+        bannerView.bannerArray =  [[Manager sharedManager]bannerArrayFreezone];
+    }
+    else{
+        bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
+    }
+    [bannerView.carousel reloadData];
     
     [_swipeView addSubview:imageHeader];
-
-   // [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:FREEZONE withSubCate:self.subeType :nil]}];
-
-
+    
+    // [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:FREEZONE withSubCate:self.subeType :nil]}];
+    
+    
     
     if(IDIOM == IPAD){
         menuView = [[UIScrollView alloc]initWithFrame:CGRectMake(0, imageHeader.frame.origin.y+imageHeader.frame.size.height,self.view.frame.size.width, 55)];
@@ -873,6 +867,7 @@
 
 -(void)callSideBar:(id)sender{
     [self.frostedViewController presentMenuViewController];
+    [self.view endEditing:YES];
 }
 -(void)menuPress:(UIButton*)button{
     
@@ -894,7 +889,7 @@
 
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
-     NSArray *object = allObjectArray.count >0 ? allObjectArray[collectionView.tag] : nil;
+    NSArray *object = allObjectArray.count >0 ? allObjectArray[collectionView.tag] : nil;
     switch ([self.nameMenu[collectionView.tag] intValue]) {
         case FREEZONE_MUSIC:
             return object.count;
@@ -916,11 +911,11 @@
 }
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
-   
-        NSArray *object = allObjectArray.count >0 ? allObjectArray[collectionView.tag] : nil;
-        NSMutableArray *temp = object.count>0 ? object[section] : nil;
-       
-  
+    
+    NSArray *object = allObjectArray.count >0 ? allObjectArray[collectionView.tag] : nil;
+    NSMutableArray *temp = object.count>0 ? object[section] : nil;
+    
+    
     switch ([self.nameMenu[collectionView.tag] intValue]) {
         case FREEZONE_MUSIC:
             return temp.count;
@@ -993,13 +988,13 @@
         
         NSString *identify = @"BlockCollectionViewCell";
         MusicCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
-
-            [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailXL]
-                              placeholderImage:[UIImage imageNamed:@"default_image_02_L.jpg"]
-                                     completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                                         
-                                     }];
-     
+        
+        [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailXL]
+                          placeholderImage:[UIImage imageNamed:@"default_image_02_L.jpg"]
+                                 completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                                     
+                                 }];
+        
         [cell.nameMusicLabel setText:articleTemp.title];
         [cell.imageView setBackgroundColor:[UIColor clearColor]];
         [cell.nameArtistLabel setText:articleTemp.artist];
@@ -1031,8 +1026,8 @@
                                          cell.imageView.image = image;
                                      }
                                  }];
-     
-      
+        
+        
         [cell.title setText:articleTemp.title];
         [cell.desc setText:articleTemp.descriptionContent];
         cell.layer.masksToBounds = NO;
@@ -1051,40 +1046,40 @@
         NSMutableArray *tempArray = object[indexPath.section];
         
         if(tempArray.count != indexPath.row){
-        AppContent *articleTemp = tempArray[indexPath.row];
-        NSString *identify = @"AppCell";
-        
-        AppCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
-        
+            AppContent *articleTemp = tempArray[indexPath.row];
+            NSString *identify = @"AppCell";
+            
+            AppCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
+            
             [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
                               placeholderImage:[UIImage imageNamed:@"default_image_02_L.jpg"]
                                      completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
                                          
                                      }];
-   
-        
-        [cell.title setText:articleTemp.title];
-        [cell.imageView setBackgroundColor:[UIColor clearColor]];
-        [cell.desc setText:articleTemp.descriptionContent];
-        
-        cell.layer.masksToBounds = NO;
-        cell.layer.shadowOffset = CGSizeMake(2, 2);
-        cell.layer.shadowRadius = 2;
-        cell.layer.shadowOpacity = 0.5;
-        cell.layer.shouldRasterize = YES;
-        cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
-        
-        [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
-        
-        return cell;
+            
+            
+            [cell.title setText:articleTemp.title];
+            [cell.imageView setBackgroundColor:[UIColor clearColor]];
+            [cell.desc setText:articleTemp.descriptionContent];
+            
+            cell.layer.masksToBounds = NO;
+            cell.layer.shadowOffset = CGSizeMake(2, 2);
+            cell.layer.shadowRadius = 2;
+            cell.layer.shadowOpacity = 0.5;
+            cell.layer.shouldRasterize = YES;
+            cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
+            
+            [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
+            
+            return cell;
         }else{
-      
+            
             NSString *identify = @"EmptyCell";
             UICollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
             
             
             [cell setBackgroundColor:[UIColor whiteColor]];
-                return cell;
+            return cell;
         }
     }
     else if([self.nameMenu[collectionView.tag] intValue]== FREEZONE_REGISTER){
@@ -1194,8 +1189,8 @@
             break;
         case FREEZONE_FREESMS://register freezone
             if(indexPath.row == 0)
-                 return CGSizeMake(self.view.frame.size.width-20,386);
-
+                return CGSizeMake(self.view.frame.size.width-20,386);
+            
             else
                 return CGSizeMake(self.view.frame.size.width-20, (self.view.frame.size.height-menuHeight - (((self.view.frame.size.width-20)*500)/750)) > 0 ? self.view.frame.size.height -menuHeight- (((self.view.frame.size.width-20)*500)/750)+50 : 50 );
             break;
@@ -1288,9 +1283,11 @@ referenceSizeForFooterInSection:(NSInteger)section
     [UIView animateWithDuration:0.1 animations:^{
         views.frame =  CGRectMake(views.frame.origin.x,y , views.frame.size.width, views.frame.size.height);
     }];
+    
+    [self.collectionView setContentOffset:CGPointMake(0, 250)];
 }
 - (void)textViewDidBeginEditing:(UITextView *)textView {
-  
+    
 }
 - (void)textViewDidChange:(UITextView *)textView{
     if(textView == tempCell.messageTextView){
@@ -1322,43 +1319,43 @@ referenceSizeForFooterInSection:(NSInteger)section
 }
 -(void)sendSMS:(id)sender{
     if(tempCell.phoneNumber.text.length==10 && tempCell.messageTextView.text.length>0){
-    [Manager savePageView:0 orSubCate:FREEZONE_FREESMS];
-    
-    freeZoneValue = 2;// sms
-    NSString *phoneNumber;
-    if([[Manager sharedManager] phoneNumber].length > 0){
-        phoneNumber = [[[Manager sharedManager] phoneNumber]
-                       stringByReplacingOccurrencesOfString:@"-" withString:@""];
+        [Manager savePageView:0 orSubCate:FREEZONE_FREESMS];
         
-    }
-    black = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
-    [black setBackgroundColor:[UIColor colorWithWhite:0 alpha:0.5]];
-    [self.view addSubview:black];
-    
-    UITapGestureRecognizer *singleFingerTap =
-    [[UITapGestureRecognizer alloc] initWithTarget:self
-                                            action:@selector(hidePopup:)];
-    [black addGestureRecognizer:singleFingerTap];
-    
-    views = [[[NSBundle mainBundle] loadNibNamed:@"RegisterFreeZone" owner:self options:nil] objectAtIndex:0];
-    [views setFrame:CGRectMake(10,100, self.view.frame.size.width-20, 329)];
-    views.tag = 1;
-    views.phoneNumberTextField.text = phoneNumber;
-    views.delegate = self;
-    [views setBackgroundColor:[UIColor whiteColor]];
-    views.alpha = 0.8;
-    [views setCenter:CGPointMake(self.view.frame.size.width / 2.0, self.view.frame.size.height / 2.0 -60)];
-    [ppp setCenter:CGPointMake(self.view.frame.size.width / 2.0, self.view.frame.size.height / 2.0 -60)];
-    [self.view addSubview:views];
-    
-    [UIView transitionWithView:self.view
-                      duration:0.5
-                       options:UIViewAnimationOptionCurveLinear
-                    animations:^{
-                        views.alpha = 1;
-                        [black setBackgroundColor:[UIColor colorWithWhite:0 alpha:0.8]];
-                    }
-                    completion:nil];
+        freeZoneValue = 2;// sms
+        NSString *phoneNumber;
+        if([[Manager sharedManager] phoneNumber].length > 0){
+            phoneNumber = [[[Manager sharedManager] phoneNumber]
+                           stringByReplacingOccurrencesOfString:@"-" withString:@""];
+            
+        }
+        black = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
+        [black setBackgroundColor:[UIColor colorWithWhite:0 alpha:0.5]];
+        [self.view addSubview:black];
+        
+        UITapGestureRecognizer *singleFingerTap =
+        [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                action:@selector(hidePopup:)];
+        [black addGestureRecognizer:singleFingerTap];
+        
+        views = [[[NSBundle mainBundle] loadNibNamed:@"RegisterFreeZone" owner:self options:nil] objectAtIndex:0];
+        [views setFrame:CGRectMake(10,100, self.view.frame.size.width-20, 329)];
+        views.tag = 1;
+        views.phoneNumberTextField.text = phoneNumber;
+        views.delegate = self;
+        [views setBackgroundColor:[UIColor whiteColor]];
+        views.alpha = 0.8;
+        [views setCenter:CGPointMake(self.view.frame.size.width / 2.0, self.view.frame.size.height / 2.0 -60)];
+        [ppp setCenter:CGPointMake(self.view.frame.size.width / 2.0, self.view.frame.size.height / 2.0 -60)];
+        [self.view addSubview:views];
+        
+        [UIView transitionWithView:self.view
+                          duration:0.5
+                           options:UIViewAnimationOptionCurveLinear
+                        animations:^{
+                            views.alpha = 1;
+                            [black setBackgroundColor:[UIColor colorWithWhite:0 alpha:0.8]];
+                        }
+                        completion:nil];
         
     }else{
         if(tempCell.phoneNumber.text.length == 0){
@@ -1389,7 +1386,7 @@ referenceSizeForFooterInSection:(NSInteger)section
             [alertView show];
         }
     }
-
+    
 }
 -(void)cancelSMS:(id)sender{
     black = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
@@ -1413,15 +1410,15 @@ referenceSizeForFooterInSection:(NSInteger)section
                         [popupYesAndNo setFrame:CGRectMake(popupYesAndNo.frame.origin.x-self.view.frame.size.width,popupYesAndNo.frame.origin.y, 257, 132)];
                     }
                     completion:^(BOOL finished){
-                      //  [popupYesAndNo removeFromSuperview];
+                        //  [popupYesAndNo removeFromSuperview];
                     }];
     
-
+    
 }
 -(void)buttonPupUpYesAndNOPress:(BOOL)isYES{
     
     if(isYES){
-         tempCell.messageTextView.text = @"";
+        tempCell.messageTextView.text = @"";
         tempCell.phoneNumber.text = @"";
         [popupYesAndNo removeFromSuperview];
         [black removeFromSuperview];
@@ -1437,7 +1434,7 @@ referenceSizeForFooterInSection:(NSInteger)section
     //mGAD
     //Psvi
     NSString *newStr = [tempCell.phoneNumber.text substringFromIndex:1];
-   NSString* numberPhone =  [NSString stringWithFormat:@"66%@",newStr ];
+    NSString* numberPhone =  [NSString stringWithFormat:@"66%@",newStr ];
     NSString *jsonString =
     [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"sendSMS\",\"params\":{ \"verifyMsg\":\"%@\", \"verifyCode\":\"%@\",\"sender\":%@,\"receiver\":%@, \"message\":\"%@\",\"mms\":null }}",vierfyCode,[self calculateSHA:number],phonNumber_Mssid,numberPhone,tempCell.messageTextView.text];
     
@@ -1477,7 +1474,7 @@ referenceSizeForFooterInSection:(NSInteger)section
                 
                 if([[temp objectForKey:@"total"] intValue]>30){
                     ppp.titleLabel.text = [NSString stringWithFormat:@"คุณส่งข้อความในเดือนนี้เต็มจำนวน 30 ข้อความแล้ว กรุณาส่งใหม่ในเดือนถัดไปนะคะ"];
-
+                    
                 }
                 ppp.delegate = self;
                 ppp.type = 1;
@@ -1526,7 +1523,7 @@ referenceSizeForFooterInSection:(NSInteger)section
     
 }
 -(void)registerFreezone:(id*)button{
-     [Manager savePageView:0 orSubCate:FREEZONE_REGISTER];
+    [Manager savePageView:0 orSubCate:FREEZONE_REGISTER];
     freeZoneValue = 1;
     NSString *phoneNumber;
     if([[Manager sharedManager] phoneNumber].length > 0){
@@ -1645,7 +1642,7 @@ referenceSizeForFooterInSection:(NSInteger)section
         else{
             [self submitFreeSMS:number ];
         }
-       
+        
     }
 }
 -(void)hidePopup:(id)sender{
@@ -1952,7 +1949,7 @@ referenceSizeForFooterInSection:(NSInteger)section
             [menuView scrollRectToVisible:toVisible animated:YES];
         }
     }
-   
+    
     currentPage = (int)swipeView.currentItemIndex;
     NSLog(@"didchange Main %d",currentPage);
     self.indexPage =(int)swipeView.currentItemIndex;
@@ -1971,10 +1968,10 @@ referenceSizeForFooterInSection:(NSInteger)section
 - (void)swipeViewDidEndDecelerating:(SwipeView *)swipeView{
     if(swipeView.currentItemIndex != lastStatPage){
         //
-
-                [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:FREEZONE withSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue] :nil]}];
-                [Manager savePageView:0 orSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue]];
- 
+        
+        [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:FREEZONE withSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue] :nil]}];
+        [Manager savePageView:0 orSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue]];
+        
         lastStatPage = (int)swipeView.currentItemIndex;
     }
     
@@ -1988,8 +1985,8 @@ referenceSizeForFooterInSection:(NSInteger)section
 
 -(void)runLoop:(NSTimer*)NSTimer{
     
-    if(_carousel)
-        [_carousel scrollToItemAtIndex:self.carousel.currentItemIndex+1 animated:YES];
+    if(bannerView.carousel)
+        [bannerView.carousel scrollToItemAtIndex:bannerView.carousel.currentItemIndex+1 animated:YES];
     
     
     
@@ -2002,84 +1999,6 @@ referenceSizeForFooterInSection:(NSInteger)section
 - (void)handlePinch:(UIPinchGestureRecognizer *)pinchGestureRecognizer
 {
     NSLog(@"xx");
-}
-#pragma mark -
-#pragma mark iCarousel methods
-
-- (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
-{
-    //return the total number of items in the carousel
-    if([[Manager sharedManager] bannerArrayFreezone]){
-        return [[Manager sharedManager]bannerArrayFreezone].count;
-    }
-    else{
-        return [[Manager sharedManager]bannerArray].count;
-    }
-}
-- (NSUInteger)numberOfVisibleItemsInCarousel:(iCarousel *)carousel
-{
-    //limit the number of items views loaded concurrently (for performance reasons)
-    return 4;
-}
-- (void)scrollToItemAtIndex:(NSInteger)index
-                   duration:(NSTimeInterval)scrollDuration{
-    
-    
-}
-- (void)carouselCurrentItemIndexDidChange:(__unused iCarousel *)carousel
-{
-    //NSLog(@"Index: %@", @(self.carousel.currentItemIndex));
-    pageControl.currentPage = self.carousel.currentItemIndex;
-}
-- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
-{
-    UIImageView *viewsImage = [[UIImageView alloc] initWithFrame:_carousel.frame];
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayFreezone]){
-        temp  = [[Manager sharedManager] bannerArrayFreezone ][index];
-    }
-    
-    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-    [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-                     
-                          options:0
-                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                             // progression tracking code
-                         }
-                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                            if (image) {
-                                viewsImage.image = image;
-                            }
-                            
-                            
-                            
-                        }];
-    
-    [viewsImage setContentMode:UIViewContentModeScaleToFill];
-    return viewsImage;
-    
-}
-- (BOOL)carouselShouldWrap:(iCarousel *)carousel
-{
-    //wrap all carousels
-    return NO;
-}
-- (void)carousel:(iCarousel *)carousel didSelectItemAtIndex:(NSInteger)index{
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayFreezone]){
-        temp  = [[Manager sharedManager] bannerArrayFreezone ][index];
-    }
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:temp.link]];
-}
-- (CGFloat)carousel:(iCarousel *)carousel valueForOption:(iCarouselOption)option withDefault:(CGFloat)value
-{
-    
-    if (option == iCarouselOptionWrap) {
-        return YES;
-    }
-    return value;
 }
 
 

@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "DtacImage.h"
+#import "RelateContent.h"
 @interface ContentDetail : NSObject
 @property(nonatomic,strong)NSString *contentID;
 @property(nonatomic,strong)NSString *feedID;
@@ -21,6 +22,7 @@
 @property(nonatomic,strong)NSArray *media;
 @property(nonatomic,strong)NSArray *tags;
 @property(nonatomic,strong)NSMutableArray *subContent;
+@property(nonatomic,strong)NSMutableArray *relateContent;
 @property(nonatomic,strong)NSMutableArray *gallary;
 @property(nonatomic,strong)NSDate *publishDate;
 @property(nonatomic,strong)NSDate *startDate;

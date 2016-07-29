@@ -33,6 +33,7 @@
 #import "BannerImage.h"
 #import "LotteryObject.h"
 #import "LotteryCellCollectionViewCell.h"
+#import "BannerView.h"
 @interface SportViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout>
 {
     NSMutableArray *sizeArray;
@@ -76,11 +77,25 @@
     NSMutableArray *lotteryArray;
     
     int lastStatPage ;
+    
+    BannerView *bannerView;
 }
 @property (nonatomic) CGFloat lastContentOffset;
 @end
 
 @implementation SportViewController
+
+-(void)viewWillAppear:(BOOL)animated{
+    if(!timer)
+        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
+                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [timer invalidate];
+    timer = nil;
+    
+}
+
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
     if(scrollView.contentOffset.x==0){
@@ -178,7 +193,7 @@
 }
 -(void)GetContentSport:(int)index AndSubcate:(int)subcate{
     
-     NSString *jsonString =
+    NSString *jsonString =
     [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getContentBySubCateId\",\"params\":{ \"subCateId\":%ld, \"page\":%d,\"limit\":14 }}",(long)subcate,1];
     
     NSString *valueHeader;
@@ -232,7 +247,7 @@
 -(void)setup{
     allObjectArray = [[NSMutableArray alloc]init];
     pageArray = [[NSMutableArray alloc]init];
-     lastStatPage = self.indexPage ;
+    lastStatPage = self.indexPage ;
     for (int i = 0; i < self.nameMenu.count; i++) {
         [allObjectArray addObject:[[NSMutableArray alloc]init]];
         [pageArray addObject:[NSNumber numberWithInt:1]];
@@ -245,9 +260,9 @@
     }
     
     //if(self.indexPage == 0)
-
+    
     [Manager savePageView:5 orSubCate:0];
- 
+    
     //initial submenu
     menuArray = self.nameMenu;
     
@@ -330,8 +345,8 @@
             }
             
             [[Manager sharedManager] setBannerArraySport:bannerArray];
-            pageControl.numberOfPages = [[Manager sharedManager] bannerArraySport].count;
-            [_carousel reloadData];
+            bannerView.bannerArray = [[Manager sharedManager] bannerArraySport];
+            [bannerView.carousel reloadData];
             // [self.collectionView reloadData];
         }
         
@@ -346,8 +361,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self setCateID:SPORT];
-     if(![[Manager sharedManager]bannerArraySport])
-    [self getBanner];
+    if(![[Manager sharedManager]bannerArraySport])
+        [self getBanner];
     // [Manager savePageView:5];
     //
     //    for (int i = 0 ; i <50; i++) {
@@ -381,10 +396,10 @@
         self.navigationItem.leftBarButtonItem=menuButton;
     }
     [self setup];
-
-   // [self googleTagUpdate:@{@"event": @"openScreen", @"screenName":[ Manager returnStringForGoogleTag:SPORT withSubCate:self.subeType :nil]}];
-        
-
+    
+    // [self googleTagUpdate:@{@"event": @"openScreen", @"screenName":[ Manager returnStringForGoogleTag:SPORT withSubCate:self.subeType :nil]}];
+    
+    
     self.view = [[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.view.backgroundColor = [UIColor whiteColor];
     
@@ -404,32 +419,19 @@
     imageHeaderColor = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, imageHeader.frame.size.height )];
     
     
-    if(!_carousel)
-        _carousel = [[iCarousel alloc] initWithFrame:CGRectMake(0.0f, 0.0f, imageHeader.frame.size.width, imageHeader.frame.size.height)];
-    _carousel.delegate = self;
-    _carousel.dataSource = self;
-    _carousel.type = iCarouselTypeLinear;
-    _carousel.backgroundColor = [UIColor clearColor];
+    if(!bannerView)
+        bannerView = [[BannerView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
+    bannerView.backgroundColor = [UIColor clearColor];
     //_carousel.
-    [imageHeader addSubview:_carousel];
+    [imageHeader addSubview:bannerView];
     
-    
-    
-    
-    // Page Control
-    if(!pageControl)
-        pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (self.carousel.frame.size.height-20), self.carousel.frame.size.width, 20.0f)];
-    pageControl.numberOfPages = [[Manager sharedManager] bannerArray].count;
-    pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-    pageControl.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-    pageControl.userInteractionEnabled = NO;
-    [_carousel addSubview:pageControl];
-    [timer invalidate];
-    timer = nil;
-    timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
-                                              target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
-    
-    
+    if([[Manager sharedManager] bannerArraySport]){
+        bannerView.bannerArray =  [[Manager sharedManager]bannerArraySport];
+    }
+    else{
+        bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
+    }
+    [bannerView.carousel reloadData];
     
     //            imageHeaderImage = [[JBKenBurnsView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 300 )];
     //            [imageHeaderImage animateWithImages:@[[UIImage imageNamed:@"banner_dtacplay.png"]]
@@ -530,19 +532,19 @@
 
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
-
+    
     NSArray *object = allObjectArray.count >0 ? allObjectArray[collectionView.tag] : nil;
     return object.count;
-
+    
     
 }
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
-
-        NSArray *object = allObjectArray.count >0 ? allObjectArray[collectionView.tag] : nil;
-        NSMutableArray *temp = object.count>0 ? object[section] : nil;//collectionView.tag
-        return temp.count;
-
+    
+    NSArray *object = allObjectArray.count >0 ? allObjectArray[collectionView.tag] : nil;
+    NSMutableArray *temp = object.count>0 ? object[section] : nil;//collectionView.tag
+    return temp.count;
+    
     
 }
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section {
@@ -550,9 +552,9 @@
 }
 
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section {
-
+    
     return 10;
-
+    
 }
 
 // Layout: Set Edges
@@ -575,67 +577,67 @@
 // The cell that is returned must be retrieved from a call to -dequeueReusableCellWithReuseIdentifier:forIndexPath:
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-        NSArray *object = allObjectArray[collectionView.tag];
-        NSMutableArray *tempArray = object[indexPath.section];
-        ContentPreview *articleTemp = tempArray[indexPath.row];
-        NSLog(@"%@",articleTemp.title);
-        NSString *identify = @"BlockCollectionViewCell";
-        DtacPlayBlockCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
-        
-        
-        [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
-                          placeholderImage:[UIImage imageNamed:@"default_image_01_L.jpg"]
-                                 completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                                     
-                                 }];
-        
-        
-        [cell.label setText:articleTemp.previewTitle];
-        
-        
-        cell.layer.masksToBounds = NO;
-        cell.layer.shadowOffset = CGSizeMake(2, 2);
-        cell.layer.shadowRadius = 2;
-        cell.layer.shadowOpacity = 0.5;
-        cell.layer.shouldRasterize = YES;
-        cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
-        
-        [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
-        
-        return cell;
- }
+    NSArray *object = allObjectArray[collectionView.tag];
+    NSMutableArray *tempArray = object[indexPath.section];
+    ContentPreview *articleTemp = tempArray[indexPath.row];
+    NSLog(@"%@",articleTemp.title);
+    NSString *identify = @"BlockCollectionViewCell";
+    DtacPlayBlockCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
+    
+    
+    [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
+                      placeholderImage:[UIImage imageNamed:@"default_image_01_L.jpg"]
+                             completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                                 
+                             }];
+    
+    
+    [cell.label setText:articleTemp.previewTitle];
+    
+    
+    cell.layer.masksToBounds = NO;
+    cell.layer.shadowOffset = CGSizeMake(2, 2);
+    cell.layer.shadowRadius = 2;
+    cell.layer.shadowOpacity = 0.5;
+    cell.layer.shouldRasterize = YES;
+    cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
+    
+    [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
+    
+    return cell;
+}
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     float w_1 = (self.view.frame.size.width/2 -15);
     float w_2 = (self.view.frame.size.width -20);
-
+    
     return CGSizeMake(w_1,(w_1*144)/300+(IPAD == IDIOM  ? 60 : 50));
 }
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
     
-        self.articleView= [[SportDetailViewController alloc]init];
-        NSArray *object = allObjectArray[currentPage];
-        NSMutableArray *temp =  object[indexPath.section];
-        ContentPreview *preview = temp[indexPath.row];
-        
-        self.articleView.contentID = preview.contentID;
-        self.articleView.pageType = self.pageType;
-        self.articleView.themeColor = self.themeColor;
-        
-        NSString* nameMenu = [Manager getSubcateName:[self.nameMenu[collectionView.tag]  intValue] withThai:YES];
-        
-        
-        
-        self.articleView.titlePage = nameMenu;
-        UIBarButtonItem *newBackButton =
-        [[UIBarButtonItem alloc] initWithTitle:@" "
-                                         style:UIBarButtonItemStyleBordered
-                                        target:nil
-                                        action:nil];
-        [self.navigationItem setBackBarButtonItem:newBackButton];
-        self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-        [self.navigationController pushViewController:self.articleView animated:YES];
+    self.articleView= [[SportDetailViewController alloc]init];
+    NSArray *object = allObjectArray[currentPage];
+    NSMutableArray *temp =  object[indexPath.section];
+    ContentPreview *preview = temp[indexPath.row];
+    
+    self.articleView.contentID = preview.contentID;
+    self.articleView.pageType = self.pageType;
+    self.articleView.themeColor = self.themeColor;
+    
+    NSString* nameMenu = [Manager getSubcateName:[self.nameMenu[collectionView.tag]  intValue] withThai:YES];
+    
+    
+    
+    self.articleView.titlePage = nameMenu;
+    UIBarButtonItem *newBackButton =
+    [[UIBarButtonItem alloc] initWithTitle:@" "
+                                     style:UIBarButtonItemStyleBordered
+                                    target:nil
+                                    action:nil];
+    [self.navigationItem setBackBarButtonItem:newBackButton];
+    self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
+    [self.navigationController pushViewController:self.articleView animated:YES];
     
 }
 - (CGSize)collectionView:(UICollectionView *)collectionView
@@ -764,24 +766,24 @@ referenceSizeForFooterInSection:(NSInteger)section
     NSLog(@"didchange Main %d",currentPage);
     self.indexPage =(int)swipeView.currentItemIndex;
     self.collectionView = collectionViewArray[currentPage];
-
-        __weak SportViewController *weakSelf = self;
-        
-        // setup pull-to-refresh
-        [ self.collectionView  addInfiniteScrollingWithActionHandler:^{
-            [weakSelf insertRowAtTop];
-        }];
-        self.collectionView.showsInfiniteScrolling = YES;
     
-
+    __weak SportViewController *weakSelf = self;
+    
+    // setup pull-to-refresh
+    [ self.collectionView  addInfiniteScrollingWithActionHandler:^{
+        [weakSelf insertRowAtTop];
+    }];
+    self.collectionView.showsInfiniteScrolling = YES;
+    
+    
     
 }
 - (void)swipeViewDidEndDecelerating:(SwipeView *)swipeView{
     if(swipeView.currentItemIndex != lastStatPage){
-
-                [self googleTagUpdate:@{@"event": @"openScreen", @"screenName":[ Manager returnStringForGoogleTag:SPORT withSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue] :nil]}];
-                [Manager savePageView:0 orSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue]];
-         
+        
+        [self googleTagUpdate:@{@"event": @"openScreen", @"screenName":[ Manager returnStringForGoogleTag:SPORT withSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue] :nil]}];
+        [Manager savePageView:0 orSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue]];
+        
         lastStatPage = (int)swipeView.currentItemIndex;
     }
     
@@ -790,12 +792,12 @@ referenceSizeForFooterInSection:(NSInteger)section
     lastStatPage = (int)swipeView.currentItemIndex;
     [self googleTagUpdate:@{@"event": @"openScreen", @"screenName":[ Manager returnStringForGoogleTag:SPORT withSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue] :nil]}];
     [Manager savePageView:0 orSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue]];
-  
+    
 }
 -(void)runLoop:(NSTimer*)NSTimer{
     
-    if(_carousel)
-        [_carousel scrollToItemAtIndex:self.carousel.currentItemIndex+1 animated:YES];
+    if(bannerView.carousel)
+        [bannerView.carousel scrollToItemAtIndex:bannerView.carousel.currentItemIndex+1 animated:YES];
     
     
     
@@ -808,83 +810,6 @@ referenceSizeForFooterInSection:(NSInteger)section
 - (void)handlePinch:(UIPinchGestureRecognizer *)pinchGestureRecognizer
 {
     NSLog(@"xx");
-}
-#pragma mark -
-#pragma mark iCarousel methods
-
-- (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
-{
-    //return the total number of items in the carousel
-    if([[Manager sharedManager] bannerArraySport]){
-        return [[Manager sharedManager]bannerArraySport].count;
-    }
-    else{
-        return [[Manager sharedManager]bannerArray].count;
-    }
-}
-- (NSUInteger)numberOfVisibleItemsInCarousel:(iCarousel *)carousel
-{
-    //limit the number of items views loaded concurrently (for performance reasons)
-    return 4;
-}
-- (void)scrollToItemAtIndex:(NSInteger)index
-                   duration:(NSTimeInterval)scrollDuration{
-    
-    
-}
-- (void)carouselCurrentItemIndexDidChange:(__unused iCarousel *)carousel
-{
-    //NSLog(@"Index: %@", @(self.carousel.currentItemIndex));
-    pageControl.currentPage = self.carousel.currentItemIndex;
-}
-- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
-{
-    UIImageView *viewsImage = [[UIImageView alloc] initWithFrame:_carousel.frame];
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArraySport]){
-        temp  = [[Manager sharedManager] bannerArraySport ][index];
-    }
-    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-    [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-                         
-                          options:0
-                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                             // progression tracking code
-                         }
-                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                            if (image) {
-                                viewsImage.image = image;
-                            }
-                            
-                            
-                            
-                        }];
-    
-    [viewsImage setContentMode:UIViewContentModeScaleToFill];
-    return viewsImage;
-    
-}
-- (BOOL)carouselShouldWrap:(iCarousel *)carousel
-{
-    //wrap all carousels
-    return NO;
-}
-- (CGFloat)carousel:(iCarousel *)carousel valueForOption:(iCarouselOption)option withDefault:(CGFloat)value
-{
-    
-    if (option == iCarouselOptionWrap) {
-        return YES;
-    }
-    return value;
-}
-- (void)carousel:(iCarousel *)carousel didSelectItemAtIndex:(NSInteger)index{
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArraySport]){
-        temp  = [[Manager sharedManager] bannerArraySport ][index];
-    }
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:temp.link]];
 }
 
 - (void)didReceiveMemoryWarning {

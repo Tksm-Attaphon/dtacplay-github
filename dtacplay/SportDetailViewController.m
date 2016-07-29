@@ -30,6 +30,8 @@
 #import "FBSDKCoreKit.h"
 #import "Banner.h"
 #import "BannerImage.h"
+#import "BannerView.h"
+
 @interface SportDetailViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,UICollectionViewDelegate,UIGestureRecognizerDelegate,RTLabelDelegate,DWTagListDelegate,UIWebViewDelegate,SocialShare>
 {
     UIView *imageHeader;
@@ -55,14 +57,25 @@
     MBProgressHUD *hudWebView ;
     NSTimer *timer;
     
-       NSURL *linkBanner;
+    NSURL *linkBanner;
+     BannerView *bannerView;
+    
 }
 @property (nonatomic, strong) NSMutableArray        *array;
 @property (nonatomic, strong) DWTagList             *tagList;
 @end
 
 @implementation SportDetailViewController
-
+-(void)viewWillAppear:(BOOL)animated{
+    if(!timer)
+        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
+                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [timer invalidate];
+    timer = nil;
+    
+}
 -(void)getArticleDetail{
     NSString *jsonString =
     [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getContentById\",\"params\":{ \"conId\":%@}}",_contentID];
@@ -80,7 +93,7 @@
         if ([responseObject objectForKey:@"result"]) {
             NSDictionary *result =[responseObject objectForKey:@"result"] ;
             article = [[ContentDetail alloc]initWithDictionary:result];
-             [self getBannerCredit:[article.feedID intValue]];
+            [self getBannerCredit:[article.feedID intValue]];
             if(article.feedID){
                 NSString *canReadDate = [Manager dateTimeToReadableString:article.publishDate];
                 article.title = [NSString stringWithFormat:@"%@\n",article.title];
@@ -115,9 +128,9 @@
             [line setBackgroundColor:[UIColor colorWithHexString:COLOR_SPORT]];
             [self.scrollView addSubview:line];
             
-           
+            
             self.navigationItem.title = [Manager getCateName:[article.cateID intValue] withThai:YES];
-          
+            
             [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:SPORT withSubCate:article.subCateID :article.title]}];
             
             
@@ -158,33 +171,20 @@
     
     imageHeader.clipsToBounds = YES;
     
-    
-    if(!_carousel)
-        _carousel = [[iCarousel alloc] initWithFrame:CGRectMake(0.0f, 0.0f, imageHeader.frame.size.width, imageHeader.frame.size.height)];
-    _carousel.delegate = self;
-    _carousel.dataSource = self;
-    _carousel.type = iCarouselTypeLinear;
-    _carousel.backgroundColor = [UIColor clearColor];
+    if(!bannerView)
+        bannerView = [[BannerView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
+    bannerView.backgroundColor = [UIColor clearColor];
     //_carousel.
-    [imageHeader addSubview:_carousel];
+    [imageHeader addSubview:bannerView];
     
+    if([[Manager sharedManager] bannerArraySport]){
+        bannerView.bannerArray =  [[Manager sharedManager]bannerArraySport];
+    }
+    else{
+        bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
+    }
+    [bannerView.carousel reloadData];
     
-    
-    
-    // Page Control
-    if(!pageControl)
-        pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (self.carousel.frame.size.height-20), self.carousel.frame.size.width, 20.0f)];
-    pageControl.numberOfPages = [[Manager sharedManager] bannerArraySport].count >0  ? [[Manager sharedManager] bannerArraySport].count : [[Manager sharedManager] bannerArray].count;
-    pageControl.currentPage = 0;
-    pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-    pageControl.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-    pageControl.userInteractionEnabled = NO;
-    [timer invalidate];
-    timer = nil;
-    timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
-                                              target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
-    
-    [_carousel addSubview:pageControl];
     [self.scrollView addSubview:imageHeader];
     
     [self.scrollView sendSubviewToBack:imageHeader];
@@ -536,8 +536,7 @@
     contentView.layer.shadowOffset = CGSizeMake(1, 1);
     contentView.layer.shadowRadius = 2;
     contentView.layer.shadowOpacity = 0.5;
-    contentView.layer.shouldRasterize = YES;
-    contentView.layer.rasterizationScale = [UIScreen mainScreen].scale;
+ 
     
     //
     //    if(article.subCateID == 1 || article.subCateID == 2 ||article.subCateID == 3 ||article.subCateID == 4){
@@ -728,18 +727,31 @@
             NSString *linkImage = [[result objectForKey:@"imageLink"] isEqual:[NSNull null]] ? nil : [result objectForKey:@"imageLink"] ;
             NSString *detail = [[result objectForKey:@"detail"] isEqual:[NSNull null]] ? nil : [result objectForKey:@"detail"] ;
             NSString *link = [[result objectForKey:@"link"] isEqual:[NSNull null]] ? nil : [result objectForKey:@"link"];
-           
+            
             linkBanner = [NSURL URLWithString:linkImage];
             
             NSString *supporter = @"";
             
-            if(detail)
+            if(detail){
                 supporter = [Manager returnSupporter:[article.feedID intValue] :detail : link ];
+            }
+            
+            if(article.relateContent){
+                supporter = [NSString stringWithFormat:@"%@ \n <p><h3 style=\"color:%@;font-family: %@;\">ข่าวอื่นๆ ที่น่าสนใจ</h3></p>  <ul>",supporter, COLOR_SPORT,FONT_DTAC_REGULAR];
+                
+                NSString *relatecontent = @"";
+                for(RelateContent *relateArticle in article.relateContent){
+                     relatecontent = [relatecontent stringByAppendingString: [NSString stringWithFormat:@"<li><a style=\"color:%@; text-decoration: none;\" href=\"%@\">%@</a></li>" ,DEFAULT_TEXT_COLOR,relateArticle.link,relateArticle.title]];
+                }
+                
+                supporter = [NSString stringWithFormat:@"%@ %@</ul>",supporter,relatecontent];
+            }
+            
             article.descriptionContent = [NSString stringWithFormat:@"%@ %@",article.descriptionContent,supporter];
             
             UIImage *image = nil;
             if(imageURL != nil)
-            bottomImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, _tagList.frame.size.height+contentView.frame.origin.y + contentView.frame.size.height+10, self.scrollView.frame.size.width, (200*contentView.frame.size.width)/940)];
+                bottomImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, _tagList.frame.size.height+contentView.frame.origin.y + contentView.frame.size.height+10, self.scrollView.frame.size.width, (200*contentView.frame.size.width)/940)];
             [self.scrollView addSubview:bottomImage];
             [bottomImage setContentMode:UIViewContentModeScaleAspectFit];
             [bottomImage setImage:image];
@@ -793,12 +805,11 @@
         frame.size.height = 1;
         aWebView.frame = frame;
         CGSize fittingSize = [aWebView sizeThatFits:CGSizeZero];
-        frame.size = fittingSize;
+        frame.size = CGSizeMake(fittingSize.width,aWebView.scrollView.contentSize.height);
         aWebView.frame = frame;
         [self setFrameContent];
-        NSLog(@"size: %f, %f", fittingSize.width, fittingSize.height);
+        NSLog(@"size: %f, %f", fittingSize.width, aWebView.scrollView.contentSize.height);
         isFinishLoad =YES;
-        [hudWebView hide:YES];
     }
 }
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
@@ -1091,8 +1102,8 @@
             }
             
             [[Manager sharedManager] setBannerArrayDownload:bannerArray];
-            pageControl.numberOfPages = [[Manager sharedManager] bannerArraySport].count;
-            [_carousel reloadData];
+            bannerView.bannerArray = [[Manager sharedManager] bannerArraySport];
+            [bannerView.carousel reloadData];
             // [self.collectionView reloadData];
         }
         
@@ -1131,87 +1142,11 @@
 
 -(void)runLoop:(NSTimer*)NSTimer{
     
-    if(_carousel)
-        [_carousel scrollToItemAtIndex:self.carousel.currentItemIndex+1 animated:YES];
+    if(bannerView.carousel)
+        [bannerView.carousel scrollToItemAtIndex:bannerView.carousel.currentItemIndex+1 animated:YES];
     
     
     
-}
-#pragma mark -
-#pragma mark iCarousel methods
-
-- (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
-{
-    if([[Manager sharedManager] bannerArraySport]){
-        return [[Manager sharedManager]bannerArraySport].count;
-    }
-    else{
-        return [[Manager sharedManager]bannerArray].count;
-    }
-}
-- (NSUInteger)numberOfVisibleItemsInCarousel:(iCarousel *)carousel
-{
-    //limit the number of items views loaded concurrently (for performance reasons)
-    return 4;
-}
-- (void)scrollToItemAtIndex:(NSInteger)index
-                   duration:(NSTimeInterval)scrollDuration{
-    
-    
-}
-- (void)carouselCurrentItemIndexDidChange:(__unused iCarousel *)carousel
-{
-    //NSLog(@"Index: %@", @(self.carousel.currentItemIndex));
-    pageControl.currentPage = self.carousel.currentItemIndex;
-}
-- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
-{
-    UIImageView *viewsImage = [[UIImageView alloc] initWithFrame:_carousel.frame];
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArraySport]){
-        temp  = [[Manager sharedManager] bannerArraySport ][index];
-    }
-    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-    [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-     
-                          options:0
-                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                             // progression tracking code
-                         }
-                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                            if (image) {
-                                viewsImage.image = image;
-                            }
-                            
-                            
-                            
-                        }];
-    
-    [viewsImage setContentMode:UIViewContentModeScaleToFill];
-    return viewsImage;
-    
-}
-- (BOOL)carouselShouldWrap:(iCarousel *)carousel
-{
-    //wrap all carousels
-    return NO;
-}
-- (CGFloat)carousel:(iCarousel *)carousel valueForOption:(iCarouselOption)option withDefault:(CGFloat)value
-{
-    
-    if (option == iCarouselOptionWrap) {
-        return YES;
-    }
-    return value;
-}
-- (void)carousel:(iCarousel *)carousel didSelectItemAtIndex:(NSInteger)index{
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArraySport]){
-        temp  = [[Manager sharedManager] bannerArraySport ][index];
-    }
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:temp.link]];
 }
 //////////
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
@@ -1247,7 +1182,7 @@
     GallaryObject* gallaryTemp = article.gallary[indexPath.row];
     SDWebImageManager *manager = [SDWebImageManager sharedManager];
     [manager downloadImageWithURL:[NSURL URLWithString:gallaryTemp.thumb]
-                        
+     
                           options:0
                          progress:^(NSInteger receivedSize, NSInteger expectedSize) {
                              // progression tracking code

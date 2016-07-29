@@ -12,7 +12,7 @@
 #import "GameContent.h"
 #import "Constant.h"
 @interface GameDetailViewController : DtacPlayViewController
-@property (strong, nonatomic) iCarousel *carousel;
+
 @property(nonatomic,strong)UICollectionView *collectionView;
 @property(nonatomic,strong)GameContent *gameObject;
 

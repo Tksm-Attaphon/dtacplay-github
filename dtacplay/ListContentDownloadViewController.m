@@ -36,6 +36,8 @@
 #import "CPACollectionViewCell2.h"
 #import "NimbusKitAttributedLabel.h"
 #import "CPAContent.h"
+
+#import "BannerView.h"
 @interface ListContentDownloadViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,UICollectionViewDelegate,UIGestureRecognizerDelegate,iCarouselDataSource,iCarouselDelegate>
 {
     UIPageControl *pageControl;
@@ -48,11 +50,24 @@
     int page;
     
     NSMutableArray* object;
+    
+    BannerView *bannerView;
 }
 
 @end
 
 @implementation ListContentDownloadViewController
+
+-(void)viewWillAppear:(BOOL)animated{
+    if(!timer)
+        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
+                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [timer invalidate];
+    timer = nil;
+    
+}
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
@@ -75,14 +90,135 @@
     NSString *jsonString ;
     if(!_isCPA)
         if(self.subCate == DOWNLOAD_GAME ||self.subCate == DOWNLOAD_GAME_NEW ||self.subCate == DOWNLOAD_GAME_HIT ||self.subCate == DOWNLOAD_GAME_GAMECLUB ||self.subCate == DOWNLOAD_GAME_GAMEROOM){
-        jsonString =
-        [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getGame\",\"params\":{\"subCateId\":%ld,\"page\":%d,\"limit\":14,\"suggest\":false,\"opera\":null }}",(long)self.subCate,++page];
+            jsonString =
+            [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getGame\",\"params\":{\"subCateId\":%ld,\"page\":%d,\"limit\":14,\"suggest\":false,\"opera\":null }}",(long)self.subCate,++page];
         }else{
+            
+            jsonString =
+            [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getMusic\",\"params\":{\"subCateId\":%ld,\"page\":%d,\"limit\":14,\"suggest\":false }}",(long)self.subCate,++page];
+        }
+        else{
+            switch (subcat) {
+                case DOWNLOAD_CPA_NEWS_HIT:
+                    subcat = 1;
+                    break;
+                case DOWNLOAD_CPA_NEWS_GOSSIP:
+                    subcat = 2;
+                    break;
+                case DOWNLOAD_CPA_NEWS_ECO:
+                    subcat = 3;
+                    break;
+                case DOWNLOAD_CPA_HORO:
+                    subcat = 4;
+                    break;
+                case DOWNLOAD_CPA_LUCKY_NUMBER:
+                    subcat = 5;
+                    break;
+                case DOWNLOAD_CPA_LIFESTYLE_QUIZE:
+                    subcat = 6;
+                    break;
+                case DOWNLOAD_CPA_LIFESTYLE_MOVIE:
+                    subcat = 7;
+                    break;
+                case DOWNLOAD_CPA_LIFESTYLE_BEUTY:
+                    subcat = 8;
+                    break;
+                case DOWNLOAD_CPA_SPORT_FOOTBALL:
+                    subcat = 9;
+                    break;
+                case DOWNLOAD_CPA_SPORT_OTHER:
+                    subcat = 10;
+                case DOWNLOAD_CPA_CLIP_FREE_INTERNET:
+                    subcat = 11;
+                    break;
+                case DOWNLOAD_CPA_CLIP_FREE_PREMIUM:
+                    subcat = 12;
+                    break;
+                default:
+                    break;
+            }
+            
+            jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getCpaContentBySubCateId\",\"params\":{\"cpaSubCateId\":%d, \"page\":%d, \"limit\":%d }}",subcat,++page,10];
+        }
+    
+    NSString *valueHeader;
+    
+    NSMutableURLRequest *requestHTTP = [Manager createRequestHTTP:jsonString cookieValue:valueHeader];
+    AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:requestHTTP];
+    
+    op.responseSerializer = [AFJSONResponseSerializer serializer];
+    [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
         
-        jsonString =
-        [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getMusic\",\"params\":{\"subCateId\":%ld,\"page\":%d,\"limit\":14,\"suggest\":false }}",(long)self.subCate,++page];
-    }
-    else{
+        if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
+            
+            NSDictionary *result =[responseObject objectForKey:@"result"] ;
+            NSArray * content = [result objectForKey:@"contents"] ;
+            if(!_isCPA){
+                if(self.subCate == DOWNLOAD_GAME ||self.subCate == DOWNLOAD_GAME_NEW ||self.subCate == DOWNLOAD_GAME_HIT ||self.subCate == DOWNLOAD_GAME_GAMECLUB ||self.subCate == DOWNLOAD_GAME_GAMEROOM){
+                    for(NSDictionary* temp in content){
+                        
+                        GameContent *preview = [[GameContent alloc]initWithDictionary:temp];
+                        [object addObject:preview];
+                        
+                        
+                    }
+                }
+                
+                else{
+                    for(NSDictionary* temp in content){
+                        
+                        MusicContent *preview = [[MusicContent alloc]initWithDictionary:temp];
+                        [object addObject:preview];
+                        
+                        
+                    }
+                }
+            }else{
+                for(NSDictionary* temp in content){
+                    
+                    CPAContent *preview = [[CPAContent alloc]initWithDictionary:temp];
+                    [object addObject:preview];
+                    
+                    
+                }
+            }
+            
+        }
+        else{
+            _collectionView.showsInfiniteScrolling = NO;
+            page --;
+        }
+        
+        [_collectionView.infiniteScrollingView stopAnimating];
+        
+        [_collectionView reloadData];
+        
+        //  ...
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"JSON responseObject: %@ ",error);
+        
+        [_collectionView.infiniteScrollingView stopAnimating];
+        page--;
+    }];
+    [op start];
+    
+}
+
+-(void)GetContentDownloadSubCate:(int)subcat{
+    
+    
+    NSString *jsonString ;
+    if(!_isCPA){
+        if(subcat == DOWNLOAD_GAME ||subcat == DOWNLOAD_GAME_NEW ||subcat == DOWNLOAD_GAME_HIT ||subcat == DOWNLOAD_GAME_GAMECLUB ||subcat == DOWNLOAD_GAME_GAMEROOM){
+            jsonString =
+            [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getGame\",\"params\":{\"subCateId\":%d,\"page\":%d,\"limit\":14,\"suggest\":false,\"opera\":null }}",subcat,1];
+        }else{
+            
+            jsonString =
+            [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getMusic\",\"params\":{\"subCateId\":%d,\"page\":%d,\"limit\":14,\"suggest\":false }}",subcat,1];
+        }
+        
+    }else{
         switch (subcat) {
             case DOWNLOAD_CPA_NEWS_HIT:
                 subcat = 1;
@@ -123,128 +259,7 @@
                 break;
         }
         
-        jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getCpaContentBySubCateId\",\"params\":{\"cpaSubCateId\":%d, \"page\":%d, \"limit\":%d }}",subcat,++page,10];
-    }
-    
-    NSString *valueHeader;
-    
-    NSMutableURLRequest *requestHTTP = [Manager createRequestHTTP:jsonString cookieValue:valueHeader];
-    AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:requestHTTP];
-    
-    op.responseSerializer = [AFJSONResponseSerializer serializer];
-    [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-        
-        if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
-            
-            NSDictionary *result =[responseObject objectForKey:@"result"] ;
-            NSArray * content = [result objectForKey:@"contents"] ;
-            if(!_isCPA){
-            if(self.subCate == DOWNLOAD_GAME ||self.subCate == DOWNLOAD_GAME_NEW ||self.subCate == DOWNLOAD_GAME_HIT ||self.subCate == DOWNLOAD_GAME_GAMECLUB ||self.subCate == DOWNLOAD_GAME_GAMEROOM){
-                for(NSDictionary* temp in content){
-                    
-                    GameContent *preview = [[GameContent alloc]initWithDictionary:temp];
-                    [object addObject:preview];
-                    
-                    
-                }
-            }
-            
-            else{
-                for(NSDictionary* temp in content){
-                    
-                    MusicContent *preview = [[MusicContent alloc]initWithDictionary:temp];
-                    [object addObject:preview];
-                    
-                    
-                }
-            }
-            }else{
-                for(NSDictionary* temp in content){
-                    
-                    CPAContent *preview = [[CPAContent alloc]initWithDictionary:temp];
-                    [object addObject:preview];
-                    
-                    
-                }
-            }
-            
-        }
-        else{
-            _collectionView.showsInfiniteScrolling = NO;
-            page --;
-        }
-        
-        [_collectionView.infiniteScrollingView stopAnimating];
-        
-        [_collectionView reloadData];
-        
-        //  ...
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"JSON responseObject: %@ ",error);
-        
-        [_collectionView.infiniteScrollingView stopAnimating];
-        page--;
-    }];
-    [op start];
-    
-}
-
--(void)GetContentDownloadSubCate:(int)subcat{
-    
-    
-    NSString *jsonString ;
-    if(!_isCPA){
-    if(subcat == DOWNLOAD_GAME ||subcat == DOWNLOAD_GAME_NEW ||subcat == DOWNLOAD_GAME_HIT ||subcat == DOWNLOAD_GAME_GAMECLUB ||subcat == DOWNLOAD_GAME_GAMEROOM){
-        jsonString =
-        [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getGame\",\"params\":{\"subCateId\":%d,\"page\":%d,\"limit\":14,\"suggest\":false,\"opera\":null }}",subcat,1];
-    }else{
-        
-        jsonString =
-        [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getMusic\",\"params\":{\"subCateId\":%d,\"page\":%d,\"limit\":14,\"suggest\":false }}",subcat,1];
-    }
-        
-    }else{
-        switch (subcat) {
-            case DOWNLOAD_CPA_NEWS_HIT:
-               subcat = 1;
-                break;
-            case DOWNLOAD_CPA_NEWS_GOSSIP:
-                subcat = 2;
-                break;
-            case DOWNLOAD_CPA_NEWS_ECO:
-                subcat = 3;
-                break;
-            case DOWNLOAD_CPA_HORO:
-                subcat = 4;
-                break;
-            case DOWNLOAD_CPA_LUCKY_NUMBER:
-                subcat = 5;
-                break;
-            case DOWNLOAD_CPA_LIFESTYLE_QUIZE:
-                subcat = 6;
-                break;
-            case DOWNLOAD_CPA_LIFESTYLE_MOVIE:
-                subcat = 7;
-                break;
-            case DOWNLOAD_CPA_LIFESTYLE_BEUTY:
-                subcat = 8;
-                break;
-            case DOWNLOAD_CPA_SPORT_FOOTBALL:
-                subcat = 9;
-                break;
-            case DOWNLOAD_CPA_SPORT_OTHER:
-                subcat = 10;
-            case DOWNLOAD_CPA_CLIP_FREE_INTERNET:
-                subcat = 11;
-                break;
-            case DOWNLOAD_CPA_CLIP_FREE_PREMIUM:
-                subcat = 12;
-                break;
-            default:
-                break;
-        }
-
-          jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getCpaContentBySubCateId\",\"params\":{\"cpaSubCateId\":%d, \"page\":null, \"limit\":null }}",subcat];
+        jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getCpaContentBySubCateId\",\"params\":{\"cpaSubCateId\":%d, \"page\":null, \"limit\":null }}",subcat];
     }
     NSString *valueHeader;
     
@@ -253,12 +268,12 @@
     [hud setActivityIndicatorColor:[UIColor colorWithHexString:SIDE_BAR_COLOR]];
     NSMutableURLRequest *requestHTTP = [Manager createRequestHTTP:jsonString cookieValue:valueHeader];
     AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:requestHTTP];
-
+    
     
     op.responseSerializer = [AFJSONResponseSerializer serializer];
     [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
         [hud hide:YES];
-      
+        
         
         if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
             
@@ -266,25 +281,25 @@
             NSArray * content = [result objectForKey:@"contents"] ;
             
             if(!_isCPA){
-            if(subcat == DOWNLOAD_GAME ||subcat == DOWNLOAD_GAME_NEW ||subcat == DOWNLOAD_GAME_HIT ||subcat == DOWNLOAD_GAME_GAMECLUB ||subcat == DOWNLOAD_GAME_GAMEROOM){
-                for(NSDictionary* temp in content){
-                    
-                    GameContent *preview = [[GameContent alloc]initWithDictionary:temp];
-                    [object addObject:preview];
-                    
-                    
+                if(subcat == DOWNLOAD_GAME ||subcat == DOWNLOAD_GAME_NEW ||subcat == DOWNLOAD_GAME_HIT ||subcat == DOWNLOAD_GAME_GAMECLUB ||subcat == DOWNLOAD_GAME_GAMEROOM){
+                    for(NSDictionary* temp in content){
+                        
+                        GameContent *preview = [[GameContent alloc]initWithDictionary:temp];
+                        [object addObject:preview];
+                        
+                        
+                    }
                 }
-            }
-            
-            else{
-                for(NSDictionary* temp in content){
-                    
-                    MusicContent *preview = [[MusicContent alloc]initWithDictionary:temp];
-                    [object addObject:preview];
-                    
-                    
+                
+                else{
+                    for(NSDictionary* temp in content){
+                        
+                        MusicContent *preview = [[MusicContent alloc]initWithDictionary:temp];
+                        [object addObject:preview];
+                        
+                        
+                    }
                 }
-            }
                 
             }else{
                 for(NSDictionary* temp in content){
@@ -335,8 +350,8 @@
             }
             
             [[Manager sharedManager] setBannerArrayDownload:bannerArray];
-            pageControl.numberOfPages = [[Manager sharedManager] bannerArrayDownload].count;
-            [_carousel reloadData];
+           bannerView.bannerArray = [[Manager sharedManager] bannerArrayDownload];
+            [bannerView.carousel reloadData];
             // [self.collectionView reloadData];
         }
         
@@ -352,12 +367,12 @@
     [super viewDidLoad];
     page = 1;
     [self setCateID:DOWNLOAD];
-     if(![[Manager sharedManager]bannerArrayDownload])
-         [self getBanner];
+    if(![[Manager sharedManager]bannerArrayDownload])
+        [self getBanner];
     object = [[NSMutableArray alloc]init];
     
     [self GetContentDownloadSubCate:self.subCate];
-
+    
     [ Manager savePageView:0 orSubCate:self.subCate];
     [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:DOWNLOAD withSubCate:self.subCate :nil]}];
     
@@ -456,7 +471,7 @@
         case DOWNLOAD_CPA_CLIP_FREE_PREMIUM:
             [imageView setImage:[UIImage imageNamed:@"dtacplay_download_premiumclip"]];
             break;
-        
+            
         default:
             break;
     }
@@ -488,32 +503,32 @@
         forSupplementaryViewOfKind: UICollectionElementKindSectionHeader
                withReuseIdentifier:@"RecommendedHeader"];
     if(!_isCPA){
-    if(self.subCate == DOWNLOAD_GAME ||self.subCate == DOWNLOAD_GAME_NEW ||self.subCate == DOWNLOAD_GAME_HIT ||self.subCate == DOWNLOAD_GAME_GAMECLUB ||self.subCate == DOWNLOAD_GAME_GAMEROOM){
-        [_collectionView registerClass:[AppCell class] forCellWithReuseIdentifier:@"GameCell"];
-        
-        __weak ListContentDownloadViewController *weakSelf = self;
-        
-        // setup pull-to-refresh
-        [_collectionView addInfiniteScrollingWithActionHandler:^{
-            [weakSelf insertRowAtTop];
-        }];
-    }
-    else{
-        [_collectionView registerClass:[MusicCell class] forCellWithReuseIdentifier:@"MusicCell"];
-        
-        __weak ListContentDownloadViewController *weakSelf = self;
-        
-        // setup pull-to-refresh
-        [_collectionView addInfiniteScrollingWithActionHandler:^{
-            [weakSelf insertRowAtTop];
-        }];
-    }
+        if(self.subCate == DOWNLOAD_GAME ||self.subCate == DOWNLOAD_GAME_NEW ||self.subCate == DOWNLOAD_GAME_HIT ||self.subCate == DOWNLOAD_GAME_GAMECLUB ||self.subCate == DOWNLOAD_GAME_GAMEROOM){
+            [_collectionView registerClass:[AppCell class] forCellWithReuseIdentifier:@"GameCell"];
+            
+            __weak ListContentDownloadViewController *weakSelf = self;
+            
+            // setup pull-to-refresh
+            [_collectionView addInfiniteScrollingWithActionHandler:^{
+                [weakSelf insertRowAtTop];
+            }];
+        }
+        else{
+            [_collectionView registerClass:[MusicCell class] forCellWithReuseIdentifier:@"MusicCell"];
+            
+            __weak ListContentDownloadViewController *weakSelf = self;
+            
+            // setup pull-to-refresh
+            [_collectionView addInfiniteScrollingWithActionHandler:^{
+                [weakSelf insertRowAtTop];
+            }];
+        }
     }else{
-         [_collectionView registerClass:[CPACollectionViewCell2 class] forCellWithReuseIdentifier:@"CPACell"];
+        [_collectionView registerClass:[CPACollectionViewCell2 class] forCellWithReuseIdentifier:@"CPACell"];
     }
     [_collectionView setBackgroundColor:[UIColor whiteColor]];
     
-  
+    
     
     [self.view addSubview:_collectionView];
     [self.view addSubview:menuView];
@@ -561,41 +576,28 @@
         [headerView setBackgroundColor:[UIColor whiteColor]];
         
         
-        _carousel = [[iCarousel alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
-        
-        _carousel.delegate = self;
-        _carousel.dataSource = self;
-        _carousel.type = iCarouselTypeLinear;
-        _carousel.backgroundColor = [UIColor clearColor];
+        if(!bannerView)
+            bannerView = [[BannerView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
+        bannerView.backgroundColor = [UIColor clearColor];
         //_carousel.
-        [headerView addSubview:_carousel];
+        [headerView addSubview:bannerView];
         
-        
-        
-        
-        // Page Control
-        if(!pageControl)
-            pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (self.carousel.frame.size.height-20), self.carousel.frame.size.width, 20.0f)];
-        pageControl.numberOfPages = [[Manager sharedManager] bannerArrayDownload].count >0  ? [[Manager sharedManager] bannerArrayDownload].count : [[Manager sharedManager] bannerArray].count;
-        pageControl.currentPage = 0;
-        pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-        pageControl.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-        pageControl.userInteractionEnabled = NO;
-        [_carousel addSubview:pageControl];
-        [timer invalidate];
-        timer = nil;
-        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
-                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
-        
-        
+        if([[Manager sharedManager] bannerArrayDownload]){
+            bannerView.bannerArray =  [[Manager sharedManager]bannerArrayDownload];
+        }
+        else{
+            bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
+        }
+        [bannerView.carousel reloadData];
+
         return headerView;
         
     }
     return reusableview;
 }
 -(void)runLoop:(NSTimer*)NSTimer{
-    if(_carousel)
-        [_carousel scrollToItemAtIndex:_carousel.currentItemIndex+1 animated:YES];
+    if(bannerView.carousel)
+        [bannerView.carousel scrollToItemAtIndex:bannerView.carousel.currentItemIndex+1 animated:YES];
     
 }
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
@@ -624,62 +626,62 @@
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     if(!_isCPA){
-    if(self.subCate == DOWNLOAD_MUSIC_NEW || self.subCate == DOWNLOAD_MUSIC_HIT || self.subCate == DOWNLOAD_MUSIC_INTER ||self.subCate == DOWNLOAD_MUSIC_LOOKTHOONG){
-         MusicContent *articleTemp = object[indexPath.row];
-        NSString *identify = @"MusicCell";
-        MusicCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
-  
+        if(self.subCate == DOWNLOAD_MUSIC_NEW || self.subCate == DOWNLOAD_MUSIC_HIT || self.subCate == DOWNLOAD_MUSIC_INTER ||self.subCate == DOWNLOAD_MUSIC_LOOKTHOONG){
+            MusicContent *articleTemp = object[indexPath.row];
+            NSString *identify = @"MusicCell";
+            MusicCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
+            
             [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
                               placeholderImage:[UIImage imageNamed:@"default_image_02_L.jpg"]
                                      completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
                                          
                                      }];
-        
-      
-        [cell.nameMusicLabel setText:articleTemp.title];
-        [cell.imageView setBackgroundColor:[UIColor clearColor]];
-        [cell.nameArtistLabel setText:articleTemp.artist];
-        [cell.nameAlbumLabel setText:articleTemp.album];
-        
-        //NSLog(@"%f , %f , %f",cell.nameMusicLabel.frame.origin.y,cell.nameArtistLabel.frame.origin.y,cell.nameAlbumLabel.frame.origin.y);
-        cell.layer.masksToBounds = NO;
-        cell.layer.shadowOffset = CGSizeMake(2, 2);
-        cell.layer.shadowRadius = 2;
-        cell.layer.shadowOpacity = 0.5;
-        cell.layer.shouldRasterize = YES;
-        cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
-        
-        [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
-        NSLog(@"complete");
-        return cell;
-        
-    }
-    else{
-         GameContent *articleTemp = object[indexPath.row];
-        NSString *identify = @"GameCell";
-        AppCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
-     
-        [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
-                          placeholderImage:[UIImage imageNamed:@"default_image_02_L.jpg"]
-                                 completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                                     
-                                 }];
-    
-        
-        [cell.title setText:articleTemp.title];
-        [cell.desc setText:articleTemp.descriptionContent];
-        cell.layer.masksToBounds = NO;
-        cell.layer.shadowOffset = CGSizeMake(2, 2);
-        cell.layer.shadowRadius = 2;
-        cell.layer.shadowOpacity = 0.5;
-        cell.layer.shouldRasterize = YES;
-        cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
-        
-        [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
-         NSLog(@"complete");
-        return cell;
-        
-    }
+            
+            
+            [cell.nameMusicLabel setText:articleTemp.title];
+            [cell.imageView setBackgroundColor:[UIColor clearColor]];
+            [cell.nameArtistLabel setText:articleTemp.artist];
+            [cell.nameAlbumLabel setText:articleTemp.album];
+            
+            //NSLog(@"%f , %f , %f",cell.nameMusicLabel.frame.origin.y,cell.nameArtistLabel.frame.origin.y,cell.nameAlbumLabel.frame.origin.y);
+            cell.layer.masksToBounds = NO;
+            cell.layer.shadowOffset = CGSizeMake(2, 2);
+            cell.layer.shadowRadius = 2;
+            cell.layer.shadowOpacity = 0.5;
+            cell.layer.shouldRasterize = YES;
+            cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
+            
+            [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
+            NSLog(@"complete");
+            return cell;
+            
+        }
+        else{
+            GameContent *articleTemp = object[indexPath.row];
+            NSString *identify = @"GameCell";
+            AppCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
+            
+            [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
+                              placeholderImage:[UIImage imageNamed:@"default_image_02_L.jpg"]
+                                     completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                                         
+                                     }];
+            
+            
+            [cell.title setText:articleTemp.title];
+            [cell.desc setText:articleTemp.descriptionContent];
+            cell.layer.masksToBounds = NO;
+            cell.layer.shadowOffset = CGSizeMake(2, 2);
+            cell.layer.shadowRadius = 2;
+            cell.layer.shadowOpacity = 0.5;
+            cell.layer.shouldRasterize = YES;
+            cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
+            
+            [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
+            NSLog(@"complete");
+            return cell;
+            
+        }
     }else{
         CPAContent *articleTemp = object[indexPath.row];
         NSString *identify = @"CPACell";
@@ -727,7 +729,7 @@
                 cell.imageView.image = [UIImage imageNamed:@"clip_XL"];
                 break;
         }
-
+        
         
         [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
                           placeholderImage:[UIImage imageNamed:@"default_image_02_L.jpg"]
@@ -750,20 +752,20 @@
             imageName= @"register_icon";
         }
         
-//                break;
-//            case 2:
-//                imageName = @"reccomend_Register";
-//                break;
-//            case 3:
-//                imageName = @"hot_Register_2";
-//                break;
-//            case 4:
-//                imageName = @"new_Register_2";
-//                break;
-//            case 5:
-//                imageName = @"reccomend_Register_2";
-//                break;
-     
+        //                break;
+        //            case 2:
+        //                imageName = @"reccomend_Register";
+        //                break;
+        //            case 3:
+        //                imageName = @"hot_Register_2";
+        //                break;
+        //            case 4:
+        //                imageName = @"new_Register_2";
+        //                break;
+        //            case 5:
+        //                imageName = @"reccomend_Register_2";
+        //                break;
+        
         [cell.descriptionLabel setText:[NSString stringWithFormat:@"%@\n\n\n\n\n",detail ]];
         NSString *text = [NSString stringWithFormat:@"%@\n",detail ];
         cell.layer.masksToBounds = NO;
@@ -775,16 +777,16 @@
         cell.descriptionLabel.adjustsFontSizeToFitWidth = NO;
         cell.descriptionLabel.lineBreakMode = NSLineBreakByWordWrapping;
         [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
-
+        
         if(imageName != nil){
-        UIImage *img=[UIImage imageNamed:imageName];
-        
-        [cell.descriptionLabel insertImage:img atIndex:text.length
-                         margins:UIEdgeInsetsZero verticalTextAlignment:NIVerticalTextAlignmentMiddle];
-        
+            UIImage *img=[UIImage imageNamed:imageName];
+            
+            [cell.descriptionLabel insertImage:img atIndex:text.length
+                                       margins:UIEdgeInsetsZero verticalTextAlignment:NIVerticalTextAlignmentMiddle];
+            
         }
         [cell.descriptionLabel setFont:[UIFont fontWithName:FONT_DTAC_BOLD size:IDIOM == IPAD ? 16 : 14] range:(NSRange){0,articleTemp.service.length }    ];
-
+        
         return cell;
     }
 }
@@ -794,23 +796,23 @@
     if(_isCPA){
         float w_1 = (self.view.frame.size.width-20);
         CPAContent *articleTemp = object[indexPath.row];
-       
+        
         
         // Values are fractional -- you should take the ceilf to get equivalent values
         NIAttributedLabel *des= [[NIAttributedLabel alloc]initWithFrame:CGRectMake(0,0, w_1-120-10, 999)];
-         [des setText:[NSString stringWithFormat:@"%@ %@ ",articleTemp.service,articleTemp.descriptionContent]];
+        [des setText:[NSString stringWithFormat:@"%@ %@ ",articleTemp.service,articleTemp.descriptionContent]];
         des.numberOfLines = 0;
         [des setTextColor:[UIColor colorWithHexString:DEFAULT_TEXT_COLOR]];
         [des setFont:[UIFont fontWithName:FONT_DTAC_REGULAR size:IDIOM == IPAD ? 14 : 12]];
         [des sizeToFit];
         float height = 120;
         
-            height = des.frame.size.height+w_1*0.25;
+        height = des.frame.size.height+w_1*0.25;
         
         return CGSizeMake(w_1,height);
     }else{
         float w_1 = (self.view.frame.size.width/2 -15);
-   
+        
         return CGSizeMake(w_1,w_1+45);
     }
 }
@@ -820,22 +822,22 @@
 }
 
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
-
+    
     if(_isCPA){
         CPAContent *articleTemp = object[indexPath.row];
         [Manager savePageViewCPA:[articleTemp.cpaConID intValue]];
         [[UIApplication sharedApplication] openURL:[NSURL URLWithString:articleTemp.aocLink]];
     }
     else{
-    if(self.subCate == DOWNLOAD_MUSIC_NEW || self.subCate == DOWNLOAD_MUSIC_HIT || self.subCate == DOWNLOAD_MUSIC_INTER ||self.subCate == DOWNLOAD_MUSIC_LOOKTHOONG){
-        MusicContent *articleTemp = object[indexPath.row];
-        [self getMusicByID:articleTemp.musicID];
-      
-    }
-    else{
-        GameContent *articleTemp = object[indexPath.row];
-        [self getGameByID:articleTemp.gameID];
-    }
+        if(self.subCate == DOWNLOAD_MUSIC_NEW || self.subCate == DOWNLOAD_MUSIC_HIT || self.subCate == DOWNLOAD_MUSIC_INTER ||self.subCate == DOWNLOAD_MUSIC_LOOKTHOONG){
+            MusicContent *articleTemp = object[indexPath.row];
+            [self getMusicByID:articleTemp.musicID];
+            
+        }
+        else{
+            GameContent *articleTemp = object[indexPath.row];
+            [self getGameByID:articleTemp.gameID];
+        }
     }
 }
 
@@ -938,83 +940,5 @@
     return size.height;
 }
 
-
-
-#pragma mark -
-#pragma mark iCarousel methods
-
-- (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
-{
-    if([[Manager sharedManager] bannerArrayDownload]){
-        return [[Manager sharedManager]bannerArrayDownload].count;
-    }
-    else{
-        return [[Manager sharedManager]bannerArray].count;
-    }
-}
-- (NSUInteger)numberOfVisibleItemsInCarousel:(iCarousel *)carousel
-{
-    //limit the number of items views loaded concurrently (for performance reasons)
-    return 4;
-}
-- (void)scrollToItemAtIndex:(NSInteger)index
-                   duration:(NSTimeInterval)scrollDuration{
-    
-    
-}
-- (void)carouselCurrentItemIndexDidChange:(__unused iCarousel *)carousel
-{
-    //NSLog(@"Index: %@", @(self.carousel.currentItemIndex));
-    pageControl.currentPage = self.carousel.currentItemIndex;
-}
-- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
-{
-    UIImageView *viewsImage = [[UIImageView alloc] initWithFrame:_carousel.frame];
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayDownload]){
-        temp  = [[Manager sharedManager] bannerArrayDownload ][index];
-    }
-    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-    [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-                       
-                          options:0
-                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                             // progression tracking code
-                         }
-                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                            if (image) {
-                                viewsImage.image = image;
-                            }
-                            
-                            
-                            
-                        }];
-    
-    [viewsImage setContentMode:UIViewContentModeScaleToFill];
-    return viewsImage;
-    
-}
-- (BOOL)carouselShouldWrap:(iCarousel *)carousel
-{
-    //wrap all carousels
-    return NO;
-}
-- (CGFloat)carousel:(iCarousel *)carousel valueForOption:(iCarouselOption)option withDefault:(CGFloat)value
-{
-    
-    if (option == iCarouselOptionWrap) {
-        return YES;
-    }
-    return value;
-}
-- (void)carousel:(iCarousel *)carousel didSelectItemAtIndex:(NSInteger)index{
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayDownload]){
-        temp  = [[Manager sharedManager] bannerArrayDownload ][index];
-    }
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:temp.link]];
-}
 
 @end

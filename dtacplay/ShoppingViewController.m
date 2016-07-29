@@ -28,6 +28,7 @@
 #import "Banner.h"
 #import "BannerImage.h"
 #import "SVPullToRefresh.h"
+#import "BannerView.h"
 @interface ShoppingViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,UICollectionViewDelegate,UIGestureRecognizerDelegate,iCarouselDataSource,iCarouselDelegate>
 {
     UIPageControl *pageControl;
@@ -36,31 +37,44 @@
     NSMutableArray *shoppingItemArray;
     UIView *menuView;
     float lastContentOffset;
-     NSTimer *timer;
+    NSTimer *timer;
     int page;
+    BannerView *bannerView;
 }
 
 @end
 
 @implementation ShoppingViewController
+
+-(void)viewWillAppear:(BOOL)animated{
+    if(!timer)
+        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
+                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [timer invalidate];
+    timer = nil;
+
+}
+
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-
-
-        if(self.collectionViewShopping.contentOffset.y >=[[Manager sharedManager]bannerHeight]){
-           
-            [menuView setFrame:CGRectMake(0,0, menuView.frame.size.width, menuView.frame.size.height)];
-           
-        }
-        else{
-            [menuView setFrame:CGRectMake(0,[[Manager sharedManager]bannerHeight]- scrollView.contentOffset.y, menuView.frame.size.width, menuView.frame.size.height)];
-        }
-        NSLog(@"content offset y :%f",scrollView.contentOffset.y);
-        lastContentOffset =scrollView.contentOffset.y;
+    
+    
+    if(self.collectionViewShopping.contentOffset.y >=[[Manager sharedManager]bannerHeight]){
+        
+        [menuView setFrame:CGRectMake(0,0, menuView.frame.size.width, menuView.frame.size.height)];
+        
+    }
+    else{
+        [menuView setFrame:CGRectMake(0,[[Manager sharedManager]bannerHeight]- scrollView.contentOffset.y, menuView.frame.size.width, menuView.frame.size.height)];
+    }
+    NSLog(@"content offset y :%f",scrollView.contentOffset.y);
+    lastContentOffset =scrollView.contentOffset.y;
     
 }
 -(void)refreshPage{
-
+    
     NSString *jsonString =
     [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getShopping\",\"params\":{\"page\":%d,\"limit\":12}}",++page];
     
@@ -68,12 +82,12 @@
     
     NSMutableURLRequest *requestHTTP = [Manager createRequestHTTP:jsonString cookieValue:valueHeader];
     AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:requestHTTP];
-
+    
     op.responseSerializer = [AFJSONResponseSerializer serializer];
     [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-
+        
         if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
-
+            
             NSDictionary *result =[responseObject objectForKey:@"result"] ;
             NSArray * content = [result objectForKey:@"shopping"] ;
             
@@ -98,7 +112,7 @@
         //  ...
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"JSON responseObject: %@ ",error);
-   
+        
         [_collectionViewShopping.infiniteScrollingView stopAnimating];
         page--;
     }];
@@ -119,7 +133,7 @@
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
     [hud setColor:[UIColor whiteColor]];
     [hud setActivityIndicatorColor:[UIColor colorWithHexString:SIDE_BAR_COLOR]];
-
+    
     op.responseSerializer = [AFJSONResponseSerializer serializer];
     [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
         [hud hide:YES];
@@ -167,7 +181,7 @@
         if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
             
             NSDictionary *result =[responseObject objectForKey:@"result"] ;
-
+            
             
             ShoppingItem* temp_shop = [[ShoppingItem alloc]initWithDictionary:result];
             
@@ -223,8 +237,8 @@
             }
             
             [[Manager sharedManager] setBannerArrayShopping:bannerArray];
-            pageControl.numberOfPages = [[Manager sharedManager] bannerArrayShopping].count;
-            [_carousel reloadData];
+            bannerView.bannerArray = [[Manager sharedManager] bannerArrayShopping];
+            [bannerView.carousel reloadData];
             // [self.collectionView reloadData];
         }
         
@@ -239,10 +253,10 @@
 -(void)viewDidLoad{
     [super viewDidLoad];
     [self getListItem];
-     if(![[Manager sharedManager]bannerArrayShopping])
-         [self getBanner];
+    if(![[Manager sharedManager]bannerArrayShopping])
+        [self getBanner];
     [self setCateID:SHOPPING];
-     [Manager savePageView:6 orSubCate:0];
+    [Manager savePageView:6 orSubCate:0];
     
     NSString *string = [NSString stringWithFormat:@"Shopping"];
     [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": string}];
@@ -304,7 +318,7 @@
     [menuView addSubview:buttonSale];
     //[buttonSale sizeToFit];
     //[buttonRegis sizeToFit];
-   // [buttonLogin sizeToFit];
+    // [buttonLogin sizeToFit];
     
     [buttonSale setFrame:CGRectMake(self.view.frame.size.width-buttonSale.frame.size.width-10, 10, buttonSale.frame.size.width, buttonSale.frame.size.height)];
     
@@ -312,8 +326,8 @@
     [buttonLogin setFrame:CGRectMake(buttonRegis.frame.origin.x-buttonLogin.frame.size.width-10, 10, buttonLogin.frame.size.width, buttonLogin.frame.size.height)];
     
     
- 
-
+    
+    
     
     
     MyFlowLayout *layout=[[MyFlowLayout alloc] init];
@@ -324,16 +338,16 @@
     [_collectionViewShopping setDelegate:self];
     
     [_collectionViewShopping registerClass:[UICollectionReusableView class]
-        forSupplementaryViewOfKind: UICollectionElementKindSectionHeader
-               withReuseIdentifier:@"BannerHeader"];
+                forSupplementaryViewOfKind: UICollectionElementKindSectionHeader
+                       withReuseIdentifier:@"BannerHeader"];
     [_collectionViewShopping registerClass:[UICollectionReusableView class]
-        forSupplementaryViewOfKind: UICollectionElementKindSectionHeader
-               withReuseIdentifier:@"RecommendedHeader"];
+                forSupplementaryViewOfKind: UICollectionElementKindSectionHeader
+                       withReuseIdentifier:@"RecommendedHeader"];
     UINib *cellNib = [UINib nibWithNibName:@"ShoppingCell" bundle:nil];
     [self.collectionViewShopping registerNib:cellNib forCellWithReuseIdentifier:@"ShoppingCell"];
-
+    
     [_collectionViewShopping setBackgroundColor:[UIColor whiteColor]];
-
+    
     __weak ShoppingViewController *weakSelf = self;
     
     // setup pull-to-refresh
@@ -342,10 +356,10 @@
     }];
     
     [self.view addSubview:_collectionViewShopping];
-       [self.view addSubview:menuView];
+    [self.view addSubview:menuView];
 }
 - (void)insertRowAtTop {
- 
+    
     __weak ShoppingViewController *weakSelf = self;
     int64_t delayInSeconds = 1.0;
     dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
@@ -367,19 +381,19 @@
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://www.kaidee.com/posting/"]];
 }
 -(void)runLoop:(NSTimer*)NSTimer{
-    if(_carousel)
-        [_carousel scrollToItemAtIndex:_carousel.currentItemIndex+1 animated:YES];
+    if(bannerView.carousel)
+        [bannerView.carousel scrollToItemAtIndex:bannerView.carousel.currentItemIndex+1 animated:YES];
     
 }
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
     if(section == 0){
         if ( IDIOM == IPAD ) {
-
+            
             
             return CGSizeMake( self.view.frame.size.width, [[Manager sharedManager]bannerHeight]+40);
         }
         else{
-
+            
             
             return CGSizeMake( self.view.frame.size.width, [[Manager sharedManager]bannerHeight]+40);
         }
@@ -400,35 +414,21 @@
         
         [headerView setBackgroundColor:[UIColor whiteColor]];
         
-        if(!_carousel)
-            _carousel = [[iCarousel alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
-        
-        _carousel.delegate = self;
-        _carousel.dataSource = self;
-        _carousel.type = iCarouselTypeLinear;
-        _carousel.backgroundColor = [UIColor clearColor];
+        if(!bannerView)
+            bannerView = [[BannerView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
+        bannerView.backgroundColor = [UIColor clearColor];
         //_carousel.
-        [headerView addSubview:_carousel];
+        [headerView addSubview:bannerView];
         
+        if([[Manager sharedManager] bannerArrayShopping]){
+            bannerView.bannerArray =  [[Manager sharedManager]bannerArrayShopping];
+        }
+        else{
+            bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
+        }
+        [bannerView.carousel reloadData];
         
-        
-        
-        // Page Control
-        if(!pageControl)
-            pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (self.carousel.frame.size.height-20), self.carousel.frame.size.width, 20.0f)];
-        pageControl.numberOfPages = [[Manager sharedManager] bannerArrayShopping].count >0  ? [[Manager sharedManager] bannerArrayShopping].count : [[Manager sharedManager] bannerArray].count;
-        pageControl.currentPage = 0;
-        pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-        pageControl.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-        pageControl.userInteractionEnabled = NO;
-        [_carousel addSubview:pageControl];
-        [timer invalidate];
-        timer = nil;
-        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
-                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
-        
-        
-                return headerView;
+        return headerView;
         
     }
     return reusableview;
@@ -438,9 +438,9 @@
 }
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
-
+    
     return shoppingItemArray.count;
-      
+    
 }
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section {
     return 10;
@@ -451,14 +451,14 @@
 }
 - (UIEdgeInsets)collectionView:
 (UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
- 
+    
     UIEdgeInsets inset = UIEdgeInsetsMake(10,10,15,10);
     return inset;
     
 }
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-
+    
     ShoppingCell *cell=(ShoppingCell*)[collectionView dequeueReusableCellWithReuseIdentifier:@"ShoppingCell" forIndexPath:indexPath];
     NSString* imageFromURL;
     
@@ -510,20 +510,20 @@
     cell.layer.shouldRasterize = YES;
     cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
     
-   [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
+    [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
     
     return cell;
-
+    
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     float w_1 = (self.view.frame.size.width/2 -15);
-
-        
-        return CGSizeMake(w_1,w_1+142);
     
- 
+    
+    return CGSizeMake(w_1,w_1+142);
+    
+    
 }
 
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
@@ -547,85 +547,6 @@
         size = CGSizeMake(rect.size.width, rect.size.height + 1);
     }
     return size.height;
-}
-
-
-
-#pragma mark -
-#pragma mark iCarousel methods
-
-- (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
-{
-    if([[Manager sharedManager] bannerArrayShopping]){
-        return [[Manager sharedManager]bannerArrayShopping].count;
-    }
-    else{
-        return [[Manager sharedManager]bannerArray].count;
-    }
-}
-- (NSUInteger)numberOfVisibleItemsInCarousel:(iCarousel *)carousel
-{
-    //limit the number of items views loaded concurrently (for performance reasons)
-    return 4;
-}
-- (void)scrollToItemAtIndex:(NSInteger)index
-                   duration:(NSTimeInterval)scrollDuration{
-    
-    
-}
-- (void)carouselCurrentItemIndexDidChange:(__unused iCarousel *)carousel
-{
-    //NSLog(@"Index: %@", @(self.carousel.currentItemIndex));
-    pageControl.currentPage = self.carousel.currentItemIndex;
-}
-- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
-{
-    UIImageView *viewsImage = [[UIImageView alloc] initWithFrame:_carousel.frame];
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayShopping]){
-        temp  = [[Manager sharedManager] bannerArrayShopping ][index];
-    }
-    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-    [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-                      
-                          options:0
-                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                             // progression tracking code
-                         }
-                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                            if (image) {
-                                viewsImage.image = image;
-                            }
-                            
-                            
-                            
-                        }];
-    
-    [viewsImage setContentMode:UIViewContentModeScaleToFill];
-    return viewsImage;
-
-}
-- (BOOL)carouselShouldWrap:(iCarousel *)carousel
-{
-    //wrap all carousels
-    return NO;
-}
-- (CGFloat)carousel:(iCarousel *)carousel valueForOption:(iCarouselOption)option withDefault:(CGFloat)value
-{
-    
-    if (option == iCarouselOptionWrap) {
-        return YES;
-    }
-    return value;
-}
-- (void)carousel:(iCarousel *)carousel didSelectItemAtIndex:(NSInteger)index{
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayShopping]){
-        temp  = [[Manager sharedManager] bannerArrayDownload ][index];
-    }
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:temp.link]];
 }
 
 @end

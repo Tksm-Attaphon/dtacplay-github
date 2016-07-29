@@ -29,6 +29,7 @@
 #import "Banner.h"
 #import "BannerImage.h"
 #import "ShowImageViewController.h"
+#import "BannerView.h"
 @interface ShoppingDetailViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,UICollectionViewDelegate,UIGestureRecognizerDelegate,iCarouselDataSource,iCarouselDelegate,DWTagListDelegate,RTLabelDelegate>
 {
     UIPageControl *pageControl;
@@ -44,6 +45,8 @@
     UIImageView *bottomImage;
     NSURL *linkBanner;
     NSString* detailCredit;
+    
+     BannerView *bannerView;
 }
 @property (nonatomic, strong) NSMutableArray        *array;
 @property (nonatomic, strong) DWTagList             *tagList;
@@ -51,9 +54,17 @@
 
 @implementation ShoppingDetailViewController
 
--(void)getShoppingItem{
+-(void)viewWillAppear:(BOOL)animated{
+    if(!timer)
+        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
+                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [timer invalidate];
+    timer = nil;
     
 }
+
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
     
@@ -98,7 +109,8 @@
             }
             
             [[Manager sharedManager] setBannerArrayShopping:bannerArray];
-            [_carousel reloadData];
+            bannerView.bannerArray = [[Manager sharedManager] bannerArrayShopping];
+            [bannerView.carousel reloadData];
             // [self.collectionView reloadData];
         }
         
@@ -113,10 +125,10 @@
 -(void)viewDidLoad{
     [super viewDidLoad];
     [self setCateID:SHOPPING];
-     if(![[Manager sharedManager]bannerArrayShopping])
-         [self getBanner];
+    if(![[Manager sharedManager]bannerArrayShopping])
+        [self getBanner];
     
-     [self getBannerCredit:42];
+    [self getBannerCredit:42];
     
     NSString *string = [NSString stringWithFormat:@"Shopping - %@",_shoppingItem.title];
     [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": string}];
@@ -200,7 +212,7 @@
                withReuseIdentifier:@"RecommendedHeader"];
     
     
-   [_collectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"ImageProduct"] ;
+    [_collectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"ImageProduct"] ;
     [_collectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"ItemDetail"] ;
     [_collectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"TagList"] ;
     
@@ -211,18 +223,18 @@
     [self.view addSubview:menuView];
 }
 -(void)clickLogin:(id)button{
-     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://www.kaidee.com/member/login/"]];
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://www.kaidee.com/member/login/"]];
 }
 -(void)clickRegister:(id)button{
-     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://www.kaidee.com/member/register/"]];
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://www.kaidee.com/member/register/"]];
 }
 -(void)clickSell:(id)button{
-     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://www.kaidee.com/posting/"]];
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://www.kaidee.com/posting/"]];
 }
 -(void)runLoop:(NSTimer*)NSTimer{
     
     if(NSTimer == timer)
-        [_carousel scrollToItemAtIndex:_carousel.currentItemIndex+1 animated:YES];
+        [bannerView.carousel scrollToItemAtIndex:bannerView.carousel.currentItemIndex+1 animated:YES];
     
 }
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
@@ -253,32 +265,22 @@
                                                                                    withReuseIdentifier:@"BannerHeader" forIndexPath:indexPath];
         
         [headerView setBackgroundColor:[UIColor whiteColor]];
-
-        _carousel = [[iCarousel alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
         
-        _carousel.delegate = self;
-        _carousel.dataSource = self;
-        _carousel.type = iCarouselTypeLinear;
-        _carousel.backgroundColor = [UIColor clearColor];
+        if(!bannerView)
+            bannerView = [[BannerView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
+        bannerView.backgroundColor = [UIColor clearColor];
         //_carousel.
-        [headerView addSubview:_carousel];
+        [headerView addSubview:bannerView];
         
+        if([[Manager sharedManager] bannerArrayShopping]){
+            bannerView.bannerArray =  [[Manager sharedManager]bannerArrayShopping];
+        }
+        else{
+            bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
+        }
+        [bannerView.carousel reloadData];
+
         
-        
-        
-        // Page Control
-        if(!pageControl)
-            pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (self.carousel.frame.size.height-20), self.carousel.frame.size.width, 20.0f)];
-        pageControl.numberOfPages = [[Manager sharedManager] bannerArrayShopping].count >0  ? [[Manager sharedManager] bannerArrayShopping].count : [[Manager sharedManager] bannerArray].count;
-        pageControl.currentPage = 0;
-        pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-        pageControl.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-        pageControl.userInteractionEnabled = NO;
-        [_carousel addSubview:pageControl];
-        [timer invalidate];
-        timer = nil;
-        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
-                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
         return headerView;
         
     }
@@ -289,7 +291,7 @@
 }
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
-    return 1;   
+    return 1;
 }
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section {
     return 10;
@@ -302,16 +304,16 @@
 (UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section {
     
     if(section == 0){
-   
+        
         UIEdgeInsets inset = UIEdgeInsetsMake(10,0,0,0);
         return inset;
     }
     else if(section == 1){
-    
+        
         UIEdgeInsets inset = UIEdgeInsetsMake(0,10,15,10);
         return inset;
     }
-
+    
     UIEdgeInsets inset = UIEdgeInsetsMake(00,10,15,10);
     return inset;
     
@@ -320,56 +322,56 @@
 {
     
     if(indexPath.section == 0){
-    NSString *identify = @"ImageProduct";
-    UICollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
-    
-   
-    if ( IDIOM == IPAD ) {
-        _shoppingCarousel = [[iCarousel alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width-20, 444 )];
-    }
-    else{
-        _shoppingCarousel = [[iCarousel alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width-20, 280 )];
-    }
+        NSString *identify = @"ImageProduct";
+        UICollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
+        
+        
+        if ( IDIOM == IPAD ) {
+            _shoppingCarousel = [[iCarousel alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width-20, 444 )];
+        }
+        else{
+            _shoppingCarousel = [[iCarousel alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width-20, 280 )];
+        }
         UIView *black = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width-20, _shoppingCarousel.frame.size.height)];
         
         [black setBackgroundColor:[UIColor colorWithHexString:DEFAULT_TEXT_COLOR]];
         
         [cell addSubview:black];
-    _shoppingCarousel.delegate = self;
-    _shoppingCarousel.dataSource = self;
-    _shoppingCarousel.type = iCarouselTypeLinear;
-    _shoppingCarousel.backgroundColor = [UIColor clearColor];
-    //_carousel.
-    [black addSubview:_shoppingCarousel];
-    
-    
-    
-    
-    // Page Control
-    if(!pageControlShopping)
-        pageControlShopping = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (black.frame.size.height-20), _shoppingCarousel.frame.size.width, 20.0f)];
-    pageControlShopping.numberOfPages = _shoppingItem.imageThumbName.count;
-    pageControlShopping.currentPage = 0;
-    pageControlShopping.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-    pageControlShopping.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-    pageControlShopping.userInteractionEnabled = NO;
-    [black addSubview:pageControlShopping];
-
-    cell.layer.masksToBounds = NO;
-    cell.layer.shadowOffset = CGSizeMake(2, 2);
-    cell.layer.shadowRadius = 2;
-    cell.layer.shadowOpacity = 0.5;
-    cell.layer.shouldRasterize = YES;
-    cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
-    
-   [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
-    
-    return cell;
+        _shoppingCarousel.delegate = self;
+        _shoppingCarousel.dataSource = self;
+        _shoppingCarousel.type = iCarouselTypeLinear;
+        _shoppingCarousel.backgroundColor = [UIColor clearColor];
+        //_carousel.
+        [black addSubview:_shoppingCarousel];
+        
+        
+        
+        
+        // Page Control
+        if(!pageControlShopping)
+            pageControlShopping = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (black.frame.size.height-20), _shoppingCarousel.frame.size.width, 20.0f)];
+        pageControlShopping.numberOfPages = _shoppingItem.imageThumbName.count;
+        pageControlShopping.currentPage = 0;
+        pageControlShopping.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
+        pageControlShopping.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
+        pageControlShopping.userInteractionEnabled = NO;
+        [black addSubview:pageControlShopping];
+        
+        cell.layer.masksToBounds = NO;
+        cell.layer.shadowOffset = CGSizeMake(2, 2);
+        cell.layer.shadowRadius = 2;
+        cell.layer.shadowOpacity = 0.5;
+        cell.layer.shouldRasterize = YES;
+        cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
+        
+        [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
+        
+        return cell;
     }
     else if(indexPath.section == 1){
         NSString *identify = @"ItemDetail";
         UICollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
-
+        
         [cell addSubview:cellShoppingView];
         [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
         [cell setUserInteractionEnabled:YES];
@@ -406,14 +408,14 @@
     float w_1 = (self.view.frame.size.width);
     float w_1_ipad = (self.view.frame.size.width);
     if(indexPath.section == 0){
-    
-    if ( IDIOM == IPAD ) {
         
-        return CGSizeMake(w_1_ipad-20,444);
-    }
-    
-    return CGSizeMake(w_1-20,300);
-    
+        if ( IDIOM == IPAD ) {
+            
+            return CGSizeMake(w_1_ipad-20,444);
+        }
+        
+        return CGSizeMake(w_1-20,300);
+        
     }
     else if(indexPath.section == 1){
         
@@ -596,7 +598,7 @@
         //textView.delegate = self;
         textView.textColor =[UIColor colorWithHexString:DEFAULT_TEXT_COLOR];
         textView.backgroundColor = [UIColor clearColor];
-      
+        
         // UIFont *test = textView.font;//time news roman 12 pixel
         [textView setFont:[UIFont fontWithName:FONT_DTAC_LIGHT size:IDIOM==IPAD ? 18: 16]];
         textView.tag =80;
@@ -638,18 +640,18 @@
         return CGSizeMake(w_1-20,cellShoppingView.frame.size.height);
     }
     else if(indexPath.section == 2){
-      
-            if(!bottomImage)
+        
+        if(!bottomImage)
             bottomImage = [[UIImageView alloc]initWithFrame:CGRectMake(0,0,  w_1-20, (200*(w_1-20))/940)];
         
-            [bottomImage setContentMode:UIViewContentModeScaleAspectFit];
+        [bottomImage setContentMode:UIViewContentModeScaleAspectFit];
         
-    
+        
         
         return CGSizeMake(w_1-20,bottomImage.frame.size.height);
     }
     else{
-
+        
         return CGSizeMake(w_1-20,((w_1-20)*200)/940);
     }
 }
@@ -678,11 +680,11 @@
             NSString *link = [[result objectForKey:@"link"] isEqual:[NSNull null]] ? nil : [result objectForKey:@"link"];
             
             linkBanner = [NSURL URLWithString:linkImage];
-
+            
             if(detail)
                 detailCredit = [Manager returnSupporter:0 :detail : link ];
             [_collectionView reloadData];
-
+            
             SDWebImageManager *manager = [SDWebImageManager sharedManager];
             [manager downloadImageWithURL:[NSURL URLWithString:imageURL]
                                   options:0
@@ -727,7 +729,7 @@
         [[UIApplication sharedApplication] openURL:linkBanner];
 }
 - (void)clickLink:(UITapGestureRecognizer *)recognizer {
-   [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://www.kaidee.com/categories/?utm_source=dtac&utm_medium=dtacplay&utm_campaign=category-button/"]];
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://www.kaidee.com/categories/?utm_source=dtac&utm_medium=dtacplay&utm_campaign=category-button/"]];
 }
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
     
@@ -776,16 +778,7 @@
 
 - (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
 {
-    if(carousel == _carousel)
-    {
-        if([[Manager sharedManager] bannerArrayShopping]){
-            return [[Manager sharedManager]bannerArrayShopping].count;
-        }
-        else{
-            return [[Manager sharedManager]bannerArray].count;
-        }
-    }
-    
+
     return _shoppingItem.imageName.count;
 }
 - (NSUInteger)numberOfVisibleItemsInCarousel:(iCarousel *)carousel
@@ -801,40 +794,14 @@
 - (void)carouselCurrentItemIndexDidChange:(__unused iCarousel *)carousel
 {
     //NSLog(@"Index: %@", @(self.carousel.currentItemIndex));
-    if(_carousel == carousel)
-        pageControl.currentPage = self.carousel.currentItemIndex;
-    else
+  
         pageControlShopping.currentPage = self.shoppingCarousel.currentItemIndex;
 }
 - (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
 {
-    if(carousel == _carousel){
-        UIImageView *viewsImage = [[UIImageView alloc] initWithFrame:_carousel.frame];
-        Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-        
-        if([[Manager sharedManager] bannerArrayShopping]){
-            temp  = [[Manager sharedManager] bannerArrayShopping ][index];
-        }
-        SDWebImageManager *manager = [SDWebImageManager sharedManager];
-        [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-                              options:0
-                             progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                                 // progression tracking code
-                             }
-                            completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                                if (image) {
-                                    viewsImage.image = image;
-                                }
-
-                            }];
-        
-        [viewsImage setContentMode:UIViewContentModeScaleToFill];
-        return viewsImage;
-
-    }
-    else{
+   
         UIImageView *views = [[UIImageView alloc] initWithFrame:_shoppingCarousel.frame];
-
+        
         SDWebImageManager *manager = [SDWebImageManager sharedManager];
         [manager downloadImageWithURL:[NSURL URLWithString:_shoppingItem.imageThumbName[index]]
          
@@ -850,10 +817,10 @@
                                 
                                 
                             }];
-
+        
         [views setContentMode:UIViewContentModeScaleAspectFit];
         return views;
-    }
+    
 }
 - (BOOL)carouselShouldWrap:(iCarousel *)carousel
 {
@@ -869,15 +836,7 @@
     return value;
 }
 - (void)carousel:(iCarousel *)carousel didSelectItemAtIndex:(NSInteger)index{
-    if(_carousel == carousel){
-        Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-        
-        if([[Manager sharedManager] bannerArrayShopping]){
-            temp  = [[Manager sharedManager] bannerArrayDownload ][index];
-        }
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:temp.link]];
-        
-    }else{
+
         ShowImageViewController* showImage= [[ShowImageViewController alloc]init];
         showImage.allImageArray = _shoppingItem.imageName;
         showImage.index = (int)index;
@@ -892,7 +851,7 @@
         [self.navigationItem setBackBarButtonItem:newBackButton];
         [newBackButton setTintColor:[UIColor colorWithHexString:SIDE_BAR_COLOR]];
         [self.navigationController pushViewController:showImage animated:NO];
-    }
+    
 }
 
 @end

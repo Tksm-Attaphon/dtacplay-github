@@ -40,7 +40,7 @@
 #import "ListContentDownloadViewController.h"
 
 #import "CPAContent.h"
-
+#import "BannerView.h"
 @interface DownloadViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout>
 {
     NSMutableArray *sizeArray;
@@ -115,11 +115,25 @@
     NSMutableArray *clip_premium_array;
     int lastStatPage ;
     
+    BannerView *bannerView;
+    
 }
 @property (nonatomic) CGFloat lastContentOffset;
 @end
 
 @implementation DownloadViewController
+
+-(void)viewWillAppear:(BOOL)animated{
+    if(!timer)
+        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
+                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [timer invalidate];
+    timer = nil;
+    
+}
+
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
     if(scrollView.contentOffset.x==0){
@@ -231,34 +245,34 @@
                 jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":1,\"cpaSubCateId\":1 }}"];
                 break;
             case DOWNLOAD_CPA_NEWS_GOSSIP:
-                 jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":1,\"cpaSubCateId\":2 }}"];
+                jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":1,\"cpaSubCateId\":2 }}"];
                 break;
             case DOWNLOAD_CPA_NEWS_ECO:
-                 jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":1,\"cpaSubCateId\":3 }}"];
+                jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":1,\"cpaSubCateId\":3 }}"];
                 break;
             case DOWNLOAD_CPA_HORO:
                 jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":2,\"cpaSubCateId\":4 }}"];
                 break;
             case DOWNLOAD_CPA_LUCKY_NUMBER:
-                 jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":3,\"cpaSubCateId\":5 }}"];
+                jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":3,\"cpaSubCateId\":5 }}"];
                 break;
             case DOWNLOAD_CPA_LIFESTYLE_QUIZE:
-                 jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":4,\"cpaSubCateId\":6 }}"];
+                jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":4,\"cpaSubCateId\":6 }}"];
                 break;
             case DOWNLOAD_CPA_LIFESTYLE_MOVIE:
-                 jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":4,\"cpaSubCateId\":7 }}"];
+                jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":4,\"cpaSubCateId\":7 }}"];
                 break;
             case DOWNLOAD_CPA_LIFESTYLE_BEUTY:
-              jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":4,\"cpaSubCateId\":8 }}"];
+                jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":4,\"cpaSubCateId\":8 }}"];
                 break;
             case DOWNLOAD_CPA_SPORT_FOOTBALL:
-                 jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":5,\"cpaSubCateId\":9 }}"];
+                jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":5,\"cpaSubCateId\":9 }}"];
                 break;
             case DOWNLOAD_CPA_SPORT_OTHER:
-                 jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":5,\"cpaSubCateId\":10 }}"];
+                jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":5,\"cpaSubCateId\":10 }}"];
                 break;
             case DOWNLOAD_CPA_CLIP_FREE_INTERNET:
-                 jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":6,\"cpaSubCateId\":11 }}"];
+                jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":6,\"cpaSubCateId\":11 }}"];
                 break;
             case DOWNLOAD_CPA_CLIP_FREE_PREMIUM:
                 jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\",\"id\":20140317, \"method\":\"getCpaHightlight\", \"params\":{\"cpaCateId\":6,\"cpaSubCateId\":12 }}"];
@@ -266,10 +280,10 @@
             default:
                 break;
         }
-//        if(subcat == DOWNLOAD_CPA_HORO || subcat == DOWNLOAD_CPA_LUCKY_NUMBER ||subcat == DOWNLOAD_CPA_SPORT_OTHER ||subcat == DOWNLOAD_CPA_SPORT_FOOTBALL|| subcat == DOWNLOAD_CPA_CLIP_FREE_PREMIUM ||subcat == DOWNLOAD_CPA_CLIP_FREE_INTERNET)
-//            jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getContentBySubCateId\",\"params\":{ \"subCateId\":%d, \"page\":%d,\"limit\":6 }}",1,1];
-//        else
-//            jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getContentBySubCateId\",\"params\":{ \"subCateId\":%d, \"page\":%d,\"limit\":4 }}",1,1];
+        //        if(subcat == DOWNLOAD_CPA_HORO || subcat == DOWNLOAD_CPA_LUCKY_NUMBER ||subcat == DOWNLOAD_CPA_SPORT_OTHER ||subcat == DOWNLOAD_CPA_SPORT_FOOTBALL|| subcat == DOWNLOAD_CPA_CLIP_FREE_PREMIUM ||subcat == DOWNLOAD_CPA_CLIP_FREE_INTERNET)
+        //            jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getContentBySubCateId\",\"params\":{ \"subCateId\":%d, \"page\":%d,\"limit\":6 }}",1,1];
+        //        else
+        //            jsonString =  [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getContentBySubCateId\",\"params\":{ \"subCateId\":%d, \"page\":%d,\"limit\":4 }}",1,1];
     }
     NSString *valueHeader;
     
@@ -459,7 +473,7 @@
                     NSArray * subcontent = [result objectForKey:@"subCates"] ;
                     
                     NSDictionary * content = subcontent[0] ;
-                     content = [[content objectForKey:@"contents"] isEqual:[NSNull null] ] ? nil : [content objectForKey:@"contents"]  ;
+                    content = [[content objectForKey:@"contents"] isEqual:[NSNull null] ] ? nil : [content objectForKey:@"contents"]  ;
                     
                     [news_hit_array addObject:[NSNumber numberWithInt:DOWNLOAD_CPA_NEWS_HIT]];
                     
@@ -712,7 +726,7 @@
                     }
                 }
                 break;
-            
+                
                 
             default:
                 break;
@@ -799,7 +813,7 @@
             horo_sub_array = [[NSMutableArray alloc]init];
             [horo_array addObject:horo_sub_array];
             
-
+            
             
             [self GetContentDownload:i AndSubCate :DOWNLOAD_CPA_HORO limit:6];
             
@@ -829,9 +843,9 @@
             lifestyle_buety_array = [[NSMutableArray alloc]init];
             [lifestyle_array addObject:lifestyle_buety_array];
             
-           
             
-
+            
+            
             
             [self GetContentDownload:i AndSubCate :DOWNLOAD_CPA_LIFESTYLE_QUIZE limit:6];
             [self GetContentDownload:i AndSubCate :DOWNLOAD_CPA_LIFESTYLE_MOVIE limit:6];
@@ -849,7 +863,7 @@
             
             sport_other_array = [[NSMutableArray alloc]init];
             [sport_array addObject:sport_other_array];
- 
+            
             [self GetContentDownload:i AndSubCate :DOWNLOAD_CPA_SPORT_OTHER limit:6];
             [self GetContentDownload:i AndSubCate :DOWNLOAD_CPA_SPORT_FOOTBALL limit:6];
             
@@ -869,10 +883,10 @@
             [self GetContentDownload:i AndSubCate :DOWNLOAD_CPA_CLIP_FREE_PREMIUM limit:6];
             
         }
-      
+        
     }
     [Manager savePageView:8 orSubCate:0];
-
+    
     
     //initial submenu
     menuArray = self.nameMenu;
@@ -950,18 +964,18 @@
     
     NSMutableURLRequest *requestHTTP = [Manager createRequestHTTP:jsonString cookieValue:valueHeader];
     AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:requestHTTP];
-
+    
     op.responseSerializer = [AFJSONResponseSerializer serializer];
     [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-
+        
         NSDictionary *result =[responseObject objectForKey:@"result"] ;
         //  ...
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-     
+        
     }];
     [op start];
     
-
+    
 }
 -(void)getBanner{
     
@@ -988,8 +1002,8 @@
             }
             
             [[Manager sharedManager] setBannerArrayDownload:bannerArray];
-            pageControl.numberOfPages = [[Manager sharedManager] bannerArrayDownload].count;
-            [_carousel reloadData];
+            bannerView.bannerArray = [[Manager sharedManager] bannerArrayDownload];
+            [bannerView.carousel reloadData];
             // [self.collectionView reloadData];
         }
         
@@ -1004,8 +1018,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self setCateID:DOWNLOAD];
-     if(![[Manager sharedManager]bannerArrayDownload])
-         [self getBanner];
+    if(![[Manager sharedManager]bannerArrayDownload])
+        [self getBanner];
     // [Manager savePageView:8];
     //
     //    for (int i = 0 ; i <50; i++) {
@@ -1055,39 +1069,26 @@
     [self.view addSubview:_swipeView];
     
     imageHeader = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
-  //  NSNumber* number = self.nameMenu[self.indexPage];
-
-   // [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:DOWNLOAD withSubCate:[number intValue] :nil]}];
-
+    //  NSNumber* number = self.nameMenu[self.indexPage];
+    
+    // [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:DOWNLOAD withSubCate:[number intValue] :nil]}];
+    
     imageHeader.clipsToBounds = YES;
     imageHeaderColor = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, imageHeader.frame.size.height )];
     
-    
-    if(!_carousel)
-        _carousel = [[iCarousel alloc] initWithFrame:CGRectMake(0.0f, 0.0f, imageHeader.frame.size.width, imageHeader.frame.size.height)];
-    _carousel.delegate = self;
-    _carousel.dataSource = self;
-    _carousel.type = iCarouselTypeLinear;
-    _carousel.backgroundColor = [UIColor clearColor];
+    if(!bannerView)
+        bannerView = [[BannerView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
+    bannerView.backgroundColor = [UIColor clearColor];
     //_carousel.
-    [imageHeader addSubview:_carousel];
+    [imageHeader addSubview:bannerView];
     
-    
-    
-    
-    // Page Control
-    if(!pageControl)
-        pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (self.carousel.frame.size.height-20), self.carousel.frame.size.width, 20.0f)];
-    pageControl.numberOfPages = [[Manager sharedManager] bannerArrayDownload].count >0  ? [[Manager sharedManager] bannerArrayDownload].count : [[Manager sharedManager] bannerArray].count;
-    pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-    pageControl.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-    pageControl.userInteractionEnabled = NO;
-    [_carousel addSubview:pageControl];
-    [timer invalidate];
-    timer = nil;
-    timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
-                                              target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
-    
+    if([[Manager sharedManager] bannerArrayDownload]){
+        bannerView.bannerArray =  [[Manager sharedManager]bannerArrayDownload];
+    }
+    else{
+        bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
+    }
+    [bannerView.carousel reloadData];
     //            imageHeaderImage = [[JBKenBurnsView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 300 )];
     //            [imageHeaderImage animateWithImages:@[[UIImage imageNamed:@"banner_dtacplay.png"]]
     //                             transitionDuration:50
@@ -1208,7 +1209,7 @@
 }
 
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section {
-
+    
     return 10;
     
 }
@@ -1414,50 +1415,50 @@
                                     
                                     cell.imageView.image = image;
                                     
-//                                    int subcate = [tempArray[0] intValue];
-//                                    switch (subcate ) {
-//                                        
-//                                        case DOWNLOAD_CPA_NEWS_HIT:
-//                                            cell.imageView.image = [UIImage imageNamed:@"News_XL"];
-//                                            break;
-//                                        case DOWNLOAD_CPA_NEWS_GOSSIP:
-//                                            cell.imageView.image = [UIImage imageNamed:@"gossip_XL"];
-//                                            break;
-//                                        case DOWNLOAD_CPA_NEWS_ECO:
-//                                             cell.imageView.image = [UIImage imageNamed:@"economic_XL"];
-//                                            break;
-//                                        case DOWNLOAD_CPA_HORO:
-//                                           cell.imageView.image = [UIImage imageNamed:@"horo_XL"];
-//                                            break;
-//                                        case DOWNLOAD_CPA_LUCKY_NUMBER:
-//                                             cell.imageView.image = [UIImage imageNamed:@"lotto_XL"];
-//                                            break;
-//                                        case DOWNLOAD_CPA_LIFESTYLE_QUIZE:
-//                                            cell.imageView.image = [UIImage imageNamed:@"quiz_XL"];
-//                                            break;
-//                                        case DOWNLOAD_CPA_LIFESTYLE_MOVIE:
-//                                             cell.imageView.image = [UIImage imageNamed:@"Movie_XL"];
-//                                            break;
-//                                        case DOWNLOAD_CPA_LIFESTYLE_BEUTY:
-//                                            cell.imageView.image = [UIImage imageNamed:@"beauty&travel_XL"];
-//                                            break;
-//                                        case DOWNLOAD_CPA_SPORT_OTHER:
-//                                            cell.imageView.image = [UIImage imageNamed:@"Sport_etc_XL"];
-//                                            break;
-//                                        case DOWNLOAD_CPA_SPORT_FOOTBALL:
-//                                            cell.imageView.image = [UIImage imageNamed:@"Sport_XL"];
-//                                            break;
-//                                        case DOWNLOAD_CPA_CLIP_FREE_INTERNET:
-//                                            cell.imageView.image = [UIImage imageNamed:@"clip_XL"];
-//                                            break;
-//                                        case DOWNLOAD_CPA_CLIP_FREE_PREMIUM:
-//                                          cell.imageView.image = [UIImage imageNamed:@"vip_clip_XL"];
-//                                            break;
-//                                        default:
-//                                             cell.imageView.image = [UIImage imageNamed:@"clip_XL"];
-//                                            break;
-//                                    }
-                                   
+                                    //                                    int subcate = [tempArray[0] intValue];
+                                    //                                    switch (subcate ) {
+                                    //
+                                    //                                        case DOWNLOAD_CPA_NEWS_HIT:
+                                    //                                            cell.imageView.image = [UIImage imageNamed:@"News_XL"];
+                                    //                                            break;
+                                    //                                        case DOWNLOAD_CPA_NEWS_GOSSIP:
+                                    //                                            cell.imageView.image = [UIImage imageNamed:@"gossip_XL"];
+                                    //                                            break;
+                                    //                                        case DOWNLOAD_CPA_NEWS_ECO:
+                                    //                                             cell.imageView.image = [UIImage imageNamed:@"economic_XL"];
+                                    //                                            break;
+                                    //                                        case DOWNLOAD_CPA_HORO:
+                                    //                                           cell.imageView.image = [UIImage imageNamed:@"horo_XL"];
+                                    //                                            break;
+                                    //                                        case DOWNLOAD_CPA_LUCKY_NUMBER:
+                                    //                                             cell.imageView.image = [UIImage imageNamed:@"lotto_XL"];
+                                    //                                            break;
+                                    //                                        case DOWNLOAD_CPA_LIFESTYLE_QUIZE:
+                                    //                                            cell.imageView.image = [UIImage imageNamed:@"quiz_XL"];
+                                    //                                            break;
+                                    //                                        case DOWNLOAD_CPA_LIFESTYLE_MOVIE:
+                                    //                                             cell.imageView.image = [UIImage imageNamed:@"Movie_XL"];
+                                    //                                            break;
+                                    //                                        case DOWNLOAD_CPA_LIFESTYLE_BEUTY:
+                                    //                                            cell.imageView.image = [UIImage imageNamed:@"beauty&travel_XL"];
+                                    //                                            break;
+                                    //                                        case DOWNLOAD_CPA_SPORT_OTHER:
+                                    //                                            cell.imageView.image = [UIImage imageNamed:@"Sport_etc_XL"];
+                                    //                                            break;
+                                    //                                        case DOWNLOAD_CPA_SPORT_FOOTBALL:
+                                    //                                            cell.imageView.image = [UIImage imageNamed:@"Sport_XL"];
+                                    //                                            break;
+                                    //                                        case DOWNLOAD_CPA_CLIP_FREE_INTERNET:
+                                    //                                            cell.imageView.image = [UIImage imageNamed:@"clip_XL"];
+                                    //                                            break;
+                                    //                                        case DOWNLOAD_CPA_CLIP_FREE_PREMIUM:
+                                    //                                          cell.imageView.image = [UIImage imageNamed:@"vip_clip_XL"];
+                                    //                                            break;
+                                    //                                        default:
+                                    //                                             cell.imageView.image = [UIImage imageNamed:@"clip_XL"];
+                                    //                                            break;
+                                    //                                    }
+                                    
                                 }
                             }];
         
@@ -1465,7 +1466,7 @@
         [cell.title setText:[NSString stringWithFormat:@"%@ %@", articleTemp.service,articleTemp.descriptionContent ]];
         
         [cell.title setFont:[UIFont fontWithName:FONT_DTAC_BOLD size:IDIOM == IPAD ? 16 : 14] range:(NSRange){0,articleTemp.service.length }    ];
-
+        
         
         cell.layer.masksToBounds = NO;
         cell.layer.shadowOffset = CGSizeMake(2, 2);
@@ -1500,24 +1501,24 @@
         NSArray *object = allObjectArray[collectionView.tag];
         NSMutableArray *tempArray = object[indexPath.section];
         
-       
+        
         
         if([_nameMenu[collectionView.tag] intValue] != DOWNLOAD_GAME && [_nameMenu[collectionView.tag] intValue] != DOWNLOAD_MUSIC){
-             CPAContent *articleTemp = tempArray[indexPath.row];
+            CPAContent *articleTemp = tempArray[indexPath.row];
             [Manager savePageViewCPA:[articleTemp.cpaConID intValue]];
             [[UIApplication sharedApplication] openURL:[NSURL URLWithString:articleTemp.aocLink]];
         }
         else{
-        
-        if([_nameMenu[collectionView.tag] intValue] == DOWNLOAD_GAME){
             
-            GameContent *articleTemp = tempArray[indexPath.row];
-            [self getGameByID:articleTemp.gameID];
-        }
-        else{
-            MusicContent *articleTemp = tempArray[indexPath.row];
-            [self getMusicByID:articleTemp.musicID];
-        }
+            if([_nameMenu[collectionView.tag] intValue] == DOWNLOAD_GAME){
+                
+                GameContent *articleTemp = tempArray[indexPath.row];
+                [self getGameByID:articleTemp.gameID];
+            }
+            else{
+                MusicContent *articleTemp = tempArray[indexPath.row];
+                [self getMusicByID:articleTemp.musicID];
+            }
         }
     }
 }
@@ -1769,9 +1770,9 @@ referenceSizeForFooterInSection:(NSInteger)section
         self.collectionView.showsInfiniteScrolling = YES;
     }
     NSNumber* number = self.nameMenu[swipeView.currentItemIndex];
-
-//    [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:DOWNLOAD withSubCate:[number intValue] :nil]}];
-//    [Manager savePageView:0 orSubCate:[number intValue]];
+    
+    //    [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:DOWNLOAD withSubCate:[number intValue] :nil]}];
+    //    [Manager savePageView:0 orSubCate:[number intValue]];
     
 }
 - (void)swipeViewDidEndDecelerating:(SwipeView *)swipeView{
@@ -1790,8 +1791,8 @@ referenceSizeForFooterInSection:(NSInteger)section
 }
 -(void)runLoop:(NSTimer*)NSTimer{
     
-    if(_carousel)
-        [_carousel scrollToItemAtIndex:self.carousel.currentItemIndex+1 animated:YES];
+    if(bannerView.carousel)
+        [bannerView.carousel scrollToItemAtIndex:bannerView.carousel.currentItemIndex+1 animated:YES];
     
     
     
@@ -1806,82 +1807,7 @@ referenceSizeForFooterInSection:(NSInteger)section
 {
     NSLog(@"xx");
 }
-#pragma mark -
-#pragma mark iCarousel methods
-- (void)carousel:(iCarousel *)carousel didSelectItemAtIndex:(NSInteger)index{
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayDownload]){
-        temp  = [[Manager sharedManager] bannerArrayDownload ][index];
-    }
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:temp.link]];
-}
-- (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
-{
-    //return the total number of items in the carousel
-    if([[Manager sharedManager] bannerArrayDownload]){
-        return [[Manager sharedManager]bannerArrayDownload].count;
-    }
-    else{
-        return [[Manager sharedManager]bannerArray].count;
-    }
-}
-- (NSUInteger)numberOfVisibleItemsInCarousel:(iCarousel *)carousel
-{
-    //limit the number of items views loaded concurrently (for performance reasons)
-    return 4;
-}
-- (void)scrollToItemAtIndex:(NSInteger)index
-                   duration:(NSTimeInterval)scrollDuration{
-    
-    
-}
-- (void)carouselCurrentItemIndexDidChange:(__unused iCarousel *)carousel
-{
-    //NSLog(@"Index: %@", @(self.carousel.currentItemIndex));
-    pageControl.currentPage = self.carousel.currentItemIndex;
-}
-- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
-{
-    UIImageView *viewsImage = [[UIImageView alloc] initWithFrame:_carousel.frame];
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayDownload]){
-        temp  = [[Manager sharedManager] bannerArrayDownload ][index];
-    }
-    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-    [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-     
-                          options:0
-                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                             // progression tracking code
-                         }
-                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                            if (image) {
-                                viewsImage.image = image;
-                            }
-                            
-                            
-                            
-                        }];
-    
-    [viewsImage setContentMode:UIViewContentModeScaleToFill];
-    return viewsImage;
-    
-}
-- (BOOL)carouselShouldWrap:(iCarousel *)carousel
-{
-    //wrap all carousels
-    return NO;
-}
-- (CGFloat)carousel:(iCarousel *)carousel valueForOption:(iCarouselOption)option withDefault:(CGFloat)value
-{
-    
-    if (option == iCarouselOptionWrap) {
-        return YES;
-    }
-    return value;
-}
+
 
 
 - (void)didReceiveMemoryWarning {

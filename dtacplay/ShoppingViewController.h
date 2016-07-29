@@ -12,7 +12,7 @@
 
 @interface ShoppingViewController : DtacPlayViewController
 
-@property (strong, nonatomic) iCarousel *carousel;
+
 @property(nonatomic,strong)UICollectionView *collectionViewShopping;
 
 @end

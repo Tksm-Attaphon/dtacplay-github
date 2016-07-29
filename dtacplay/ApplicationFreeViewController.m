@@ -26,6 +26,7 @@
 #import "ShowImageViewController.h"
 #import "Banner.h"
 #import "BannerImage.h"
+#import "BannerView.h"
 @interface ApplicationFreeViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,UICollectionViewDelegate,UIGestureRecognizerDelegate,iCarouselDataSource,iCarouselDelegate,ImageShowCaseDelegate>
 {
     UIPageControl *pageControl;
@@ -34,12 +35,27 @@
     NSMutableArray *recommendArray;
     float h_collecitonView;
     NSTimer *timer;
-    
+     BannerView *bannerView;
 }
 
 @end
 
 @implementation ApplicationFreeViewController
+
+-(void)viewWillAppear:(BOOL)animated{
+    if(!timer)
+        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
+                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [timer invalidate];
+    timer = nil;
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:@"alert"
+                                                  object:nil];
+}
+
+
 -(void)RecommendLoad{
     recommendArray = [[NSMutableArray alloc]init];
     NSString *jsonString =
@@ -105,8 +121,8 @@
             }
             
             [[Manager sharedManager] setBannerArrayFreezone:bannerArray];
-            pageControl.numberOfPages = [[Manager sharedManager] bannerArrayFreezone].count;
-            [_carousel reloadData];
+            bannerView.bannerArray = [[Manager sharedManager] bannerArrayFreezone];
+            [bannerView.carousel reloadData];
             // [self.collectionView reloadData];
         }
         
@@ -152,8 +168,8 @@
 }
 
 -(void)runLoop:(NSTimer*)NSTimer{
-    if(_carousel)
-        [_carousel scrollToItemAtIndex:_carousel.currentItemIndex+1 animated:YES];
+    if(bannerView.carousel)
+        [bannerView.carousel scrollToItemAtIndex:bannerView.carousel.currentItemIndex+1 animated:YES];
     
 }
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
@@ -199,35 +215,25 @@
         
         [headerView setBackgroundColor:[UIColor whiteColor]];
         
-        _carousel = [[iCarousel alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
-        
-        _carousel.delegate = self;
-        _carousel.dataSource = self;
-        _carousel.type = iCarouselTypeLinear;
-        _carousel.backgroundColor = [UIColor clearColor];
+        if(!bannerView)
+            bannerView = [[BannerView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
+        bannerView.backgroundColor = [UIColor clearColor];
         //_carousel.
-        [headerView addSubview:_carousel];
+        [headerView addSubview:bannerView];
+     
+            if([[Manager sharedManager] bannerArrayFreezone]){
+                bannerView.bannerArray =  [[Manager sharedManager]bannerArrayFreezone];
+            }
+            else{
+                bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
+            }
         
         
+        [bannerView.carousel reloadData];
         
-        
-        // Page Control
-        if(!pageControl)
-            pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (self.carousel.frame.size.height-20), self.carousel.frame.size.width, 20.0f)];
-        pageControl.numberOfPages = [[Manager sharedManager] bannerArrayFreezone].count >0  ? [[Manager sharedManager] bannerArrayFreezone].count : [[Manager sharedManager] bannerArray].count;
-        pageControl.currentPage = 0;
-        pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-        pageControl.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-        pageControl.userInteractionEnabled = NO;
-        [_carousel addSubview:pageControl];
-        [timer invalidate];
-        timer = nil;
-        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
-                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
-        
-        title=[[UILabel alloc] initWithFrame:CGRectMake(10,_carousel.frame.size.height+_carousel.frame.origin.y, self.view.frame.size.width-20, 30)];
+        title=[[UILabel alloc] initWithFrame:CGRectMake(10,bannerView.frame.size.height+bannerView.frame.origin.y, self.view.frame.size.width-20, 30)];
         if ( IDIOM == IPAD ) {
-            title=[[UILabel alloc] initWithFrame:CGRectMake(10,_carousel.frame.size.height+_carousel.frame.origin.y, self.view.frame.size.width-20, 50)];
+            title=[[UILabel alloc] initWithFrame:CGRectMake(10,bannerView.frame.size.height+bannerView.frame.origin.y, self.view.frame.size.width-20, 50)];
             
         }
         title.lineBreakMode = NSLineBreakByWordWrapping;
@@ -244,9 +250,9 @@
         
         if (size.height > title.bounds.size.height) {
             
-            [title setFrame:CGRectMake(10,_carousel.frame.size.height+_carousel.frame.origin.y, self.view.frame.size.width-20, size.height)];
+            [title setFrame:CGRectMake(10,bannerView.frame.size.height+bannerView.frame.origin.y, self.view.frame.size.width-20, size.height)];
             if ( IDIOM == IPAD ) {
-                [title setFrame:CGRectMake(10,_carousel.frame.size.height+_carousel.frame.origin.y, self.view.frame.size.width-20, size.height)];
+                [title setFrame:CGRectMake(10,bannerView.frame.size.height+bannerView.frame.origin.y, self.view.frame.size.width-20, size.height)];
                 
             }
             
@@ -589,85 +595,4 @@
     }
     return size.height;
 }
-
-
-
-#pragma mark -
-#pragma mark iCarousel methods
-
-- (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
-{
-    if([[Manager sharedManager] bannerArrayFreezone]){
-        return [[Manager sharedManager]bannerArrayFreezone].count;
-    }
-    else{
-        return [[Manager sharedManager]bannerArray].count;
-    }
-}
-- (NSUInteger)numberOfVisibleItemsInCarousel:(iCarousel *)carousel
-{
-    //limit the number of items views loaded concurrently (for performance reasons)
-    return 4;
-}
-- (void)scrollToItemAtIndex:(NSInteger)index
-                   duration:(NSTimeInterval)scrollDuration{
-    
-    
-}
-- (void)carouselCurrentItemIndexDidChange:(__unused iCarousel *)carousel
-{
-    //NSLog(@"Index: %@", @(self.carousel.currentItemIndex));
-    pageControl.currentPage = self.carousel.currentItemIndex;
-}
-- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
-{
-    UIImageView *viewsImage = [[UIImageView alloc] initWithFrame:_carousel.frame];
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayFreezone]){
-        temp  = [[Manager sharedManager] bannerArrayFreezone ][index];
-    }
-    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-    [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-                         
-                          options:0
-                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                             // progression tracking code
-                         }
-                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                            if (image) {
-                                viewsImage.image = image;
-                            }
-                            
-                            
-                            
-                        }];
-    
-    [viewsImage setContentMode:UIViewContentModeScaleToFill];
-    return viewsImage;
-    
-}
-- (BOOL)carouselShouldWrap:(iCarousel *)carousel
-{
-    //wrap all carousels
-    return NO;
-}
-- (void)carousel:(iCarousel *)carousel didSelectItemAtIndex:(NSInteger)index{
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayFreezone]){
-        temp  = [[Manager sharedManager] bannerArrayFreezone ][index];
-    }
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:temp.link]];
-}
-- (CGFloat)carousel:(iCarousel *)carousel valueForOption:(iCarouselOption)option withDefault:(CGFloat)value
-{
-    
-    if (option == iCarouselOptionWrap) {
-        return YES;
-    }
-    return value;
-}
-
-
 @end

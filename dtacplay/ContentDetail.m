@@ -17,6 +17,8 @@
         self.contentID = [self isNSNull:[dictionary objectForKey:@"conId"]];
         self.cateID = [self isNSNull:[dictionary objectForKey:@"cateId"]];
         self.title = [self isNSNull:[dictionary objectForKey:@"title"]];
+        self.title = [self clearEntityHtml:self.title];
+            
         self.descriptionContent = [self isNSNull:[dictionary objectForKey:@"description"]];
         self.descriptionContent = [self clearEntityHtml:self.descriptionContent];
             
@@ -49,6 +51,16 @@
             GallaryObject *temp = [[GallaryObject alloc]initWithDictionary:gall];
             [self.gallary addObject:temp];
         }
+            
+            NSArray *subRelateContentArray = [self isNSNull:[dictionary objectForKey:@"related"]];
+            if(subRelateContentArray){
+                self.relateContent = [[NSMutableArray alloc]init];
+                for (NSDictionary* sc in subRelateContentArray){
+                    RelateContent *temp = [[RelateContent alloc]initWithDictionary:sc];
+                    [self.relateContent addObject:temp];
+                }
+            }
+            
         }
     }
     

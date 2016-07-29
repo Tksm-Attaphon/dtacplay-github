@@ -10,7 +10,20 @@
 #import "iCarousel.h"
 #import "DtacPlayViewController.h"
 @interface DtacHomeViewController : DtacPlayViewController
-
-@property (strong, nonatomic) iCarousel *carousel;
 @property(nonatomic,strong)UICollectionView *collectionView;
+
+typedef NS_ENUM(NSInteger, MENU_HOME) {
+    HOME_NEWS = 0,
+    HOME_ENTERTAINMENT,
+    HOME_PRIVILAGE ,
+    HOME_PROMOTION ,
+    HOME_LIFESTYLE ,
+    HOME_DOWNLOAD ,
+    HOME_FREEZONE ,
+    HOME_SPORT ,
+    HOME_REGISTERFREEZONE ,
+    HOME_SHOPPING ,
+};
+
+
 @end

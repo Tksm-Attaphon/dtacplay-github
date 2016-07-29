@@ -22,6 +22,7 @@ typedef NS_ENUM(NSInteger, DeviceType) {
 typedef NS_ENUM(NSInteger, CategorryType) {
     NEWS = 1,
     ENTERTAINMENT = 2,
+    PRIVILAGEGAME =1000,
     PROMOTION =7,
     LIFESTYLE = 3,
     FREEZONE = 4,
@@ -125,6 +126,10 @@ typedef NS_ENUM(NSInteger, DTACPLAY_Language) {
 #define URL_GET_PHONE_NUMBER @"http://dtplay-web.thinksmart.co.th/th/msisdn/info"
 //*/
 
+
+
+#define SERVICE_UAT @"http://dtplay-api.dev5.thinksmart.co.th/site-api/service"
+#define SERVICE_PRODUCTOIN @"https://dtplay-api.thinksmart.co.th/site-api/service"
 //security
 #define AUTHORIZATION_VALUE @"Basic ZHRhY3BsYXlfYXBpOiA2RjVScGIyU2U2Y3hQ"
 

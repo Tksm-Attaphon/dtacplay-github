@@ -14,6 +14,8 @@
 #import "ContentPreviewPromotion.h"
 #import <SDWebImage/UIImageView+WebCache.h>
 #import "Manager.h"
+#import "AFHTTPRequestOperationManager.h"
+#import "AFHTTPRequestOperation.h"
 @implementation BannerSlideCollectionViewCell
 
 - (void)awakeFromNib {
@@ -123,6 +125,30 @@
     
     if(prom.link){
         [[UIApplication sharedApplication] openURL:[NSURL URLWithString:prom.link]];
+        NSString *jsonString =
+        [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"saveOpenLink\", \"params\":{\"refId\":%@, \"refType\":1, \"link\":\"%@\"}}",prom.contentID,prom.link];
+        
+        
+        NSString *valueHeader;
+        
+        valueHeader = [NSString stringWithFormat:@"x-tksm-lang=1;"];
+        
+        NSMutableURLRequest *requestHTTP = [Manager createRequestHTTP:jsonString cookieValue:valueHeader];
+        AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:requestHTTP];
+        
+        op.responseSerializer = [AFJSONResponseSerializer serializer];
+        [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+            if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
+                
+            }
+            
+            //  ...
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            
+        }];
+        [op start];
+
+        
     }
     else{
     detail.contentID = prom.contentID;

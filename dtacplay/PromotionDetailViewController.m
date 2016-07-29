@@ -190,7 +190,7 @@
     [view setFrame:CGRectMake(self.view.frame.size.width-100,0, 100, 30)];
     view.tag = 1;
     view.parentView = self;
-   [view setValueForShareTitle:promotionDetail.title Description:promotionDetail.descriptionContent ImageUrl:promotionDetail.images.imageW1 ContentURL:[NSString stringWithFormat: @"%@promotion/%@/%@?m=share",DOMAIN_WEBSITE,promotionDetail.contentID,promotionDetail.title] Category:PROMOTION  SubCategoryType:0 contentID:[promotionDetail.contentID intValue]];
+    [view setValueForShareTitle:promotionDetail.title Description:promotionDetail.descriptionContent ImageUrl:promotionDetail.images.imageW1 ContentURL:[NSString stringWithFormat: @"%@promotion/%@/%@?m=share",DOMAIN_WEBSITE,promotionDetail.contentID,promotionDetail.title] Category:PROMOTION  SubCategoryType:0 contentID:[promotionDetail.contentID intValue]];
     
     [view setBackgroundColor:[UIColor clearColor]];
     [self.content.contentArray addObject:view];
@@ -237,7 +237,7 @@
             //textView.text = para.descriptionContent;
             [textView setNeedsDisplay];
             
-                [textView setFrame:CGRectMake(0, 0, textView.frame.size.width, textView.optimumSize.height+10)];
+            [textView setFrame:CGRectMake(0, 0, textView.frame.size.width, textView.optimumSize.height+10)];
             [self.content.contentArray addObject:textView];
             
             NSError *error = nil;
@@ -246,7 +246,7 @@
             
             if (error) {
                 NSLog(@"Error: %@", error);
-              
+                
             }
             else{
                 NSMutableArray *imageTag = [[NSMutableArray alloc]init];
@@ -263,39 +263,39 @@
                         
                         if(temp){
                             [ imageTag addObject:[temp getAttributeNamed:@"src"]];
-                                    ImageViewWithLink *imageView = [[ImageViewWithLink alloc]init];
-                                    [self.content.contentArray addObject:imageView];
-                                    [imageView setContentMode:UIViewContentModeScaleAspectFit];
-                                    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-                                    
-                                    imageView.url =[NSURL URLWithString:[href stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding ]];
-                                    [manager downloadImageWithURL:[NSURL URLWithString:[temp getAttributeNamed:@"src"]]
-                                     
-                                                          options:0
-                                                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                                                             // progression tracking code
-                                                         }
-                                                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                                                            if (image) {
-                                                                [imageView setImage:image];
-                                                                
-                                                                float width = scrollViewWidth;
-                                                                if(width> image.size.width){
-                                                                    width = image.size.width;
-                                                                }
-                                                                [imageView setFrame:CGRectMake(0, 0, width, (image.size.height * width)/image.size.width  )];
-                                                                [self setFrameContent];
-                                                                [imageView setUserInteractionEnabled:YES];
-                                                                UITapGestureRecognizer *singleFingerTap =
-                                                                [[UITapGestureRecognizer alloc] initWithTarget:self
-                                                                                                        action:@selector(onTouchImage:)];
-                                                                [imageView addGestureRecognizer:singleFingerTap];
-                                                                
-                                                            }
-                                                            
-                                                            
-                                                        }];
-
+                            ImageViewWithLink *imageView = [[ImageViewWithLink alloc]init];
+                            [self.content.contentArray addObject:imageView];
+                            [imageView setContentMode:UIViewContentModeScaleAspectFit];
+                            SDWebImageManager *manager = [SDWebImageManager sharedManager];
+                            
+                            imageView.url =[NSURL URLWithString:[href stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding ]];
+                            [manager downloadImageWithURL:[NSURL URLWithString:[temp getAttributeNamed:@"src"]]
+                             
+                                                  options:0
+                                                 progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+                                                     // progression tracking code
+                                                 }
+                                                completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
+                                                    if (image) {
+                                                        [imageView setImage:image];
+                                                        
+                                                        float width = scrollViewWidth;
+                                                        if(width> image.size.width){
+                                                            width = image.size.width;
+                                                        }
+                                                        [imageView setFrame:CGRectMake(0, 0, width, (image.size.height * width)/image.size.width  )];
+                                                        [self setFrameContent];
+                                                        [imageView setUserInteractionEnabled:YES];
+                                                        UITapGestureRecognizer *singleFingerTap =
+                                                        [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                                                                action:@selector(onTouchImage:)];
+                                                        [imageView addGestureRecognizer:singleFingerTap];
+                                                        
+                                                    }
+                                                    
+                                                    
+                                                }];
+                            
                             
                         }
                     }
@@ -343,10 +343,10 @@
                                             }];
                         
                     }
-
+                    
                 }
-
-
+                
+                
             }
             
         }
@@ -415,7 +415,7 @@
 -(void)onTouchImage:(UITapGestureRecognizer*)gesture{
     ImageViewWithLink *tableGridImage = (ImageViewWithLink*)gesture.view;
     
-     [[UIApplication sharedApplication] openURL:tableGridImage.url];
+    [[UIApplication sharedApplication] openURL:tableGridImage.url];
 }
 
 
@@ -599,7 +599,7 @@
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
-     [self setCateID:LIFESTYLE];
+    [self setCateID:LIFESTYLE];
     [self.navigationController.navigationBar setTitleTextAttributes:
      @{NSForegroundColorAttributeName:[UIColor colorWithHexString:COLOR_PROMOTION]   ,
        NSFontAttributeName:[UIFont fontWithName:FONT_DTAC_LIGHT size:21]}];
@@ -647,7 +647,7 @@
     
     SDWebImageManager *manager = [SDWebImageManager sharedManager];
     [manager downloadImageWithURL:[NSURL URLWithString:promotionDetail.images.imageM1]
-                       
+     
                           options:0
                          progress:^(NSInteger receivedSize, NSInteger expectedSize) {
                              // progression tracking code

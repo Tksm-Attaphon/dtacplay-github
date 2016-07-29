@@ -7,12 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "iCarousel.h"
 #import "DtacPlayViewController.h"
 #import "MusicContent.h"
 #import "Constant.h"
 @interface FreeZoneDetialController : DtacPlayViewController
-@property (strong, nonatomic) iCarousel *carousel;
+
 @property(nonatomic,strong)UICollectionView *collectionView;
 @property(nonatomic,strong)MusicContent *musicObject;
 @property(nonatomic,assign)CategorryType cate;

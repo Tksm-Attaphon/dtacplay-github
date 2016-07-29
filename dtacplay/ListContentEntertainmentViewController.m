@@ -137,23 +137,23 @@
         [hud hide:YES];
         int page = [[operation.userInfo objectForKey:@"page"] intValue];
         
-            if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
+        if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
+            
+            NSDictionary *result =[responseObject objectForKey:@"result"] ;
+            NSArray * content = [result objectForKey:@"contents"] ;
+            
+            
+            for(NSDictionary* temp in content){
                 
-                NSDictionary *result =[responseObject objectForKey:@"result"] ;
-                NSArray * content = [result objectForKey:@"contents"] ;
-
+                ContentPreview *preview = [[ContentPreview alloc]initWithDictionary:temp];
+                [object addObject:preview];
                 
-                for(NSDictionary* temp in content){
-                    
-                    ContentPreview *preview = [[ContentPreview alloc]initWithDictionary:temp];
-                    [object addObject:preview];
-                    
-                    
-                }
-
+                
             }
             
-            [self.collectionView reloadData];
+        }
+        
+        [self.collectionView reloadData];
         
         //  ...
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -172,14 +172,14 @@
     [self setCateID:ENTERTAINMENT];
     object = [[NSMutableArray alloc]init];
     
-     [self GetContentEntertainmentSubCate:self.subCate];
- 
-    [Manager savePageView:0 orSubCate:self.subCate];
-
-
-   
+    [self GetContentEntertainmentSubCate:self.subCate];
     
-   
+    [Manager savePageView:0 orSubCate:self.subCate];
+    
+    
+    
+    
+    
     NSString *string = [NSString stringWithFormat:@"Entertainment - %@",[Manager getSubcateName:self.subCate withThai:NO]];
     [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": string}];
     
@@ -244,11 +244,11 @@
     
     [label setTextColor:[UIColor colorWithHexString:DEFAULT_TEXT_COLOR]];
     [label setFont:[UIFont fontWithName:FONT_DTAC_REGULAR size:IDIOM == IPAD ? 18 : 14]];
-
+    
     
     [menuView addSubview:imageView];
     [menuView addSubview:label];
-
+    
     
     MyFlowLayout *layout=[[MyFlowLayout alloc] init];
     
@@ -258,12 +258,12 @@
     [_collectionView setDelegate:self];
     
     [_collectionView registerClass:[UICollectionReusableView class]
-                forSupplementaryViewOfKind: UICollectionElementKindSectionHeader
-                       withReuseIdentifier:@"BannerHeader"];
+        forSupplementaryViewOfKind: UICollectionElementKindSectionHeader
+               withReuseIdentifier:@"BannerHeader"];
     [_collectionView registerClass:[UICollectionReusableView class]
-                forSupplementaryViewOfKind: UICollectionElementKindSectionHeader
-                       withReuseIdentifier:@"RecommendedHeader"];
-  [_collectionView registerClass:[DtacPlayBlockCollectionViewCell class] forCellWithReuseIdentifier:@"BlockCollectionViewCell"];
+        forSupplementaryViewOfKind: UICollectionElementKindSectionHeader
+               withReuseIdentifier:@"RecommendedHeader"];
+    [_collectionView registerClass:[DtacPlayBlockCollectionViewCell class] forCellWithReuseIdentifier:@"BlockCollectionViewCell"];
     
     [_collectionView setBackgroundColor:[UIColor whiteColor]];
     
@@ -395,13 +395,13 @@
     NSString *identify = @"BlockCollectionViewCell";
     DtacPlayBlockCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
     
-
-        [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
-                          placeholderImage:[UIImage imageNamed:@"default_image_01_L.jpg"]
-                                 completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                                     
-                                 }];
-  
+    
+    [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
+                      placeholderImage:[UIImage imageNamed:@"default_image_01_L.jpg"]
+                             completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                                 
+                             }];
+    
     [cell.label setText:articleTemp.previewTitle];
     
     cell.layer.masksToBounds = NO;
@@ -427,13 +427,13 @@
 
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
     EntertainmentDetailViewController * articleView= [[EntertainmentDetailViewController alloc]init];
-  
+    
     //NSMutableArray *temp =  object[indexPath.section];
     ContentPreview *preview = object[indexPath.row];
     articleView.contentID = preview.contentID;
     articleView.pageType = ENTERTAINMENT;
     articleView.themeColor = [UIColor colorWithHexString:COLOR_ENTERTAINMENT];
- 
+    
     articleView.titlePage = @"บันเทิง";
     UIBarButtonItem *newBackButton =
     [[UIBarButtonItem alloc] initWithTitle:@" "
@@ -493,7 +493,7 @@
     Banner *temp  = [[Manager sharedManager] bannerArray ][index];
     SDWebImageManager *manager = [SDWebImageManager sharedManager];
     [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-                      
+     
                           options:0
                          progress:^(NSInteger receivedSize, NSInteger expectedSize) {
                              // progression tracking code

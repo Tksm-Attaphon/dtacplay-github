@@ -15,6 +15,7 @@
 @property(nonatomic,strong)NSString *engName;
 @property(nonatomic,strong)NSMutableArray *subcates;
 
+@property(nonatomic,assign)BOOL isDisable;
 
 - (instancetype)initWithDictionary:(NSDictionary*)dictionary ;
 

@@ -246,7 +246,7 @@ static Manager *shareInstance = nil;
             return thai ?  [[[Manager sharedManager] entertainmentCategory]video].name : [[[Manager sharedManager] entertainmentCategory]video].engName ;
             break;
         case ENTERTAINMENT_MOVIE_TRAILER:
-            return thai ?  @"ตัวอย่างหนัง" :@"Movie Trailer";
+            return thai ?  [[[Manager sharedManager] entertainmentCategory]trailer_movie].name :[[[Manager sharedManager] entertainmentCategory]trailer_movie].engName;
             break;
         case ENTERTAINMENT_MOVIE_NEWS:
             return thai ?  @"ข่าวหนัง" : @"Movie News" ;
@@ -393,6 +393,10 @@ static Manager *shareInstance = nil;
         case ENTERTAINMENT:
             return thai ? [[Manager sharedManager] entertainmentCategory].name : [[Manager sharedManager] entertainmentCategory].engName;
             break;
+        case PRIVILAGEGAME:
+            return thai ? [[Manager sharedManager] privilageGameCategory].name : [[Manager sharedManager] privilageGameCategory].engName;
+            break;
+            
         case LIFESTYLE:
             return thai ?  [[Manager sharedManager] lifestyleCategory].name : [[Manager sharedManager] lifestyleCategory].engName;
             break;
@@ -472,7 +476,9 @@ static Manager *shareInstance = nil;
             case DOWNLOAD:
                 page = 8;
                 break;
-
+            case PRIVILAGEGAME:
+                page = 10;
+                break;
             default:
                 break;
         }
@@ -516,6 +522,9 @@ static Manager *shareInstance = nil;
                 break;
             case ENTERTAINMENT_MOVIE:
                 page = 22;
+                break;
+            case ENTERTAINMENT_MOVIE_TRAILER:
+                page = 222;
                 break;
                 
             case LIFESTYLE_TRAVEL:
@@ -604,34 +613,56 @@ static Manager *shareInstance = nil;
             case DOWNLOAD_GAME_GAMEROOM:
                 page = 824;
                 break;
-//            case DOWNLOAD_CPA_NEWS_HIT:
-//                page = 0;
-//                break;
-//            case DOWNLOAD_CPA_NEWS_GOSSIP:
-//                page = 0;
-//                break;
-//            case DOWNLOAD_CPA_NEWS_ECO:
-//                page = 0;
-//                break;
-//            case DOWNLOAD_CPA_LIFESTYLE_QUIZE:
-//                page = 0;
-//                break;
-//            case DOWNLOAD_CPA_LIFESTYLE_MOVIE:
-//                page = 0;
-//                break;
-//            case DOWNLOAD_CPA_LIFESTYLE_BEUTY:
-//                page = 0;
-//                break;
-//            case DOWNLOAD_CPA_SPORT_OTHER:
-//                page = 0;
-//                break;
-//            case DOWNLOAD_CPA_CLIP_FREE_INTERNET:
-//                page = 0;
-//                break;
-//            case DOWNLOAD_CPA_CLIP_FREE_PREMIUM:
-//                page = 0;
-//                break;
-//                
+                
+            case DOWNLOAD_CPA_NEWS:
+                page = 801;
+                break;
+            case DOWNLOAD_CPA_NEWS_HIT:
+                page = 8011;
+                break;
+            case DOWNLOAD_CPA_NEWS_GOSSIP:
+                page = 8012;
+                break;
+            case DOWNLOAD_CPA_NEWS_ECO:
+                page = 8013;
+                break;
+            case DOWNLOAD_CPA_HORO:
+                page = 802;
+                break;
+            case DOWNLOAD_CPA_LUCKY_NUMBER:
+                page = 803;
+                break;
+            case DOWNLOAD_CPA_LIFESTYLE:
+                page = 804;
+                break;
+            case DOWNLOAD_CPA_LIFESTYLE_QUIZE:
+                page = 8041;
+                break;
+            case DOWNLOAD_CPA_LIFESTYLE_MOVIE:
+                page = 8042;
+                break;
+            case DOWNLOAD_CPA_LIFESTYLE_BEUTY:
+                page = 8043;
+                break;
+            case DOWNLOAD_CPA_SPORT:
+                page = 805;
+                break;
+            case DOWNLOAD_CPA_SPORT_FOOTBALL:
+                page = 8051;
+                break;
+            case DOWNLOAD_CPA_SPORT_OTHER:
+                page = 8052;
+                break;
+            case DOWNLOAD_CPA_CLIP_FREE:
+                page = 806;
+                break;
+            case DOWNLOAD_CPA_CLIP_FREE_INTERNET:
+                page = 8061;
+                break;
+            case DOWNLOAD_CPA_CLIP_FREE_PREMIUM:
+                page = 8062;
+                break;
+//
 //                
             default:
                 break;
@@ -662,6 +693,7 @@ static Manager *shareInstance = nil;
 
 }
 +(void)savePageViewCPA:(int)cateID{
+    NSLog(@"CPA : %d",cateID);
     NSString *jsonString =
     [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"saveCpaContentReg\", \"params\":{\"cpaConId\":%d}}",cateID];
     

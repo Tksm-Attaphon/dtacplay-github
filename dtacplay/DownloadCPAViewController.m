@@ -39,6 +39,8 @@
 #import "ListContentDownloadViewController.h"
 #import "CPACollectionViewCell.h"
 #import "DownloadViewController.h"
+
+#import "BannerView.h"
 @interface DownloadCPAViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout>
 {
     NSMutableArray *sizeArray;
@@ -76,11 +78,27 @@
     float menuHeight;
     UIView *nodataView;
     
+    BannerView *bannerView;
+    
 }
 @property (nonatomic) CGFloat lastContentOffset;
 @end
 
 @implementation DownloadCPAViewController
+
+
+-(void)viewWillAppear:(BOOL)animated{
+    if(!timer)
+        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
+                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [timer invalidate];
+    timer = nil;
+    
+}
+
+
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
     if(scrollView.contentOffset.x==0){
@@ -110,25 +128,25 @@
 }
 
 -(void)setup{
-
-        MyFlowLayout *layout=[[MyFlowLayout alloc] init];
-        
-        UICollectionView *fooCollection=[[UICollectionView alloc] initWithFrame:CGRectMake(0, 45, self.view.frame.size.width, self.view.frame.size.height-110) collectionViewLayout:layout];
-
-        [fooCollection setDataSource:self];
-        [fooCollection setDelegate:self];
-        
-        [fooCollection registerNib:[UINib nibWithNibName:@"CPACollectionViewCell" bundle:nil] forCellWithReuseIdentifier:@"CPACell"];
-        
-        //HeaderCell
-        [fooCollection registerClass:[UICollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionFooter withReuseIdentifier:@"FooterView"];
-        
-        [fooCollection setBackgroundColor:[UIColor clearColor]];
-        
-        [fooCollection scrollsToTop];
-        
-        [fooCollection addSubview:iconHeader];
-        [collectionViewArray addObject:fooCollection];
+    
+    MyFlowLayout *layout=[[MyFlowLayout alloc] init];
+    
+    UICollectionView *fooCollection=[[UICollectionView alloc] initWithFrame:CGRectMake(0, 45, self.view.frame.size.width, self.view.frame.size.height-110) collectionViewLayout:layout];
+    
+    [fooCollection setDataSource:self];
+    [fooCollection setDelegate:self];
+    
+    [fooCollection registerNib:[UINib nibWithNibName:@"CPACollectionViewCell" bundle:nil] forCellWithReuseIdentifier:@"CPACell"];
+    
+    //HeaderCell
+    [fooCollection registerClass:[UICollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionFooter withReuseIdentifier:@"FooterView"];
+    
+    [fooCollection setBackgroundColor:[UIColor clearColor]];
+    
+    [fooCollection scrollsToTop];
+    
+    [fooCollection addSubview:iconHeader];
+    [collectionViewArray addObject:fooCollection];
     
 }
 -(void)getBanner{
@@ -156,8 +174,8 @@
             }
             
             [[Manager sharedManager] setBannerArrayDownload:bannerArray];
-            pageControl.numberOfPages = [[Manager sharedManager] bannerArrayDownload].count;
-            [_carousel reloadData];
+            bannerView.bannerArray = [[Manager sharedManager] bannerArrayDownload];
+            [bannerView.carousel reloadData];
             // [self.collectionView reloadData];
         }
         
@@ -215,7 +233,7 @@
     
     self.view = [[UIView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.view.backgroundColor = [UIColor whiteColor];
-
+    
     
     MyFlowLayout *layout=[[MyFlowLayout alloc] init];
     
@@ -224,8 +242,8 @@
     [fooCollection setDataSource:self];
     [fooCollection setDelegate:self];
     [fooCollection registerClass:[UICollectionReusableView class]
-        forSupplementaryViewOfKind: UICollectionElementKindSectionHeader
-               withReuseIdentifier:@"BannerHeader"];
+      forSupplementaryViewOfKind: UICollectionElementKindSectionHeader
+             withReuseIdentifier:@"BannerHeader"];
     
     [fooCollection registerNib:[UINib nibWithNibName:@"CPACollectionViewCell" bundle:nil] forCellWithReuseIdentifier:@"CPACell"];
     [fooCollection registerNib:[UINib nibWithNibName:@"CPACollectionViewCell2Line" bundle:nil] forCellWithReuseIdentifier:@"CPACell2"];
@@ -239,7 +257,7 @@
     
     [fooCollection addSubview:iconHeader];
     [self.view addSubview:fooCollection];
-
+    
     
 }
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
@@ -270,35 +288,20 @@
                                                                                    withReuseIdentifier:@"BannerHeader" forIndexPath:indexPath];
         
         [headerView setBackgroundColor:[UIColor whiteColor]];
-        
-        
-        _carousel = [[iCarousel alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
-        
-        _carousel.delegate = self;
-        _carousel.dataSource = self;
-        _carousel.type = iCarouselTypeLinear;
-        _carousel.backgroundColor = [UIColor clearColor];
+        if(!bannerView)
+            bannerView = [[BannerView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
+        bannerView.backgroundColor = [UIColor clearColor];
         //_carousel.
-        [headerView addSubview:_carousel];
+        [headerView addSubview:bannerView];
         
-        
-        
-        
-        // Page Control
-        if(!pageControl)
-            pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (self.carousel.frame.size.height-20), self.carousel.frame.size.width, 20.0f)];
-        pageControl.numberOfPages = [[Manager sharedManager] bannerArray].count;;
-        pageControl.currentPage = 0;
-        pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-        pageControl.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-        pageControl.userInteractionEnabled = NO;
-        [_carousel addSubview:pageControl];
-        [timer invalidate];
-        timer = nil;
-        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
-                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
-        
-        
+        if([[Manager sharedManager] bannerArrayDownload]){
+            bannerView.bannerArray =  [[Manager sharedManager]bannerArrayDownload];
+        }
+        else{
+            bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
+        }
+        [bannerView.carousel reloadData];
+
         return headerView;
         
     }
@@ -333,7 +336,7 @@
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
     return 9;
-
+    
 }
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section {
     return 10;
@@ -369,85 +372,85 @@
 // The cell that is returned must be retrieved from a call to -dequeueReusableCellWithReuseIdentifier:forIndexPath:
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-        if(indexPath.row == 0){
-            
-   
-            
-            NSString *identify = @"HeaderCell";
-            DtacPlayHeaderHoloCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
-            [cell setBackgroundColor:[UIColor whiteColor]];
-            [cell.line setBackgroundColor:[UIColor colorWithHexString:COLOR_DOWNLOAD]];
-            [cell.moreButton setHidden:YES];
-  
-            [cell.imageView setImage:[UIImage imageNamed:@"dtacplay_download_gameclub"]];
-            [cell.imageView setContentMode:UIViewContentModeScaleAspectFit];
-            [cell.label setTextColor:[UIColor colorWithHexString:COLOR_DOWNLOAD]];
-            [cell.imageView setBackgroundColor:[UIColor whiteColor]];
-            [cell.label setText:[Manager getCateName:DOWNLOAD withThai:YES]];
-            
-            return cell;
-            
+    if(indexPath.row == 0){
+        
+        
+        
+        NSString *identify = @"HeaderCell";
+        DtacPlayHeaderHoloCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
+        [cell setBackgroundColor:[UIColor whiteColor]];
+        [cell.line setBackgroundColor:[UIColor colorWithHexString:COLOR_DOWNLOAD]];
+        [cell.moreButton setHidden:YES];
+        
+        [cell.imageView setImage:[UIImage imageNamed:@"dtacplay_download_gameclub"]];
+        [cell.imageView setContentMode:UIViewContentModeScaleAspectFit];
+        [cell.label setTextColor:[UIColor colorWithHexString:COLOR_DOWNLOAD]];
+        [cell.imageView setBackgroundColor:[UIColor whiteColor]];
+        [cell.label setText:[Manager getCateName:DOWNLOAD withThai:YES]];
+        
+        return cell;
+        
+    }
+    else{
+        NSString *identify = @"CPACell";
+        if(indexPath.row == 8){
+            identify = @"CPACell2";
         }
-        else{
-            NSString *identify = @"CPACell";
-            if(indexPath.row == 8){
-                identify = @"CPACell2";
-            }
-            
-                CPACollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
+        
+        CPACollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
+        
+        
+        [cell.imageView sd_setImageWithURL:[NSURL URLWithString:@""]
+                          placeholderImage:[UIImage imageNamed:@"default_image_02_L.jpg"]
+                                 completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                                     
+                                 }];
+        
+        switch (indexPath.row) {
+            case 1:
+                [cell.text setText:[Manager getSubcateName:DOWNLOAD_MUSIC withThai:YES]];
                 
+                break;
+            case 2:
                 
-                [cell.imageView sd_setImageWithURL:[NSURL URLWithString:@""]
-                                  placeholderImage:[UIImage imageNamed:@"default_image_02_L.jpg"]
-                                         completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                                             
-                                         }];
-                
-            switch (indexPath.row) {
-                case 1:
-                     [cell.text setText:[Manager getSubcateName:DOWNLOAD_MUSIC withThai:YES]];
-                   
-                    break;
-                case 2:
-                   
-                     [cell.text setText:[Manager getSubcateName:DOWNLOAD_GAME withThai:YES]];
-                    break;
-                case 3:
-                  [cell.text setText:[Manager getSubcateName:DOWNLOAD_CPA_NEWS withThai:YES]];
-                    break;
-                case 4:
-                    [cell.text setText:[Manager getSubcateName:DOWNLOAD_CPA_HORO withThai:YES]];
-                    break;
-                case 5:
-                    [cell.text setText:[Manager getSubcateName:DOWNLOAD_CPA_LUCKY_NUMBER withThai:YES]];
-                    break;
-                case 6:
-                    [cell.text setText:[Manager getSubcateName:DOWNLOAD_CPA_LIFESTYLE withThai:YES]];
-                    break;
-                case 7:
-                   [cell.text setText:[Manager getSubcateName:DOWNLOAD_CPA_SPORT withThai:YES]];
-                    break;
-                case 8:
-                    [cell.text setText:@"คลิปฟรี\nอินเตอร์เนต"];
-                    break;
-                default:
-                    break;
-            }
-            
-                [cell.imageView setBackgroundColor:[UIColor clearColor]];
-                
-                //NSLog(@"%f , %f , %f",cell.nameMusicLabel.frame.origin.y,cell.nameArtistLabel.frame.origin.y,cell.nameAlbumLabel.frame.origin.y);
-                cell.layer.masksToBounds = NO;
-                cell.layer.shadowOffset = CGSizeMake(2, 2);
-                cell.layer.shadowRadius = 2;
-                cell.layer.shadowOpacity = 0.5;
-                cell.layer.shouldRasterize = YES;
-                cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
-                
-                [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
-                
-                return cell;
-            }
+                [cell.text setText:[Manager getSubcateName:DOWNLOAD_GAME withThai:YES]];
+                break;
+            case 3:
+                [cell.text setText:[Manager getSubcateName:DOWNLOAD_CPA_NEWS withThai:YES]];
+                break;
+            case 4:
+                [cell.text setText:[Manager getSubcateName:DOWNLOAD_CPA_HORO withThai:YES]];
+                break;
+            case 5:
+                [cell.text setText:[Manager getSubcateName:DOWNLOAD_CPA_LUCKY_NUMBER withThai:YES]];
+                break;
+            case 6:
+                [cell.text setText:[Manager getSubcateName:DOWNLOAD_CPA_LIFESTYLE withThai:YES]];
+                break;
+            case 7:
+                [cell.text setText:[Manager getSubcateName:DOWNLOAD_CPA_SPORT withThai:YES]];
+                break;
+            case 8:
+                [cell.text setText:@"คลิปฟรี\nอินเตอร์เนต"];
+                break;
+            default:
+                break;
+        }
+        
+        [cell.imageView setBackgroundColor:[UIColor clearColor]];
+        
+        //NSLog(@"%f , %f , %f",cell.nameMusicLabel.frame.origin.y,cell.nameArtistLabel.frame.origin.y,cell.nameAlbumLabel.frame.origin.y);
+        cell.layer.masksToBounds = NO;
+        cell.layer.shadowOffset = CGSizeMake(2, 2);
+        cell.layer.shadowRadius = 2;
+        cell.layer.shadowOpacity = 0.5;
+        cell.layer.shouldRasterize = YES;
+        cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
+        
+        [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
+        
+        return cell;
+    }
     
     
 }
@@ -468,7 +471,7 @@
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
     if(indexPath.row != 0){
         DownloadViewController *catePage= [[DownloadViewController alloc] init];
-       
+        
         catePage.indexPage = 0;
         
         
@@ -477,7 +480,7 @@
             case 1:
                 catePage.subeType = DOWNLOAD_MUSIC;
                 catePage.subeType = DOWNLOAD_MUSIC_NEW;
-                 catePage.nameMenu = [NSArray arrayWithObjects: [NSNumber numberWithInteger:DOWNLOAD_MUSIC], nil];
+                catePage.nameMenu = [NSArray arrayWithObjects: [NSNumber numberWithInteger:DOWNLOAD_MUSIC], nil];
                 break;
             case 2:
                 catePage.subeType = DOWNLOAD_GAME;
@@ -512,7 +515,7 @@
                 break;
         }
         
-
+        
         UIBarButtonItem *newBackButton =
         [[UIBarButtonItem alloc] initWithTitle:@" "
                                          style:UIBarButtonItemStyleBordered
@@ -550,8 +553,8 @@ referenceSizeForFooterInSection:(NSInteger)section
 
 -(void)runLoop:(NSTimer*)NSTimer{
     
-    if(_carousel)
-        [_carousel scrollToItemAtIndex:self.carousel.currentItemIndex+1 animated:YES];
+    if(bannerView.carousel)
+        [bannerView.carousel scrollToItemAtIndex:bannerView.carousel.currentItemIndex+1 animated:YES];
     
     
     
@@ -565,83 +568,6 @@ referenceSizeForFooterInSection:(NSInteger)section
 {
     NSLog(@"xx");
 }
-#pragma mark -
-#pragma mark iCarousel methods
-- (void)carousel:(iCarousel *)carousel didSelectItemAtIndex:(NSInteger)index{
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayDownload]){
-        temp  = [[Manager sharedManager] bannerArrayDownload ][index];
-    }
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:temp.link]];
-}
-- (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
-{
-    //return the total number of items in the carousel
-    if([[Manager sharedManager] bannerArrayDownload]){
-        return [[Manager sharedManager]bannerArrayDownload].count;
-    }
-    else{
-        return [[Manager sharedManager]bannerArray].count;
-    }
-}
-- (NSUInteger)numberOfVisibleItemsInCarousel:(iCarousel *)carousel
-{
-    //limit the number of items views loaded concurrently (for performance reasons)
-    return 4;
-}
-- (void)scrollToItemAtIndex:(NSInteger)index
-                   duration:(NSTimeInterval)scrollDuration{
-    
-    
-}
-- (void)carouselCurrentItemIndexDidChange:(__unused iCarousel *)carousel
-{
-    //NSLog(@"Index: %@", @(self.carousel.currentItemIndex));
-    pageControl.currentPage = self.carousel.currentItemIndex;
-}
-- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
-{
-    UIImageView *viewsImage = [[UIImageView alloc] initWithFrame:_carousel.frame];
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayNews]){
-        temp  = [[Manager sharedManager] bannerArrayDownload ][index];
-    }
-    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-    [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-     
-                          options:0
-                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                             // progression tracking code
-                         }
-                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                            if (image) {
-                                viewsImage.image = image;
-                            }
-                            
-                            
-                            
-                        }];
-    
-    [viewsImage setContentMode:UIViewContentModeScaleToFill];
-    return viewsImage;
-    
-}
-- (BOOL)carouselShouldWrap:(iCarousel *)carousel
-{
-    //wrap all carousels
-    return NO;
-}
-- (CGFloat)carousel:(iCarousel *)carousel valueForOption:(iCarouselOption)option withDefault:(CGFloat)value
-{
-    
-    if (option == iCarouselOptionWrap) {
-        return YES;
-    }
-    return value;
-}
-
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -649,7 +575,7 @@ referenceSizeForFooterInSection:(NSInteger)section
 }
 - (void)dealloc
 {
-
+    
 }
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];

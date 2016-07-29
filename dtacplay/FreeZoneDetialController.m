@@ -24,6 +24,7 @@
 #import "Manager.h"
 #import "Banner.h"
 #import "BannerImage.h"
+#import "BannerView.h"
 @interface FreeZoneDetialController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,UICollectionViewDelegate,UIGestureRecognizerDelegate,iCarouselDataSource,iCarouselDelegate,FreeMusicDelegate>
 {
     UIPageControl *pageControl;
@@ -32,11 +33,27 @@
     NSTimer *timer;
     
     UIImageView *imageComming;
+    BannerView *bannerView;
 }
 
 @end
 
 @implementation FreeZoneDetialController
+
+-(void)viewWillAppear:(BOOL)animated{
+    if(!timer)
+        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
+                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [timer invalidate];
+    timer = nil;
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:@"alert"
+                                                  object:nil];
+}
+
+
 -(void)RecommendLoad{
     recommendArray = [[NSMutableArray alloc]init];
     NSString *jsonString =
@@ -110,17 +127,17 @@
                 
                 
                 [[Manager sharedManager] setBannerArrayDownload:bannerArray];
-                pageControl.numberOfPages = [[Manager sharedManager] bannerArrayDownload].count;
+               bannerView.bannerArray = [[Manager sharedManager] bannerArrayDownload];
                 
             }
             else{
                 
                 
                 [[Manager sharedManager] setBannerArrayFreezone:bannerArray];
-                pageControl.numberOfPages = [[Manager sharedManager] bannerArrayFreezone].count;
+                bannerView.bannerArray = [[Manager sharedManager] bannerArrayFreezone];
                 
             }
-            [_carousel reloadData];
+            [bannerView.carousel reloadData];
             // [self.collectionView reloadData];
         }
         
@@ -134,7 +151,7 @@
 }
 -(void)viewDidLoad{
     [super viewDidLoad];
-     [self setCateID:FREEZONE];
+    [self setCateID:FREEZONE];
     [self RecommendLoad];
     if(self.cate == DOWNLOAD){
         
@@ -148,7 +165,7 @@
         
     }
     
-   [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:FREEZONE withSubCate:self.subcate :self.musicObject.title]}];
+    [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:FREEZONE withSubCate:self.subcate :self.musicObject.title]}];
     self.navigationItem.title = [Manager getSubcateName:self.subcate withThai:YES];
     [self.navigationController.navigationBar setTitleTextAttributes:
      @{NSForegroundColorAttributeName:[UIColor colorWithHexString:[Manager getColorName:self.cate]],
@@ -169,14 +186,14 @@
                withReuseIdentifier:@"RecommendedHeader"];
     [_collectionView registerClass:[MusicCell class] forCellWithReuseIdentifier:@"MusicCell"];
     [_collectionView registerClass:[FreeZoneMusicDetailCell class] forCellWithReuseIdentifier:@"DetailMusicCell"];
-
+    
     [_collectionView setBackgroundColor:[UIColor whiteColor]];
     [self.view addSubview:_collectionView];
 }
 
 -(void)runLoop:(NSTimer*)NSTimer{
-    if(_carousel)
-        [_carousel scrollToItemAtIndex:_carousel.currentItemIndex+1 animated:YES];
+    if(bannerView.carousel)
+        [bannerView.carousel scrollToItemAtIndex:bannerView.carousel.currentItemIndex+1 animated:YES];
     
 }
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
@@ -223,34 +240,34 @@
         [headerView setBackgroundColor:[UIColor whiteColor]];
         
         
-        _carousel = [[iCarousel alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
-        
-        _carousel.delegate = self;
-        _carousel.dataSource = self;
-        _carousel.type = iCarouselTypeLinear;
-        _carousel.backgroundColor = [UIColor clearColor];
+        if(!bannerView)
+            bannerView = [[BannerView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
+        bannerView.backgroundColor = [UIColor clearColor];
         //_carousel.
-        [headerView addSubview:_carousel];
+        [headerView addSubview:bannerView];
         
+        if(self.cate == DOWNLOAD){
+            if([[Manager sharedManager] bannerArrayDownload]){
+                bannerView.bannerArray =  [[Manager sharedManager]bannerArrayDownload];
+            }
+            else{
+                bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
+            }
+        }
+        else{
+            if([[Manager sharedManager] bannerArrayFreezone]){
+                bannerView.bannerArray =  [[Manager sharedManager]bannerArrayFreezone];
+            }
+            else{
+                bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
+            }
+        }
         
+        [bannerView.carousel reloadData];
         
-        
-        // Page Control
-        if(!pageControl)
-            pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (self.carousel.frame.size.height-20), self.carousel.frame.size.width, 20.0f)];
-        pageControl.numberOfPages = [[Manager sharedManager] bannerArrayFreezone].count >0  ? [[Manager sharedManager] bannerArrayFreezone].count : [[Manager sharedManager] bannerArray].count;
-        pageControl.currentPage = 0;
-        pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-        pageControl.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-        pageControl.userInteractionEnabled = NO;
-        [_carousel addSubview:pageControl];
-        [timer invalidate];
-        timer = nil;
-        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
-                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
-        title=[[UILabel alloc] initWithFrame:CGRectMake(10,_carousel.frame.size.height+_carousel.frame.origin.y, self.view.frame.size.width-20, 30)];
+        title=[[UILabel alloc] initWithFrame:CGRectMake(10,bannerView.frame.size.height+bannerView.frame.origin.y, self.view.frame.size.width-20, 30)];
         if ( IDIOM == IPAD ) {
-            title=[[UILabel alloc] initWithFrame:CGRectMake(10,_carousel.frame.size.height+_carousel.frame.origin.y, self.view.frame.size.width-20, 50)];
+            title=[[UILabel alloc] initWithFrame:CGRectMake(10,bannerView.frame.size.height+bannerView.frame.origin.y, self.view.frame.size.width-20, 50)];
             
         }
         title.lineBreakMode = NSLineBreakByWordWrapping;
@@ -267,9 +284,9 @@
         
         if (size.height > title.bounds.size.height) {
             
-            [title setFrame:CGRectMake(10,_carousel.frame.size.height+_carousel.frame.origin.y, self.view.frame.size.width-20, size.height)];
+            [title setFrame:CGRectMake(10,bannerView.frame.size.height+bannerView.frame.origin.y, self.view.frame.size.width-20, size.height)];
             if ( IDIOM == IPAD ) {
-                [title setFrame:CGRectMake(10,_carousel.frame.size.height+_carousel.frame.origin.y, self.view.frame.size.width-20, size.height)];
+                [title setFrame:CGRectMake(10,bannerView.frame.size.height+bannerView.frame.origin.y, self.view.frame.size.width-20, size.height)];
                 
             }
             
@@ -303,7 +320,7 @@
         [titleReccommend setFont:[UIFont fontWithName:FONT_DTAC_REGULAR size:IDIOM == IPAD ? 22 : 20]];
         [titleReccommend setBackgroundColor:[UIColor clearColor]];
         [titleReccommend setTextColor:[UIColor colorWithHexString:[Manager getColorName:self.cate]]];
-       
+        
         [titleReccommend setText:[NSString stringWithFormat:@"%@เเนะนำ",[Manager getSubcateName:self.subcate withThai:YES]]];
         
         
@@ -351,20 +368,20 @@
         [cell setSocialItem];
         cell.delegate = self;
         [cell setUserInteractionEnabled:YES];
-       
-            SDWebImageManager *manager = [SDWebImageManager sharedManager];
-            [manager downloadImageWithURL:[NSURL URLWithString:_musicObject.images.imageThumbnailXL]
-             
-                                  options:0
-                                 progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                                     // progression tracking code
-                                 }
-                                completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                                    if (image) {
-                                        cell.imageView.image = image;
-                                    }
-                                }];
- 
+        
+        SDWebImageManager *manager = [SDWebImageManager sharedManager];
+        [manager downloadImageWithURL:[NSURL URLWithString:_musicObject.images.imageThumbnailXL]
+         
+                              options:0
+                             progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+                                 // progression tracking code
+                             }
+                            completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
+                                if (image) {
+                                    cell.imageView.image = image;
+                                }
+                            }];
+        
         NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
         [style setLineBreakMode:NSLineBreakByWordWrapping];
         
@@ -377,7 +394,7 @@
         
         [cell.nameMusicLabel setText:_musicObject.title];
         
-       // _musicObject.artist = [NSString stringWithFormat:@"ศิลปิน: %@",_musicObject.artist];
+        // _musicObject.artist = [NSString stringWithFormat:@"ศิลปิน: %@",_musicObject.artist];
         size = [[NSString stringWithFormat:@"ศิลปิน: %@",_musicObject.artist] boundingRectWithSize:CGSizeMake(cell.nameArtistLabel.frame.size.width , NSUIntegerMax) options:(NSStringDrawingUsesLineFragmentOrigin|NSStringDrawingUsesFontLeading) attributes:@{ NSForegroundColorAttributeName: [UIColor blackColor], NSFontAttributeName:[UIFont fontWithName:FONT_DTAC_REGULAR size:IDIOM == IPAD ? 14 : 12], NSParagraphStyleAttributeName : style} context:nil].size;
         
         
@@ -389,7 +406,7 @@
         [cell.imageView setBackgroundColor:[UIColor clearColor]];
         [cell.nameArtistLabel setText:[NSString stringWithFormat:@"ศิลปิน: %@",_musicObject.artist]];
         
-      //  _musicObject.album = [NSString stringWithFormat:@"อัลบั้ม: %@", _musicObject.album];
+        //  _musicObject.album = [NSString stringWithFormat:@"อัลบั้ม: %@", _musicObject.album];
         size = [[NSString stringWithFormat:@"อัลบั้ม: %@", _musicObject.album] boundingRectWithSize:CGSizeMake(cell.nameAlbumLabel.frame.size.width , NSUIntegerMax) options:(NSStringDrawingUsesLineFragmentOrigin|NSStringDrawingUsesFontLeading) attributes:@{ NSForegroundColorAttributeName: [UIColor blackColor], NSFontAttributeName:[UIFont fontWithName:FONT_DTAC_REGULAR size:IDIOM == IPAD ? 14 : 12], NSParagraphStyleAttributeName : style} context:nil].size;
         
         
@@ -422,19 +439,19 @@
     NSString *identify = @"MusicCell";
     MusicCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
     
-        SDWebImageManager *manager = [SDWebImageManager sharedManager];
-        [manager downloadImageWithURL:[NSURL URLWithString:temp.images.imageThumbnailXL]
-         
-                              options:0
-                             progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                                 // progression tracking code
-                             }
-                            completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                                if (image) {
-                                    cell.imageView.image = image;
-                                }
-                            }];
- 
+    SDWebImageManager *manager = [SDWebImageManager sharedManager];
+    [manager downloadImageWithURL:[NSURL URLWithString:temp.images.imageThumbnailXL]
+     
+                          options:0
+                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+                             // progression tracking code
+                         }
+                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
+                            if (image) {
+                                cell.imageView.image = image;
+                            }
+                        }];
+    
     
     [cell.nameMusicLabel setText:temp.title];
     [cell.imageView setBackgroundColor:[UIColor clearColor]];
@@ -618,107 +635,5 @@
         
     }
 }
-#pragma mark -
-#pragma mark iCarousel methods
 
-- (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
-{
-    if(self.cate == DOWNLOAD){
-        if([[Manager sharedManager] bannerArrayDownload]){
-            return [[Manager sharedManager]bannerArrayDownload].count;
-        }
-        else{
-            return [[Manager sharedManager]bannerArray].count;
-        }
-    }
-    else{
-        if([[Manager sharedManager] bannerArrayFreezone]){
-            return [[Manager sharedManager]bannerArrayFreezone].count;
-        }
-        else{
-            return [[Manager sharedManager]bannerArray].count;
-        }
-    }
-}
-- (NSUInteger)numberOfVisibleItemsInCarousel:(iCarousel *)carousel
-{
-    //limit the number of items views loaded concurrently (for performance reasons)
-    return 4;
-}
-- (void)scrollToItemAtIndex:(NSInteger)index
-                   duration:(NSTimeInterval)scrollDuration{
-    
-    
-}
-- (void)carouselCurrentItemIndexDidChange:(__unused iCarousel *)carousel
-{
-    //NSLog(@"Index: %@", @(self.carousel.currentItemIndex));
-    pageControl.currentPage = self.carousel.currentItemIndex;
-}
-- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
-{
-    UIImageView *viewsImage = [[UIImageView alloc] initWithFrame:_carousel.frame];
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if(self.cate == DOWNLOAD){
-        
-        if([[Manager sharedManager] bannerArrayDownload]){
-            temp  = [[Manager sharedManager] bannerArrayDownload ][index];
-        }
-    }
-    else{
-        
-        if([[Manager sharedManager] bannerArrayFreezone]){
-            temp  = [[Manager sharedManager] bannerArrayFreezone ][index];
-        }
-    }
-    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-    
-    [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-     
-                          options:0
-                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                             // progression tracking code
-                         }
-                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                            if (image) {
-                                viewsImage.image = image;
-                            }
-                        }];
-    
-    [viewsImage setContentMode:UIViewContentModeScaleToFill];
-    return viewsImage;
-    
-}
-- (BOOL)carouselShouldWrap:(iCarousel *)carousel
-{
-    //wrap all carousels
-    return NO;
-}
-- (CGFloat)carousel:(iCarousel *)carousel valueForOption:(iCarouselOption)option withDefault:(CGFloat)value
-{
-    
-    if (option == iCarouselOptionWrap) {
-        return YES;
-    }
-    return value;
-}
-
-- (void)carousel:(iCarousel *)carousel didSelectItemAtIndex:(NSInteger)index{
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if(self.cate == DOWNLOAD){
-        
-        if([[Manager sharedManager] bannerArrayDownload]){
-            temp  = [[Manager sharedManager] bannerArrayDownload ][index];
-        }
-    }
-    else{
-        
-        if([[Manager sharedManager] bannerArrayFreezone]){
-            temp  = [[Manager sharedManager] bannerArrayFreezone ][index];
-        }
-    }
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:temp.link]];
-}
 @end

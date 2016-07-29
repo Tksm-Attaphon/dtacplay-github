@@ -32,6 +32,8 @@
 #import "BannerImage.h"
 #import "DtacPlayHeaderHoloCollectionViewCell.h"
 #import "ListContentEntertainmentViewController.h"
+
+#import "BannerView.h"
 @interface EntertainmentViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout>
 {
     NSMutableArray *sizeArray;
@@ -80,12 +82,26 @@
     
     NSMutableArray *tv_array;
     int lastStatPage ;
-    
+      BannerView *bannerView;
 }
 @property (nonatomic) CGFloat lastContentOffset;
 @end
 
 @implementation EntertainmentViewController
+
+-(void)viewWillAppear:(BOOL)animated{
+    if(!timer)
+        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
+                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [timer invalidate];
+    timer = nil;
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:@"alert"
+                                                  object:nil];
+}
+
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
     if(scrollView.contentOffset.x==0){
@@ -177,12 +193,12 @@
     
 }
 -(void)GetContentEntertainment:(int)index AndSubCate:(int)subcat limit:(int)limit{
-
-
+    
+    
     NSString *
-        jsonString =
-        [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getContentBySubCateId\",\"params\":{ \"subCateId\":%d, \"page\":%d,\"limit\":%d }}",subcat,1,limit];
-
+    jsonString =
+    [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getContentBySubCateId\",\"params\":{ \"subCateId\":%d, \"page\":%d,\"limit\":%d }}",subcat,1,limit];
+    
     NSString *valueHeader;
     
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
@@ -200,10 +216,10 @@
         
         if(subcat == ENTERTAINMENT_NEWS){
             if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
-
+                
                 NSDictionary *result =[responseObject objectForKey:@"result"] ;
                 NSArray * content = [result objectForKey:@"contents"] ;
-
+                
                 for(NSDictionary* temp in content){
                     
                     ContentPreview *preview = [[ContentPreview alloc]initWithDictionary:temp];
@@ -211,9 +227,9 @@
                     
                     
                 }
-
+                
             }
- 
+            
         }
         else if(subcat == ENTERTAINMENT_MUSIC){
             if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
@@ -223,7 +239,7 @@
                 
                 
                 variety_music_array = [[NSMutableArray alloc]init];
-                 [variety_music_array addObject:[NSNumber numberWithInt:ENTERTAINMENT_MUSIC]];
+                [variety_music_array addObject:[NSNumber numberWithInt:ENTERTAINMENT_MUSIC]];
                 for(NSDictionary* temp in content){
                     
                     ContentPreview *preview = [[ContentPreview alloc]initWithDictionary:temp];
@@ -246,7 +262,7 @@
                 NSDictionary *result =[responseObject objectForKey:@"result"] ;
                 NSArray * content = [result objectForKey:@"contents"] ;
                 
-
+                
                 for(NSDictionary* temp in content){
                     
                     ContentPreview *preview = [[ContentPreview alloc]initWithDictionary:temp];
@@ -254,7 +270,7 @@
                     
                     
                 }
-
+                
             }
             
         }
@@ -285,10 +301,7 @@
                 
                 NSDictionary *result =[responseObject objectForKey:@"result"] ;
                 NSArray * content = [result objectForKey:@"contents"] ;
-                
-                
-                movie_trailer_array = [[NSMutableArray alloc]init];
-                [movie_trailer_array addObject:[NSNumber numberWithInt:ENTERTAINMENT_MOVIE_TRAILER]];
+
                 for(NSDictionary* temp in content){
                     
                     ContentPreview *preview = [[ContentPreview alloc]initWithDictionary:temp];
@@ -296,7 +309,7 @@
                     
                     
                 }
-                [movie_array addObject:movie_trailer_array];
+               
             }
             
         }
@@ -306,7 +319,7 @@
                 NSDictionary *result =[responseObject objectForKey:@"result"] ;
                 NSArray * content = [result objectForKey:@"contents"] ;
                 
-
+                
                 for(NSDictionary* temp in content){
                     
                     ContentPreview *preview = [[ContentPreview alloc]initWithDictionary:temp];
@@ -329,7 +342,7 @@
 -(void)setup{
     allObjectArray = [[NSMutableArray alloc]init];
     pageArray = [[NSMutableArray alloc]init];
-     lastStatPage = self.indexPage ;
+    lastStatPage = self.indexPage ;
     
     for (int i = 0; i < self.nameMenu.count; i++) {
         [allObjectArray addObject:[[NSMutableArray alloc]init]];
@@ -338,30 +351,30 @@
     
     
     for (int i = 0; i < self.nameMenu.count; i++) {
-
+        
         if([_nameMenu[i] intValue] == ENTERTAINMENT_NEWS){
-    
+            
             variety_news_array = [[NSMutableArray alloc]init];
             allObjectArray[i] =  variety_news_array;
             
-           
             
-             [self GetContentEntertainment:i AndSubCate :ENTERTAINMENT_NEWS limit:14];
-             //[self GetContentEntertainment:i AndSubCate :ENTERTAINMENT_MUSIC limit:8];
+            
+            [self GetContentEntertainment:i AndSubCate :ENTERTAINMENT_NEWS limit:14];
+            //[self GetContentEntertainment:i AndSubCate :ENTERTAINMENT_MUSIC limit:8];
             
         }
         else if([_nameMenu[i] intValue] == ENTERTAINMENT_VIDEO){
             variety_gossip_array = [[NSMutableArray alloc]init];
-             allObjectArray[i] = variety_gossip_array;
+            allObjectArray[i] = variety_gossip_array;
             
             [self GetContentEntertainment:i AndSubCate :ENTERTAINMENT_VIDEO limit:14];
         }
-        else if([_nameMenu[i] intValue] == ENTERTAINMENT_MOVIE){
-            movie_array = [[NSMutableArray alloc]init];
-            allObjectArray[i] = movie_array;
-            [self GetContentEntertainment:i AndSubCate :ENTERTAINMENT_MOVIE_NEWS limit:14];
+        else if([_nameMenu[i] intValue] == ENTERTAINMENT_MOVIE_TRAILER){
+            movie_trailer_array = [[NSMutableArray alloc]init];
+            allObjectArray[i] = movie_trailer_array;
+           // [self GetContentEntertainment:i AndSubCate :ENTERTAINMENT_MOVIE_NEWS limit:14];
             [self GetContentEntertainment:i AndSubCate :ENTERTAINMENT_MOVIE_TRAILER limit:14];
-    
+            
         }else if([_nameMenu[i] intValue] == ENTERTAINMENT_TV){
             tv_array = [[NSMutableArray alloc]init];
             allObjectArray[i] = tv_array;
@@ -370,7 +383,7 @@
         
     }
     [Manager savePageView:2 orSubCate:0];
-
+    
     
     //initial submenu
     menuArray = self.nameMenu;
@@ -395,7 +408,7 @@
         [fooCollection registerClass:[DtacPlayHeaderHoloCollectionViewCell class] forCellWithReuseIdentifier:@"HeaderCell"];
         //HeaderCell
         [fooCollection registerClass:[UICollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionFooter withReuseIdentifier:@"FooterView"];
-       [fooCollection setBackgroundColor:[UIColor clearColor]];
+        [fooCollection setBackgroundColor:[UIColor clearColor]];
         
         [fooCollection scrollsToTop];
         
@@ -404,12 +417,12 @@
         
         if(self.indexPage == i){
             self.collectionView =fooCollection;
-                __weak EntertainmentViewController *weakSelf = self;
+            __weak EntertainmentViewController *weakSelf = self;
             
-                // setup pull-to-refresh
-                [fooCollection addInfiniteScrollingWithActionHandler:^{
-                    [weakSelf insertRowAtTop];
-                }];
+            // setup pull-to-refresh
+            [fooCollection addInfiniteScrollingWithActionHandler:^{
+                [weakSelf insertRowAtTop];
+            }];
             
         }
         
@@ -455,8 +468,8 @@
             }
             
             [[Manager sharedManager] setBannerArrayEntertainment:bannerArray];
-            pageControl.numberOfPages = [[Manager sharedManager] bannerArrayEntertainment].count;
-            [_carousel reloadData];
+            bannerView.bannerArray = [[Manager sharedManager] bannerArrayEntertainment];
+            [bannerView.carousel reloadData];
             // [self.collectionView reloadData];
         }
         
@@ -471,9 +484,9 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self setCateID:ENTERTAINMENT];
-     if(![[Manager sharedManager]bannerArrayEntertainment])
-         [self getBanner];
-     //[Manager savePageView:2];
+    if(![[Manager sharedManager]bannerArrayEntertainment])
+        [self getBanner];
+    //[Manager savePageView:2];
     //
     //    for (int i = 0 ; i <50; i++) {
     //        NSInteger randomNumber = arc4random() %1000000;
@@ -527,31 +540,20 @@
     imageHeaderColor = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, imageHeader.frame.size.height )];
     
     
-    if(!_carousel)
-        _carousel = [[iCarousel alloc] initWithFrame:CGRectMake(0.0f, 0.0f, imageHeader.frame.size.width, imageHeader.frame.size.height)];
-    _carousel.delegate = self;
-    _carousel.dataSource = self;
-    _carousel.type = iCarouselTypeLinear;
-    _carousel.backgroundColor = [UIColor clearColor];
+    if(!bannerView)
+        bannerView = [[BannerView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
+    bannerView.backgroundColor = [UIColor clearColor];
     //_carousel.
-    [imageHeader addSubview:_carousel];
+    [imageHeader addSubview:bannerView];
     
-    
-    
-    
-    // Page Control
-    if(!pageControl)
-        pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (self.carousel.frame.size.height-20), self.carousel.frame.size.width, 20.0f)];
-    pageControl.numberOfPages = [[Manager sharedManager] bannerArrayEntertainment].count >0  ? [[Manager sharedManager] bannerArrayEntertainment].count : [[Manager sharedManager] bannerArray].count;
-    pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-    pageControl.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-    pageControl.userInteractionEnabled = NO;
-    [_carousel addSubview:pageControl];
-    [timer invalidate];
-    timer = nil;
-    timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
-                                              target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
-    
+    if([[Manager sharedManager] bannerArrayEntertainment]){
+        bannerView.bannerArray =  [[Manager sharedManager]bannerArrayEntertainment];
+    }
+    else{
+        bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
+    }
+    [bannerView.carousel reloadData];
+
     //            imageHeaderImage = [[JBKenBurnsView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 300 )];
     //            [imageHeaderImage animateWithImages:@[[UIImage imageNamed:@"banner_dtacplay.png"]]
     //                             transitionDuration:50
@@ -664,7 +666,7 @@
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
     if([_nameMenu[collectionView.tag] intValue] == ENTERTAINMENT_TV){
-         NSArray *object = allObjectArray.count >0 ? allObjectArray[collectionView.tag] : nil;
+        NSArray *object = allObjectArray.count >0 ? allObjectArray[collectionView.tag] : nil;
         return object.count;
     }
     NSArray *object = allObjectArray.count >0 ? allObjectArray[collectionView.tag] : nil;
@@ -706,91 +708,91 @@
 // The cell that is returned must be retrieved from a call to -dequeueReusableCellWithReuseIdentifier:forIndexPath:
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-//    if([_nameMenu[collectionView.tag] intValue] == ENTERTAINMENT_VARIETY ||[_nameMenu[collectionView.tag] intValue] == ENTERTAINMENT_MOVIE ){
-//        NSArray *object = allObjectArray[collectionView.tag];
-//        NSMutableArray *tempArray = object[indexPath.section];
-//       
-//        if(indexPath.row == 0){
-//            
-//             int subcate = [tempArray[indexPath.row] intValue];
-//            
-//            NSString *identify = @"HeaderCell";
-//            DtacPlayHeaderHoloCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
-//            [cell setBackgroundColor:[UIColor whiteColor]];
-//            [cell.line setBackgroundColor:[UIColor colorWithHexString:COLOR_ENTERTAINMENT]];
-//            [cell.moreButton setImage:[UIImage imageNamed:@"dtacplay_home_more_entertainment"] forState:UIControlStateNormal];
-//            [cell.moreButton addTarget:self action:@selector(moreClick:) forControlEvents:UIControlEventTouchUpInside];
-//            cell.moreButton.tag = subcate;
-//            
-//            [cell.imageView setImage:[UIImage imageNamed:@"dtacplay_horo_daily"]];
-//            [cell.imageView setContentMode:UIViewContentModeScaleAspectFit];
-//            [cell.label setTextColor:[UIColor colorWithHexString:COLOR_ENTERTAINMENT]];
-//            [cell.imageView setBackgroundColor:[UIColor whiteColor]];
-//             [cell.label setText:[Manager getSubcateName:subcate withThai:YES]];
-//            
-//            switch (subcate ) {
-//                case ENTERTAINMENT_NEWS:
-//                    [cell.imageView setImage:[UIImage imageNamed:@"dtacplay_entertainment_news"]];
-//                    break;
-//                case ENTERTAINMENT_GOSSIP:
-//                    [cell.imageView setImage:[UIImage imageNamed:@"dtacplay_entertainment_gossip"]];
-//                    break;
-//                case ENTERTAINMENT_MUSIC:
-//                    [cell.imageView setImage:[UIImage imageNamed:@"dtacplay_entertainment_music"]];
-//                    break;
-//                case ENTERTAINMENT_MOVIE_NEWS:
-//                    [cell.imageView setImage:[UIImage imageNamed:@"dtacplay_entertainment_movie_news"]];
-//                    break;
-//                case ENTERTAINMENT_MOVIE_TRAILER:
-//                    [cell.imageView setImage:[UIImage imageNamed:@"dtacplay_entertainment_movie_trailer"]];
-//                    break;
-//                default:
-//                    [cell.imageView setImage:[UIImage imageNamed:@"dtacplay_horo_secert"]];
-//                    break;
-//            }
-// 
-//            return cell;
-//
-//        }
-//        else{
-//             ContentPreview *articleTemp = tempArray[indexPath.row];
-//            NSString *identify = @"BlockCollectionViewCell";
-//            DtacPlayBlockCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
-//   
-//                [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
-//                                  placeholderImage:[UIImage imageNamed:@"default_image_01_L.jpg"]
-//                                         completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-//                                             
-//                                         }];
-//            
-//          
-//            [cell.label setText:articleTemp.previewTitle];
-//            
-//            cell.layer.masksToBounds = NO;
-//            cell.layer.shadowOffset = CGSizeMake(2, 2);
-//            cell.layer.shadowRadius = 2;
-//            cell.layer.shadowOpacity = 0.5;
-//            cell.layer.shouldRasterize = YES;
-//            cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
-//            
-//            [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
-//            NSLog(@"create cell");
-//            return cell;
-//        }
-//    }
+    //    if([_nameMenu[collectionView.tag] intValue] == ENTERTAINMENT_VARIETY ||[_nameMenu[collectionView.tag] intValue] == ENTERTAINMENT_MOVIE ){
+    //        NSArray *object = allObjectArray[collectionView.tag];
+    //        NSMutableArray *tempArray = object[indexPath.section];
+    //
+    //        if(indexPath.row == 0){
+    //
+    //             int subcate = [tempArray[indexPath.row] intValue];
+    //
+    //            NSString *identify = @"HeaderCell";
+    //            DtacPlayHeaderHoloCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
+    //            [cell setBackgroundColor:[UIColor whiteColor]];
+    //            [cell.line setBackgroundColor:[UIColor colorWithHexString:COLOR_ENTERTAINMENT]];
+    //            [cell.moreButton setImage:[UIImage imageNamed:@"dtacplay_home_more_entertainment"] forState:UIControlStateNormal];
+    //            [cell.moreButton addTarget:self action:@selector(moreClick:) forControlEvents:UIControlEventTouchUpInside];
+    //            cell.moreButton.tag = subcate;
+    //
+    //            [cell.imageView setImage:[UIImage imageNamed:@"dtacplay_horo_daily"]];
+    //            [cell.imageView setContentMode:UIViewContentModeScaleAspectFit];
+    //            [cell.label setTextColor:[UIColor colorWithHexString:COLOR_ENTERTAINMENT]];
+    //            [cell.imageView setBackgroundColor:[UIColor whiteColor]];
+    //             [cell.label setText:[Manager getSubcateName:subcate withThai:YES]];
+    //
+    //            switch (subcate ) {
+    //                case ENTERTAINMENT_NEWS:
+    //                    [cell.imageView setImage:[UIImage imageNamed:@"dtacplay_entertainment_news"]];
+    //                    break;
+    //                case ENTERTAINMENT_GOSSIP:
+    //                    [cell.imageView setImage:[UIImage imageNamed:@"dtacplay_entertainment_gossip"]];
+    //                    break;
+    //                case ENTERTAINMENT_MUSIC:
+    //                    [cell.imageView setImage:[UIImage imageNamed:@"dtacplay_entertainment_music"]];
+    //                    break;
+    //                case ENTERTAINMENT_MOVIE_NEWS:
+    //                    [cell.imageView setImage:[UIImage imageNamed:@"dtacplay_entertainment_movie_news"]];
+    //                    break;
+    //                case ENTERTAINMENT_MOVIE_TRAILER:
+    //                    [cell.imageView setImage:[UIImage imageNamed:@"dtacplay_entertainment_movie_trailer"]];
+    //                    break;
+    //                default:
+    //                    [cell.imageView setImage:[UIImage imageNamed:@"dtacplay_horo_secert"]];
+    //                    break;
+    //            }
+    //
+    //            return cell;
+    //
+    //        }
+    //        else{
+    //             ContentPreview *articleTemp = tempArray[indexPath.row];
+    //            NSString *identify = @"BlockCollectionViewCell";
+    //            DtacPlayBlockCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
+    //
+    //                [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
+    //                                  placeholderImage:[UIImage imageNamed:@"default_image_01_L.jpg"]
+    //                                         completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+    //
+    //                                         }];
+    //
+    //
+    //            [cell.label setText:articleTemp.previewTitle];
+    //
+    //            cell.layer.masksToBounds = NO;
+    //            cell.layer.shadowOffset = CGSizeMake(2, 2);
+    //            cell.layer.shadowRadius = 2;
+    //            cell.layer.shadowOpacity = 0.5;
+    //            cell.layer.shouldRasterize = YES;
+    //            cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
+    //
+    //            [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
+    //            NSLog(@"create cell");
+    //            return cell;
+    //        }
+    //    }
     NSArray *object = allObjectArray[collectionView.tag];
     ContentPreview *articleTemp = object[indexPath.row];
     NSString *identify = @"BlockCollectionViewCell";
     DtacPlayBlockCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
     
- 
-        [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
-                          placeholderImage:[UIImage imageNamed:@"default_image_01_L.jpg"]
-                                 completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                                     
-                                 }];
+    
+    [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
+                      placeholderImage:[UIImage imageNamed:@"default_image_01_L.jpg"]
+                             completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                                 
+                             }];
     [cell.label setText:articleTemp.previewTitle];
-
+    
     cell.layer.masksToBounds = NO;
     cell.layer.shadowOffset = CGSizeMake(2, 2);
     cell.layer.shadowRadius = 2;
@@ -817,33 +819,33 @@
         
     }else{
         
-       return CGSizeMake(w_1,(w_1*144)/300+(IDIOM == IPAD ? 60 : 50));
+        return CGSizeMake(w_1,(w_1*144)/300+(IDIOM == IPAD ? 60 : 50));
     }
 }
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
     
     if([_nameMenu[collectionView.tag] intValue] == ENTERTAINMENT_TV){
-    EntertainmentDetailViewController * articleView= [[EntertainmentDetailViewController alloc]init];
-    NSArray *object = allObjectArray[currentPage];
-    //NSMutableArray *temp =  object[indexPath.section];
-    ContentPreview *preview = object[indexPath.row];
-    articleView.contentID = preview.contentID;
-    articleView.pageType = self.pageType;
-    articleView.themeColor = self.themeColor;
-    
-    NSString *nameMenu = [Manager getSubcateName:[self.nameMenu[collectionView.tag]  intValue] withThai:YES];
-
-    articleView.titlePage = nameMenu;
-    UIBarButtonItem *newBackButton =
-    [[UIBarButtonItem alloc] initWithTitle:@" "
-                                     style:UIBarButtonItemStyleBordered
-                                    target:nil
-                                    action:nil];
-    [self.navigationItem setBackBarButtonItem:newBackButton];
-    self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-    [self.navigationController pushViewController:articleView animated:YES];
+        EntertainmentDetailViewController * articleView= [[EntertainmentDetailViewController alloc]init];
+        NSArray *object = allObjectArray[currentPage];
+        //NSMutableArray *temp =  object[indexPath.section];
+        ContentPreview *preview = object[indexPath.row];
+        articleView.contentID = preview.contentID;
+        articleView.pageType = self.pageType;
+        articleView.themeColor = self.themeColor;
+        
+        NSString *nameMenu = [Manager getSubcateName:[self.nameMenu[collectionView.tag]  intValue] withThai:YES];
+        
+        articleView.titlePage = nameMenu;
+        UIBarButtonItem *newBackButton =
+        [[UIBarButtonItem alloc] initWithTitle:@" "
+                                         style:UIBarButtonItemStyleBordered
+                                        target:nil
+                                        action:nil];
+        [self.navigationItem setBackBarButtonItem:newBackButton];
+        self.navigationController.navigationBar.tintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
+        [self.navigationController pushViewController:articleView animated:YES];
     }else{
-       
+        
         EntertainmentDetailViewController * articleView= [[EntertainmentDetailViewController alloc]init];
         NSArray *object = allObjectArray[currentPage];
         ContentPreview *preview = object[indexPath.row];
@@ -870,10 +872,10 @@
 -(void)moreClick:(UIButton*)button{
     
     ListContentEntertainmentViewController * articleView= [[ListContentEntertainmentViewController alloc]init];
-
+    
     articleView.cate = ENTERTAINMENT;
     articleView.subCate =(int)ceil(button.tag);
-  
+    
     UIBarButtonItem *newBackButton =
     [[UIBarButtonItem alloc] initWithTitle:@" "
                                      style:UIBarButtonItemStyleBordered
@@ -1011,14 +1013,14 @@ referenceSizeForFooterInSection:(NSInteger)section
     self.indexPage =(int)swipeView.currentItemIndex;
     self.collectionView = collectionViewArray[currentPage];
     
-   
-        __weak EntertainmentViewController *weakSelf = self;
-        
-        // setup pull-to-refresh
-        [ self.collectionView  addInfiniteScrollingWithActionHandler:^{
-            [weakSelf insertRowAtTop];
-        }];
-        self.collectionView.showsInfiniteScrolling = YES;
+    
+    __weak EntertainmentViewController *weakSelf = self;
+    
+    // setup pull-to-refresh
+    [ self.collectionView  addInfiniteScrollingWithActionHandler:^{
+        [weakSelf insertRowAtTop];
+    }];
+    self.collectionView.showsInfiniteScrolling = YES;
     
     
     
@@ -1028,8 +1030,8 @@ referenceSizeForFooterInSection:(NSInteger)section
         //
         NSNumber *number = self.nameMenu[swipeView.currentItemIndex];
         
-                [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:ENTERTAINMENT withSubCate:[number intValue] :nil]}];
-                [Manager savePageView:0 orSubCate:[number intValue]];
+        [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:ENTERTAINMENT withSubCate:[number intValue] :nil]}];
+        [Manager savePageView:0 orSubCate:[number intValue]];
         lastStatPage = (int)swipeView.currentItemIndex;
     }
     
@@ -1043,8 +1045,8 @@ referenceSizeForFooterInSection:(NSInteger)section
 }
 -(void)runLoop:(NSTimer*)NSTimer{
     
-    if(_carousel)
-        [_carousel scrollToItemAtIndex:self.carousel.currentItemIndex+1 animated:YES];
+    if(bannerView.carousel)
+        [bannerView.carousel scrollToItemAtIndex:bannerView.carousel.currentItemIndex+1 animated:YES];
     
     
     
@@ -1058,83 +1060,6 @@ referenceSizeForFooterInSection:(NSInteger)section
 {
     NSLog(@"xx");
 }
-#pragma mark -
-#pragma mark iCarousel methods
-- (void)carousel:(iCarousel *)carousel didSelectItemAtIndex:(NSInteger)index{
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayEntertainment]){
-        temp  = [[Manager sharedManager] bannerArrayEntertainment ][index];
-    }
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:temp.link]];
-}
-- (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
-{
-    //return the total number of items in the carousel
-    if([[Manager sharedManager] bannerArrayEntertainment]){
-        return [[Manager sharedManager]bannerArrayEntertainment].count;
-    }
-    else{
-        return [[Manager sharedManager]bannerArray].count;
-    }
-}
-- (NSUInteger)numberOfVisibleItemsInCarousel:(iCarousel *)carousel
-{
-    //limit the number of items views loaded concurrently (for performance reasons)
-    return 4;
-}
-- (void)scrollToItemAtIndex:(NSInteger)index
-                   duration:(NSTimeInterval)scrollDuration{
-    
-    
-}
-- (void)carouselCurrentItemIndexDidChange:(__unused iCarousel *)carousel
-{
-    //NSLog(@"Index: %@", @(self.carousel.currentItemIndex));
-    pageControl.currentPage = self.carousel.currentItemIndex;
-}
-- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
-{
-    UIImageView *viewsImage = [[UIImageView alloc] initWithFrame:_carousel.frame];
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayEntertainment]){
-        temp  = [[Manager sharedManager] bannerArrayEntertainment ][index];
-    }
-    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-    [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-                          options:0
-                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                             // progression tracking code
-                         }
-                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                            if (image) {
-                                viewsImage.image = image;
-                            }
-                            
-                            
-                            
-                        }];
-    
-    [viewsImage setContentMode:UIViewContentModeScaleToFill];
-    return viewsImage;
-    
-}
-- (BOOL)carouselShouldWrap:(iCarousel *)carousel
-{
-    //wrap all carousels
-    return NO;
-}
-- (CGFloat)carousel:(iCarousel *)carousel valueForOption:(iCarouselOption)option withDefault:(CGFloat)value
-{
-    
-    if (option == iCarouselOptionWrap) {
-        return YES;
-    }
-    return value;
-}
-
-
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.

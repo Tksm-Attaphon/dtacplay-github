@@ -12,7 +12,6 @@
 #import "Constant.h"
 @interface ListContentDownloadViewController : DtacPlayViewController
 
-@property (strong, nonatomic) iCarousel *carousel;
 @property(nonatomic,strong)UICollectionView *collectionView;
 
 @property (assign, nonatomic) CategorryType cate;

@@ -19,6 +19,8 @@
         self.feedID = [self isNSNull: [dictionary objectForKey:@"feedId"]];
         self.smrtAdsRefId = [self isNSNull: [dictionary objectForKey:@"smrtAdsRefId"]];
         self.title = [self isNSNull:  [dictionary objectForKey:@"title"]];
+        self.title = [self clearEntityHtml:self.title];
+        
         self.descriptionContent = [self isNSNull: [dictionary objectForKey:@"description"]];
         self.link =[self isNSNull: [dictionary objectForKey:@"link"]] ;
         
@@ -54,6 +56,9 @@
         
          _cpaConId = [self isNSNull: [dictionary objectForKey:@"cpaConId"]];
         _aocLink = [self isNSNull: [dictionary objectForKey:@"aocLink"]];
+        
+        _aocLink = [_aocLink stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        
         _flgNew = [[self isNSNull: [dictionary objectForKey:@"flgNew"]] boolValue];
         _flgHot = [[self isNSNull: [dictionary objectForKey:@"flgHot"]] boolValue];
         _flgRec = [[self isNSNull: [dictionary objectForKey:@"flgRec"]] boolValue];

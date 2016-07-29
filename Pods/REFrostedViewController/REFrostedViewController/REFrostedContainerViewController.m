@@ -79,7 +79,9 @@
     
     if (self.frostedViewController.menuViewController) {
         [self addChildViewController:self.frostedViewController.menuViewController];
-        self.frostedViewController.menuViewController.view.frame = self.containerView.bounds;
+        
+        
+        self.frostedViewController.menuViewController.view.frame = self.containerView.frame;
         [self.containerView addSubview:self.frostedViewController.menuViewController.view];
         [self.frostedViewController.menuViewController didMoveToParentViewController:self];
     }

@@ -15,7 +15,7 @@
 #import "NewsDetailViewController.h"
 #import "DtacPlayViewController.h"
 
-@interface NewsViewController :  DtacPlayViewController<SwipeViewDelegate, SwipeViewDataSource,iCarouselDataSource,iCarouselDelegate>
+@interface NewsViewController :  DtacPlayViewController<SwipeViewDelegate, SwipeViewDataSource>
 {
     UIPageControl *pageControl;
 }
@@ -25,7 +25,7 @@
 @property(nonatomic) SubCategorry subeType;
 
 @property(nonatomic,strong) NSArray *nameMenu;
-@property (strong, nonatomic) iCarousel *carousel;
+
 @property (nonatomic, strong) SwipeView *swipeView;
 
 @property (nonatomic, strong) SwipeView *swipeViewHoro;

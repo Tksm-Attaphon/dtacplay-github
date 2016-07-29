@@ -25,12 +25,13 @@
 
 #import "UIViewController+REFrostedViewController.h"
 #import "REFrostedViewController.h"
-
+#import "REFrostedContainerViewController.h"
 @implementation UIViewController (REFrostedViewController)
 
-- (void)re_displayController:(UIViewController *)controller frame:(CGRect)frame
+- (void)re_displayController:(REFrostedContainerViewController *)controller frame:(CGRect)frame
 {
     [self addChildViewController:controller];
+    
     controller.view.frame = frame;
     [self.view addSubview:controller.view];
     [controller didMoveToParentViewController:self];

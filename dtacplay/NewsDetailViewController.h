@@ -11,8 +11,8 @@
 #import "Constant.h"
 #import "DtacPlayViewController.h"
 #import "ArticleContent.h"
-@interface NewsDetailViewController : DtacPlayViewController<iCarouselDataSource,iCarouselDelegate>
-@property (strong, nonatomic) iCarousel *carousel;
+@interface NewsDetailViewController : DtacPlayViewController
+
 @property(strong, nonatomic) ArticleContent *content;
 @property(strong, nonatomic) UIScrollView *scrollView;
 @property(nonatomic,assign )NSString *contentID;

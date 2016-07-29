@@ -31,7 +31,7 @@
 #import "Banner.h"
 #import "BannerImage.h"
 
-
+#import "BannerView.h"
 
 @interface NewsDetailViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,UICollectionViewDelegate,UIGestureRecognizerDelegate,RTLabelDelegate,DWTagListDelegate,UIWebViewDelegate,SocialShare>
 {
@@ -57,8 +57,9 @@
     BOOL isFinishLoad;
     MBProgressHUD *hudWebView ;
     NSTimer *timer;
-   
+    
     NSURL *linkBanner;
+    BannerView *bannerView;
 }
 @property (nonatomic, strong) NSMutableArray        *array;
 @property (nonatomic, strong) DWTagList             *tagList;
@@ -85,27 +86,27 @@
             article = [[ContentDetail alloc]initWithDictionary:result];
             [self getBannerCredit:[article.feedID intValue]];
             if(article.feedID){
-            NSString *canReadDate = [Manager dateTimeToReadableString:article.publishDate];
-            article.title = [NSString stringWithFormat:@"%@\n",article.title];
-            titleHeader.text = article.title ;
-            
-            UIFont *arialFont = [UIFont fontWithName:FONT_DTAC_REGULAR size:IDIOM == IPAD ? 22 : 18];
-            NSDictionary *arialDict = [NSDictionary dictionaryWithObject: arialFont forKey:NSFontAttributeName];
-            NSMutableAttributedString *aAttrString = [[NSMutableAttributedString alloc] initWithString:article.title attributes: arialDict];
-            
-            UIFont *VerdanaFont = [UIFont fontWithName:@"HelveticaNeue" size:IDIOM == IPAD ? 16 : 14];
-            NSDictionary *verdanaDict = [NSDictionary dictionaryWithObject:VerdanaFont forKey:NSFontAttributeName];
-            NSMutableAttributedString *vAttrString = [[NSMutableAttributedString alloc]initWithString: canReadDate attributes:verdanaDict];
-         
-            [aAttrString appendAttributedString:vAttrString];
-            
-            
-            titleHeader.attributedText = aAttrString;
-            
+                NSString *canReadDate = [Manager dateTimeToReadableString:article.publishDate];
+                article.title = [NSString stringWithFormat:@"%@\n",article.title];
+                titleHeader.text = article.title ;
+                
+                UIFont *arialFont = [UIFont fontWithName:FONT_DTAC_REGULAR size:IDIOM == IPAD ? 22 : 18];
+                NSDictionary *arialDict = [NSDictionary dictionaryWithObject: arialFont forKey:NSFontAttributeName];
+                NSMutableAttributedString *aAttrString = [[NSMutableAttributedString alloc] initWithString:article.title attributes: arialDict];
+                
+                UIFont *VerdanaFont = [UIFont fontWithName:@"HelveticaNeue" size:IDIOM == IPAD ? 16 : 14];
+                NSDictionary *verdanaDict = [NSDictionary dictionaryWithObject:VerdanaFont forKey:NSFontAttributeName];
+                NSMutableAttributedString *vAttrString = [[NSMutableAttributedString alloc]initWithString: canReadDate attributes:verdanaDict];
+                
+                [aAttrString appendAttributedString:vAttrString];
+                
+                
+                titleHeader.attributedText = aAttrString;
+                
             }
             else{
                 //NSString *canReadDate = [Manager dateTimeToReadableString:article.publishDate];
-             
+                
                 titleHeader.text = article.title ;
                 
                 
@@ -123,10 +124,10 @@
             UIView *line = [[UIView alloc]initWithFrame:CGRectMake(0, titleHeader.frame.size.height+titleHeader.frame.origin.y, scrollViewWidth, 1 )];
             [line setBackgroundColor:[UIColor colorWithHexString:COLOR_NEWS]];
             [self.scrollView addSubview:line];
-          
+            
             [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:NEWS withSubCate:article.subCateID :article.title]}];
             
-           
+            
         }
         [self.collectionView reloadData];
         [hud hide:YES];
@@ -157,40 +158,28 @@
     self.scrollView.clipsToBounds  = NO;
     [self.scrollView setBackgroundColor:[UIColor whiteColor]];
     [self.view addSubview:self.scrollView];
-   
+    
     imageHeader = [[UIView alloc]initWithFrame:CGRectMake(-10, 0, screenWidth, [[Manager sharedManager]bannerHeight] )];
     
     [imageHeader setBackgroundColor:[UIColor whiteColor]];
     
     imageHeader.clipsToBounds = YES;
     
-    
-    if(!_carousel)
-        _carousel = [[iCarousel alloc] initWithFrame:CGRectMake(0.0f, 0.0f, imageHeader.frame.size.width, imageHeader.frame.size.height)];
-    _carousel.delegate = self;
-    _carousel.dataSource = self;
-    _carousel.type = iCarouselTypeLinear;
-    _carousel.backgroundColor = [UIColor clearColor];
+    if(!bannerView)
+        bannerView = [[BannerView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
+    bannerView.backgroundColor = [UIColor clearColor];
     //_carousel.
-    [imageHeader addSubview:_carousel];
+    [imageHeader addSubview:bannerView];
+    
+    if([[Manager sharedManager] bannerArrayFreezone]){
+        bannerView.bannerArray =  [[Manager sharedManager]bannerArrayFreezone];
+    }
+    else{
+        bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
+    }
+    [bannerView.carousel reloadData];
     
     
-    
-    
-    // Page Control
-    if(!pageControl)
-        pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (self.carousel.frame.size.height-20), self.carousel.frame.size.width, 20.0f)];
-    pageControl.numberOfPages = [[Manager sharedManager] bannerArrayNews].count >0  ? [[Manager sharedManager] bannerArrayNews].count : [[Manager sharedManager] bannerArray].count;;
-    pageControl.currentPage = 0;
-    pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-    pageControl.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-    pageControl.userInteractionEnabled = NO;
-    [timer invalidate];
-    timer = nil;
-    timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
-                                              target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
-    
-    [_carousel addSubview:pageControl];
     [self.scrollView addSubview:imageHeader];
     
     [self.scrollView sendSubviewToBack:imageHeader];
@@ -291,7 +280,7 @@
     [imageView addGestureRecognizer:pgr];
     
     imageView.tag = 11;
- 
+    
     [self.content.contentArray addObject:imageView];
     
     
@@ -301,7 +290,7 @@
     view.delegate = self;
     view.parentView = self;
     //NSArray *keys = [NSArray arrayWithObjects:@"title", @"description", @"imageURL", @"contentURL", nil];
-
+    
     NSString *url;
     switch (article.subCateID) {
         case NEWS_WIKI:
@@ -328,12 +317,12 @@
     }
     
     if(article.subCateID == NEWS_WIKI){
-         [view setValueForShareTitle:[NSString stringWithFormat:@"วันนี้ในอดีต %@ โดย Wiki",article.title] Description:article.descriptionContent ImageUrl:article.images.imageL ContentURL:url  Category:[article.cateID intValue] SubCategoryType:article.subCateID contentID:[article.contentID intValue]];
+        [view setValueForShareTitle:[NSString stringWithFormat:@"วันนี้ในอดีต %@ โดย Wiki",article.title] Description:article.descriptionContent ImageUrl:article.images.imageL ContentURL:url  Category:[article.cateID intValue] SubCategoryType:article.subCateID contentID:[article.contentID intValue]];
     }
     else{
-         [view setValueForShareTitle:article.title Description:article.descriptionContent ImageUrl:article.images.imageL ContentURL:url  Category:[article.cateID intValue] SubCategoryType:article.subCateID contentID:[article.contentID intValue]];
+        [view setValueForShareTitle:article.title Description:article.descriptionContent ImageUrl:article.images.imageL ContentURL:url  Category:[article.cateID intValue] SubCategoryType:article.subCateID contentID:[article.contentID intValue]];
     }
-   
+    
     
     [view setBackgroundColor:[UIColor clearColor]];
     [self.content.contentArray addObject:view];
@@ -357,34 +346,34 @@
     //    label.tag = 99;
     //    [self.content.contentArray addObject:label];
     /////
-//    if(article.subCateID == NEWS_WIKI){
-//        NSString* supporter = [Manager returnSupporter:[article.feedID intValue] :@"สนับสนุนเนื้อหาโดย Wikipedia" : @"http://m.wikipedia.org" ];
-//        article.descriptionContent = [NSString stringWithFormat:@"%@ %@",article.descriptionContent,supporter];
-//        UIImage *image  = [UIImage imageNamed:@"banner_wiki.jpg"];
-//        linkBanner =[NSURL URLWithString:@"http://m.wikipedia.org"] ;
-//        bottomImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, _tagList.frame.size.height+contentView.frame.origin.y + contentView.frame.size.height+10, self.scrollView.frame.size.width, (200*contentView.frame.size.width)/940)];
-//        [self.scrollView addSubview:bottomImage];
-//        [bottomImage setContentMode:UIViewContentModeScaleAspectFit];
-//        [bottomImage setImage:image];
-//        [bottomImage setBackgroundColor:[UIColor clearColor]];
-//       
-//        
-//        
-//        [bottomImage setUserInteractionEnabled:YES];
-//        UITapgetstureRecognizer* singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
-//        
-//        singleTap.numberOfTapsRequired = 1;
-//        singleTap.numberOfTouchesRequired = 1;
-//        [bottomImage addGestureRecognizer: singleTap];
-//        
-//        
-//        
-//        
-//    }
+    //    if(article.subCateID == NEWS_WIKI){
+    //        NSString* supporter = [Manager returnSupporter:[article.feedID intValue] :@"สนับสนุนเนื้อหาโดย Wikipedia" : @"http://m.wikipedia.org" ];
+    //        article.descriptionContent = [NSString stringWithFormat:@"%@ %@",article.descriptionContent,supporter];
+    //        UIImage *image  = [UIImage imageNamed:@"banner_wiki.jpg"];
+    //        linkBanner =[NSURL URLWithString:@"http://m.wikipedia.org"] ;
+    //        bottomImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, _tagList.frame.size.height+contentView.frame.origin.y + contentView.frame.size.height+10, self.scrollView.frame.size.width, (200*contentView.frame.size.width)/940)];
+    //        [self.scrollView addSubview:bottomImage];
+    //        [bottomImage setContentMode:UIViewContentModeScaleAspectFit];
+    //        [bottomImage setImage:image];
+    //        [bottomImage setBackgroundColor:[UIColor clearColor]];
+    //
+    //
+    //
+    //        [bottomImage setUserInteractionEnabled:YES];
+    //        UITapgetstureRecognizer* singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
+    //
+    //        singleTap.numberOfTapsRequired = 1;
+    //        singleTap.numberOfTouchesRequired = 1;
+    //        [bottomImage addGestureRecognizer: singleTap];
+    //
+    //
+    //
+    //
+    //    }
     if(article.feedID == nil){
         if(article.descriptionContent != nil){
             RTLabel *textView = [[RTLabel alloc]initWithFrame:CGRectMake(0, 0, scrollViewWidth-20, 1000)];
-               [textView setDisableSingleLine:YES];
+            [textView setDisableSingleLine:YES];
             [textView setText:@""];
             textView.delegate = self;
             textView.textColor =[UIColor colorWithHexString:DEFAULT_TEXT_COLOR];
@@ -400,7 +389,7 @@
             //textView.text = para.descriptionContent;
             [textView setNeedsDisplay];
             
-        
+            
             [textView setFrame:CGRectMake(0, 0, textView.frame.size.width, textView.optimumSize.height+20)];
             [self.content.contentArray addObject:textView];
         }
@@ -417,12 +406,12 @@
                 [textView setFont:[UIFont fontWithName:@"HelveticaNeue" size:IDIOM==IPAD ? 18: 16]];
                 textView.tag =88;
                 [textView setText:para.descriptionContent];
-                 [textView setNeedsDisplay];
+                [textView setNeedsDisplay];
                 
                 
                 
                 [textView setFrame:CGRectMake(0, 0, scrollViewWidth, textView.optimumSize.height)];
-               
+                
                 
                 [self.content.contentArray addObject:textView];
                 
@@ -433,29 +422,29 @@
                     imageView = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, width,image.size.height  )];
                 else
                     imageView = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, width, (width*image.size.height)/ image.size.width  )];
-               
-                    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-                    [manager downloadImageWithURL:[NSURL URLWithString:para.images.imageL]
-                     
-                                          options:0
-                                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                                             // progression tracking code
-                                         }
-                                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                                            if (image) {
-                                                [imageView setImage:image];
-                                                imageView.tag = 66;
-                                                float width = scrollViewWidth;
-                                                
-                                                [imageView setFrame:CGRectMake(0, 0, width, (width*image.size.height)/ image.size.width  )];
-                                                
-                                                [imageView setContentMode:UIViewContentModeScaleAspectFit];
-                                                [self setFrameContent];
-                                            }
+                
+                SDWebImageManager *manager = [SDWebImageManager sharedManager];
+                [manager downloadImageWithURL:[NSURL URLWithString:para.images.imageL]
+                 
+                                      options:0
+                                     progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+                                         // progression tracking code
+                                     }
+                                    completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
+                                        if (image) {
+                                            [imageView setImage:image];
+                                            imageView.tag = 66;
+                                            float width = scrollViewWidth;
                                             
+                                            [imageView setFrame:CGRectMake(0, 0, width, (width*image.size.height)/ image.size.width  )];
                                             
-                                        }];
-           
+                                            [imageView setContentMode:UIViewContentModeScaleAspectFit];
+                                            [self setFrameContent];
+                                        }
+                                        
+                                        
+                                    }];
+                
                 imageView.userInteractionEnabled = YES;
                 
                 UITapGestureRecognizer *pgr = [[UITapGestureRecognizer alloc]
@@ -469,25 +458,25 @@
     }
     else{
         NSString *supporter = @"";
-//        switch (article.subCateID) {
-//            case 1:
-//                supporter = @"<a style=\"color:424242; text-decoration: none;\" href=\"http://www.innnews.co.th/\">สนับสนุนเนื้อหาโดย INN News</a>";
-//                break;
-//            case 2:
-//                supporter = @"<a style=\"color:424242; text-decoration: none;\" href=\"http://www.innnews.co.th/\">สนับสนุนเนื้อหาโดย INN News</a>";
-//                break;
-//            case 3:
-//                supporter = @"<a style=\"color:424242; text-decoration: none;\" href=\"http://www.innnews.co.th/\">สนับสนุนเนื้อหาโดย INN News</a>";
-//                break;
-//            case 4:
-//                supporter = @"<a style=\"color:424242; text-decoration: none; \"  href=\" http://www.siamphone.com/\">สนับสนุนเนื้อหาโดย SiamPhone.com</a>";
-//                break;
-//                
-//            default:
-//                break;
-//        }
+        //        switch (article.subCateID) {
+        //            case 1:
+        //                supporter = @"<a style=\"color:424242; text-decoration: none;\" href=\"http://www.innnews.co.th/\">สนับสนุนเนื้อหาโดย INN News</a>";
+        //                break;
+        //            case 2:
+        //                supporter = @"<a style=\"color:424242; text-decoration: none;\" href=\"http://www.innnews.co.th/\">สนับสนุนเนื้อหาโดย INN News</a>";
+        //                break;
+        //            case 3:
+        //                supporter = @"<a style=\"color:424242; text-decoration: none;\" href=\"http://www.innnews.co.th/\">สนับสนุนเนื้อหาโดย INN News</a>";
+        //                break;
+        //            case 4:
+        //                supporter = @"<a style=\"color:424242; text-decoration: none; \"  href=\" http://www.siamphone.com/\">สนับสนุนเนื้อหาโดย SiamPhone.com</a>";
+        //                break;
+        //
+        //            default:
+        //                break;
+        //        }
         NSString* content = [NSString stringWithFormat:@"<style type='text/css'>img {width: %fpx; height: auto;} body{ background-color: f5f5f5; color:424242; }</style>%@",scrollViewWidth-20,article.descriptionContent == nil ?@"" : article.descriptionContent ];
-        textWebView = [[UIWebView alloc]initWithFrame:CGRectMake(0, 0, scrollViewWidth, 1000)];
+        textWebView = [[UIWebView alloc]initWithFrame:CGRectMake(0, 0, scrollViewWidth, 2000)];
         [textWebView loadHTMLString:content baseURL:nil];
         textWebView.tag =78952;
         textWebView.delegate = self;
@@ -496,7 +485,7 @@
         textWebView.scrollView.bounces = NO;
         [self.content.contentArray addObject:textWebView];
         [textWebView setBackgroundColor:[UIColor whiteColor]];
-
+        
     }
     /////
     
@@ -589,82 +578,82 @@
     contentView.layer.shadowOffset = CGSizeMake(1, 1);
     contentView.layer.shadowRadius = 2;
     contentView.layer.shadowOpacity = 0.5;
-//    contentView.layer.shouldRasterize = YES;
-//    contentView.layer.rasterizationScale = [UIScreen mainScreen].scale;
- 
-//   
-//    if(article.subCateID == 1 || article.subCateID == 2 ||article.subCateID == 3 ||article.subCateID == 4){
-//         UIImage *image = [UIImage imageNamed:@"Horoscope_banner_L.jpg"];
-//        if(!bottomImage){
-//       
-//            switch (article.subCateID) {
-//                case 1:
-//                    image = [UIImage imageNamed:@"Horoscope_banner_L.jpg"];
-//                    break;
-//                case 2:
-//                    image = [UIImage imageNamed:@"Horoscope_banner_L.jpg"];
-//                    break;
-//                case 3:
-//                    image = [UIImage imageNamed:@"Horoscope_banner_L.jpg"];
-//                    break;
-//                case 4:
-//                    image = [UIImage imageNamed:@"Horoscope_banner_L.jpg"];
-//                    break;
-//                default:
-//                    break;
-//            }
-//        bottomImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, _tagList.frame.size.height+contentView.frame.origin.y + contentView.frame.size.height+10, self.scrollView.frame.size.width, (image.size.height*self.scrollView.frame.size.width)/image.size.width)];
-//        [self.scrollView addSubview:bottomImage];
-//        [bottomImage setContentMode:UIViewContentModeScaleAspectFit];
-//        [bottomImage setImage:image];
-//        }else{
-//            [bottomImage  setFrame:CGRectMake(0, _tagList.frame.size.height+contentView.frame.origin.y + contentView.frame.size.height+5, self.scrollView.frame.size.width, (image.size.height*self.scrollView.frame.size.width)/image.size.width+10)];
-//        }
-//    }
+    //    contentView.layer.shouldRasterize = YES;
+    //    contentView.layer.rasterizationScale = [UIScreen mainScreen].scale;
+    
+    //
+    //    if(article.subCateID == 1 || article.subCateID == 2 ||article.subCateID == 3 ||article.subCateID == 4){
+    //         UIImage *image = [UIImage imageNamed:@"Horoscope_banner_L.jpg"];
+    //        if(!bottomImage){
+    //
+    //            switch (article.subCateID) {
+    //                case 1:
+    //                    image = [UIImage imageNamed:@"Horoscope_banner_L.jpg"];
+    //                    break;
+    //                case 2:
+    //                    image = [UIImage imageNamed:@"Horoscope_banner_L.jpg"];
+    //                    break;
+    //                case 3:
+    //                    image = [UIImage imageNamed:@"Horoscope_banner_L.jpg"];
+    //                    break;
+    //                case 4:
+    //                    image = [UIImage imageNamed:@"Horoscope_banner_L.jpg"];
+    //                    break;
+    //                default:
+    //                    break;
+    //            }
+    //        bottomImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, _tagList.frame.size.height+contentView.frame.origin.y + contentView.frame.size.height+10, self.scrollView.frame.size.width, (image.size.height*self.scrollView.frame.size.width)/image.size.width)];
+    //        [self.scrollView addSubview:bottomImage];
+    //        [bottomImage setContentMode:UIViewContentModeScaleAspectFit];
+    //        [bottomImage setImage:image];
+    //        }else{
+    //            [bottomImage  setFrame:CGRectMake(0, _tagList.frame.size.height+contentView.frame.origin.y + contentView.frame.size.height+5, self.scrollView.frame.size.width, (image.size.height*self.scrollView.frame.size.width)/image.size.width+10)];
+    //        }
+    //    }
     if(article.tags){
-    if(!_tagList){
-        NSArray *tag_tmp_1 = article.tags;
-        
-        _tagList = [[DWTagList alloc] initWithFrame:CGRectMake(0.0f, contentView.frame.origin.y + contentView.frame.size.height +10, self.view.frame.size.width-20, 120)];
-        
-        
-        _array = [[NSMutableArray alloc]init];
-        
-        
-        
-        //        for (NSString *object in tag_tmp_1) {
-        //
-        //            [_array addObject:object];
-        //        }
-        //        //_array = [[NSMutableArray alloc] initWithObjects:
-        //        //  @"Graphic",
-        //        //  @"Floral",
-        //        //   @"Animal",
-        //        //  nil];
-        //        if(_array)
-        //            [_array sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-        //                NSString * str1 = [(NSString *)obj1 substringFromIndex:0];
-        //                NSString * str2 = [(NSString *)obj2 substringFromIndex:0];
-        //                return [str1 compare:str2 options:NSNumericSearch];
-        //            }];
-        [_tagList setTags:tag_tmp_1];
-        _tagList.automaticResize = YES;
-        [_tagList setTagDelegate:self];
-        // Customisation
-        
-        [_tagList setFont:[UIFont fontWithName:FONT_DTAC_LIGHT size:IDIOM == IPAD ? 16 : 14]];
-        [_tagList setTextColor:self.themeColor];
-        [_tagList setTagBackgroundColor:[UIColor whiteColor]];
-        [_tagList setCornerRadius:0.0f];
-        [_tagList setBorderColor:[UIColor clearColor]];
-        [_tagList setBorderWidth:1.0f];
-        [self.scrollView addSubview:_tagList];
-        //  [_tagList setBackgroundColor:[UIColor redColor]];
-        [_tagList setFrame:CGRectMake(0, contentView.frame.size.height+contentView.frame.origin.y+10, self.scrollView.frame.size.width-10, _tagList.contentSize.height)];
-    }
-    else{
-        [_tagList setFrame:CGRectMake(0, contentView.frame.size.height+contentView.frame.origin.y+10, self.scrollView.frame.size.width-10, _tagList.contentSize.height)];
-    }
+        if(!_tagList){
+            NSArray *tag_tmp_1 = article.tags;
+            
+            _tagList = [[DWTagList alloc] initWithFrame:CGRectMake(0.0f, contentView.frame.origin.y + contentView.frame.size.height +10, self.view.frame.size.width-20, 120)];
+            
+            
+            _array = [[NSMutableArray alloc]init];
+            
+            
+            
+            //        for (NSString *object in tag_tmp_1) {
+            //
+            //            [_array addObject:object];
+            //        }
+            //        //_array = [[NSMutableArray alloc] initWithObjects:
+            //        //  @"Graphic",
+            //        //  @"Floral",
+            //        //   @"Animal",
+            //        //  nil];
+            //        if(_array)
+            //            [_array sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+            //                NSString * str1 = [(NSString *)obj1 substringFromIndex:0];
+            //                NSString * str2 = [(NSString *)obj2 substringFromIndex:0];
+            //                return [str1 compare:str2 options:NSNumericSearch];
+            //            }];
+            [_tagList setTags:tag_tmp_1];
+            _tagList.automaticResize = YES;
+            [_tagList setTagDelegate:self];
+            // Customisation
+            
+            [_tagList setFont:[UIFont fontWithName:FONT_DTAC_LIGHT size:IDIOM == IPAD ? 16 : 14]];
+            [_tagList setTextColor:self.themeColor];
+            [_tagList setTagBackgroundColor:[UIColor whiteColor]];
+            [_tagList setCornerRadius:0.0f];
+            [_tagList setBorderColor:[UIColor clearColor]];
+            [_tagList setBorderWidth:1.0f];
+            [self.scrollView addSubview:_tagList];
+            //  [_tagList setBackgroundColor:[UIColor redColor]];
+            [_tagList setFrame:CGRectMake(0, contentView.frame.size.height+contentView.frame.origin.y+10, self.scrollView.frame.size.width-10, _tagList.contentSize.height)];
+        }
+        else{
+            [_tagList setFrame:CGRectMake(0, contentView.frame.size.height+contentView.frame.origin.y+10, self.scrollView.frame.size.width-10, _tagList.contentSize.height)];
+        }
     }
     
     if(!albumLabel){
@@ -732,7 +721,7 @@
     }
     
     if(!bottomImage){
-     
+        
         
     }
     else{
@@ -756,16 +745,16 @@
                                                        )];
         }
     }
-
-   // [self.scrollView setContentSize:CGSizeMake(scrollViewWidth, contentView.frame.size.height+contentView.frame.origin.y+title.frame.size.height+title.frame.origin.y+bottomImage.frame.size.height+15+_tagList.frame.size.height)];
+    
+    // [self.scrollView setContentSize:CGSizeMake(scrollViewWidth, contentView.frame.size.height+contentView.frame.origin.y+title.frame.size.height+title.frame.origin.y+bottomImage.frame.size.height+15+_tagList.frame.size.height)];
     
     
 }
 - (void)getBannerCredit:(int)feedID{
-
+    
     NSString *jsonString =
     [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getSmrtAdsBanner\",\"params\":{ \"smrtAdsRefId\":%@}}",article.smrtAdsRefId];
-
+    
     NSString *valueHeader;
     
     NSMutableURLRequest *requestHTTP = [Manager createRequestHTTP:jsonString cookieValue:valueHeader];
@@ -793,6 +782,15 @@
             
             
             if(article.feedID != nil){
+                if(article.relateContent){
+                    supporter = [NSString stringWithFormat:@"%@ \n <p><h3 style=\"color:%@;font-family: %@;\">ข่าวอื่นๆ ที่น่าสนใจ</h3></p>  <ul>",supporter, COLOR_NEWS,FONT_DTAC_REGULAR];
+                    NSString *relatecontent = @"";
+                    for(RelateContent *relateArticle in article.relateContent){
+                        relatecontent = [relatecontent stringByAppendingString: [NSString stringWithFormat:@"<li><a style=\"color:%@; text-decoration: none;\" href=\"%@\">%@</a></li>" ,DEFAULT_TEXT_COLOR,relateArticle.link,relateArticle.title]];
+                    }
+                    
+                    supporter = [NSString stringWithFormat:@"%@ %@</ul>",supporter,relatecontent];
+                }
                 article.descriptionContent = [NSString stringWithFormat:@"%@ %@",article.descriptionContent,supporter];
             }
             else
@@ -801,11 +799,11 @@
                 [article.subContent addObject:para];
                 para.descriptionContent =  [NSString stringWithFormat:@"%@ \n",supporter];
             }
-
+            
             
             UIImage *image ;
             if(imageURL != nil)
-            bottomImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, _tagList.frame.size.height+contentView.frame.origin.y + contentView.frame.size.height+10, self.scrollView.frame.size.width, (200*contentView.frame.size.width)/940)];
+                bottomImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, _tagList.frame.size.height+contentView.frame.origin.y + contentView.frame.size.height+10, self.scrollView.frame.size.width, (200*contentView.frame.size.width)/940)];
             [self.scrollView addSubview:bottomImage];
             [bottomImage setContentMode:UIViewContentModeScaleAspectFit];
             [bottomImage setImage:image];
@@ -832,17 +830,17 @@
                                     
                                     
                                 }];
-
+            
             
             
         }
         
-         [self updateContent];
+        [self updateContent];
         //  ...
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"JSON responseObject: %@ ",error);
-         [self updateContent];
-       
+        [self updateContent];
+        
     }];
     [op start];
 }
@@ -857,7 +855,7 @@
 - (void)webViewDidFinishLoad:(UIWebView *)aWebView {
     if ([[aWebView stringByEvaluatingJavaScriptFromString:@"document.readyState"] isEqualToString:@"complete"]) {
         // UIWebView object has fully loaded.
-    
+        
         CGRect frame = aWebView.frame;
         frame.size.height = 1;
         aWebView.frame = frame;
@@ -1161,8 +1159,8 @@
             }
             
             [[Manager sharedManager] setBannerArrayNews:bannerArray];
-            pageControl.numberOfPages = [[Manager sharedManager] bannerArrayNews].count;
-            [_carousel reloadData];
+            bannerView.bannerArray = [[Manager sharedManager] bannerArrayNews];
+            [bannerView.carousel reloadData];
             // [self.collectionView reloadData];
         }
         
@@ -1174,17 +1172,26 @@
     
     
 }
+-(void)viewWillAppear:(BOOL)animated{
+    if(!timer)
+        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
+                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [timer invalidate];
+    timer = nil;
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
- [self setCateID:NEWS];
-     if(![[Manager sharedManager]bannerArrayNews])
-         [self getBanner];
+    [self setCateID:NEWS];
+    if(![[Manager sharedManager]bannerArrayNews])
+        [self getBanner];
     
     _themeColor = [UIColor colorWithHexString:COLOR_NEWS];
     //self.navigationItem.title = @"ข่าว";
     
-
+    
     
     
     [self.navigationController.navigationBar setTitleTextAttributes:
@@ -1202,90 +1209,13 @@
 
 -(void)runLoop:(NSTimer*)NSTimer{
     
-    if(_carousel)
-        [_carousel scrollToItemAtIndex:self.carousel.currentItemIndex+1 animated:YES];
+    if(bannerView.carousel)
+        [bannerView.carousel scrollToItemAtIndex:bannerView.carousel.currentItemIndex+1 animated:YES];
     
     
     
 }
-#pragma mark -
-#pragma mark iCarousel methods
 
-- (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
-{
-    if([[Manager sharedManager] bannerArrayNews]){
-        return [[Manager sharedManager]bannerArrayNews].count;
-    }
-    else{
-        return [[Manager sharedManager]bannerArray].count;
-    }
-}
-- (NSUInteger)numberOfVisibleItemsInCarousel:(iCarousel *)carousel
-{
-    //limit the number of items views loaded concurrently (for performance reasons)
-    return 4;
-}
-- (void)scrollToItemAtIndex:(NSInteger)index
-                   duration:(NSTimeInterval)scrollDuration{
-    
-    
-}
-- (void)carouselCurrentItemIndexDidChange:(__unused iCarousel *)carousel
-{
-    //NSLog(@"Index: %@", @(self.carousel.currentItemIndex));
-    pageControl.currentPage = self.carousel.currentItemIndex;
-}
-- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
-{
-    UIImageView *viewsImage = [[UIImageView alloc] initWithFrame:_carousel.frame];
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayNews]){
-        temp  = [[Manager sharedManager] bannerArrayNews ][index];
-    }
-
-    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-    [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-     
-                          options:0
-                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                             // progression tracking code
-                         }
-                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                            if (image) {
-                                viewsImage.image = image;
-                            }
-                            
-                            
-                            
-                        }];
-    
-    [viewsImage setContentMode:UIViewContentModeScaleToFill];
-    return viewsImage;
-    
-}
-- (BOOL)carouselShouldWrap:(iCarousel *)carousel
-{
-    //wrap all carousels
-    return NO;
-}
-- (CGFloat)carousel:(iCarousel *)carousel valueForOption:(iCarouselOption)option withDefault:(CGFloat)value
-{
-    
-    if (option == iCarouselOptionWrap) {
-        return YES;
-    }
-    return value;
-}
-- (void)carousel:(iCarousel *)carousel didSelectItemAtIndex:(NSInteger)index{
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayNews]){
-        temp  = [[Manager sharedManager] bannerArrayNews ][index];
-    }
-
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:temp.link]];
-}
 //////////
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
@@ -1320,7 +1250,7 @@
     GallaryObject* gallaryTemp = article.gallary[indexPath.row];
     SDWebImageManager *manager = [SDWebImageManager sharedManager];
     [manager downloadImageWithURL:[NSURL URLWithString:gallaryTemp.thumb]
-                         
+     
                           options:0
                          progress:^(NSInteger receivedSize, NSInteger expectedSize) {
                              // progression tracking code

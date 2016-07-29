@@ -11,4 +11,5 @@
 @interface IconImageView : UIImageView
 @property(nonatomic)CategorryType type;
 @property(nonatomic)SubCategorry subType;
+@property(nonatomic)int indexParent;
 @end

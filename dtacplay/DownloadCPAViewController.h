@@ -15,7 +15,7 @@
 #import "NewsDetailViewController.h"
 #import "DtacPlayViewController.h"
 
-@interface DownloadCPAViewController :  DtacPlayViewController<iCarouselDataSource,iCarouselDelegate>
+@interface DownloadCPAViewController :  DtacPlayViewController
 {
     UIPageControl *pageControl;
 }
@@ -25,7 +25,6 @@
 @property(nonatomic) SubCategorry subeType;
 
 @property(nonatomic,strong) NSArray *nameMenu;
-@property (strong, nonatomic) iCarousel *carousel;
 @property (nonatomic, strong) SwipeView *swipeView;
 
 @property (nonatomic, strong) SwipeView *swipeViewHoro;

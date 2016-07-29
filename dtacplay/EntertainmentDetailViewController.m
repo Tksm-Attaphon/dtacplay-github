@@ -30,6 +30,7 @@
 #import "SocialView.h"
 #import "Banner.h"
 #import "BannerImage.h"
+#import "BannerView.h"
 @interface EntertainmentDetailViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,UICollectionViewDelegate,UIGestureRecognizerDelegate,RTLabelDelegate,DWTagListDelegate,UIWebViewDelegate>
 {
     UIView *imageHeader;
@@ -45,7 +46,7 @@
     UITextView *textViewTag;
     
     NSTimer *timer;
-
+    
     UIImageView *bottomImage;
     float screenWidth;
     float screenHeight;
@@ -59,6 +60,8 @@
     
     BOOL orientation;
     MPMoviePlayerViewController *movieController;
+    
+    BannerView *bannerView;
 }
 @property (nonatomic, strong) MPMoviePlayerViewController *moviePlayer;
 @property (nonatomic, strong) NSMutableArray        *array;
@@ -66,14 +69,26 @@
 @end
 
 @implementation EntertainmentDetailViewController
+-(void)viewWillAppear:(BOOL)animated{
+    if(!timer)
+        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
+                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [timer invalidate];
+    timer = nil;
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:@"alert"
+                                                  object:nil];
+}
 
 -(void)getArticleDetail{
     NSString *jsonString =
     [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getContentById\",\"params\":{ \"conId\":%@}}",_contentID];
     
-//    hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
-//    [hud setColor:[UIColor whiteColor]];
-//    [hud setActivityIndicatorColor:[UIColor colorWithHexString:SIDE_BAR_COLOR]];
+    //    hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    //    [hud setColor:[UIColor whiteColor]];
+    //    [hud setActivityIndicatorColor:[UIColor colorWithHexString:SIDE_BAR_COLOR]];
     NSString *valueHeader;
     
     NSMutableURLRequest *requestHTTP = [Manager createRequestHTTP:jsonString cookieValue:valueHeader];
@@ -118,14 +133,14 @@
             UIView *line = [[UIView alloc]initWithFrame:CGRectMake(0, titleHeader.frame.size.height+titleHeader.frame.origin.y, scrollViewWidth, 1 )];
             [line setBackgroundColor:[UIColor colorWithHexString:COLOR_ENTERTAINMENT]];
             [self.scrollView addSubview:line];
- 
+            
             [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:ENTERTAINMENT withSubCate:article.subCateID :article.title]}];
             self.navigationItem.title = [Manager getSubcateName:article.subCateID withThai:YES];
-    
-      
+            
+            
         }
         [self.collectionView reloadData];
-       
+        
         //  ...
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"JSON responseObject: %@ ",error);
@@ -153,40 +168,28 @@
     self.scrollView.clipsToBounds  = NO;
     
     [self.view addSubview:self.scrollView];
-
+    
     imageHeader = [[UIView alloc]initWithFrame:CGRectMake(-10, 0, screenWidth, [[Manager sharedManager]bannerHeight] )];
     
     [imageHeader setBackgroundColor:[UIColor whiteColor]];
     
     imageHeader.clipsToBounds = YES;
     
-    
-    if(!_carousel)
-        _carousel = [[iCarousel alloc] initWithFrame:CGRectMake(0.0f, 0.0f, imageHeader.frame.size.width, imageHeader.frame.size.height)];
-    _carousel.delegate = self;
-    _carousel.dataSource = self;
-    _carousel.type = iCarouselTypeLinear;
-    _carousel.backgroundColor = [UIColor clearColor];
+    if(!bannerView)
+        bannerView = [[BannerView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
+    bannerView.backgroundColor = [UIColor clearColor];
     //_carousel.
-    [imageHeader addSubview:_carousel];
+    [imageHeader addSubview:bannerView];
     
+    if([[Manager sharedManager] bannerArrayEntertainment]){
+        bannerView.bannerArray =  [[Manager sharedManager]bannerArrayEntertainment];
+    }
+    else{
+        bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
+    }
+    [bannerView.carousel reloadData];
+
     
-    
-    
-    // Page Control
-    if(!pageControl)
-        pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (self.carousel.frame.size.height-20), self.carousel.frame.size.width, 20.0f)];
-    pageControl.numberOfPages = [[Manager sharedManager] bannerArrayEntertainment].count >0  ? [[Manager sharedManager] bannerArrayEntertainment].count : [[Manager sharedManager] bannerArray].count;
-    
-    pageControl.currentPage = 0;
-    pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-    pageControl.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-    pageControl.userInteractionEnabled = NO;
-    [_carousel addSubview:pageControl];
-    [timer invalidate];
-    timer = nil;
-    timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
-                                              target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
     [self.scrollView addSubview:imageHeader];
     
     [self.scrollView sendSubviewToBack:imageHeader];
@@ -235,32 +238,32 @@
     UIImageView* imageView ;
     UIImage *image;
     float width = screenWidth;
-
+    
     imageView = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, width, (width*144)/300  )];//<UIImage: 0x7fe3d8fdd280>, {225, 135
-
+    
     //NSString* a = promotionDetail.title;
-  
-        SDWebImageManager *manager = [SDWebImageManager sharedManager];
-        [manager downloadImageWithURL:[NSURL URLWithString:article.images.imageL]
-         
-                              options:0
-                             progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                                 // progression tracking code
-                             }
-                            completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                                if (image) {
-                                    [imageView setImage:image];
+    
+    SDWebImageManager *manager = [SDWebImageManager sharedManager];
+    [manager downloadImageWithURL:[NSURL URLWithString:article.images.imageL]
+     
+                          options:0
+                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+                             // progression tracking code
+                         }
+                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
+                            if (image) {
+                                [imageView setImage:image];
+                                
+                                [imageView setFrame:CGRectMake(0, 0, _scrollView.frame.size.width, (_scrollView.frame.size.width*image.size.height)/ image.size.width  )];
+                                [imageView setContentMode:UIViewContentModeScaleAspectFit];
+                                
+                                
+                                if(article.media !=nil){
+                                    UIView *temp = [[UIView alloc]initWithFrame:imageView.frame];
+                                    [temp setBackgroundColor:[UIColor blackColor]];
+                                    [temp setAlpha:0.3];
                                     
-                                    [imageView setFrame:CGRectMake(0, 0, _scrollView.frame.size.width, (_scrollView.frame.size.width*image.size.height)/ image.size.width  )];
-                                    [imageView setContentMode:UIViewContentModeScaleAspectFit];
-                                    
-                                    
-                                    if(article.media !=nil){
-                                        UIView *temp = [[UIView alloc]initWithFrame:imageView.frame];
-                                        [temp setBackgroundColor:[UIColor blackColor]];
-                                        [temp setAlpha:0.3];
-                                       
-                                        [imageView addSubview:temp];
+                                    [imageView addSubview:temp];
                                     UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
                                     [button addTarget:self
                                                action:@selector(video:)
@@ -268,35 +271,35 @@
                                     [button setImage:[UIImage imageNamed:@"dtacplay_play_video"]  forState:UIControlStateNormal];
                                     button.frame = CGRectMake(0, 0, imageView.frame.size.width, imageView.frame.size.height);
                                     [imageView addSubview:button];
-                                        imageView.clipsToBounds = YES;
-                                    }
-                                    [self setFrameContent];
+                                    imageView.clipsToBounds = YES;
                                 }
-                                else{
-                                    UIImage* image = [UIImage imageNamed:@"default_image_01_L.jpg"];
-                                    [imageView setImage:image];
-                                    
-                                    [imageView setFrame:CGRectMake(0, 0, width, (width*image.size.height)/ image.size.width  )];
-                                    [imageView setContentMode:UIViewContentModeScaleAspectFit];
-                                    [self setFrameContent];
-                                    
-                                    if(article.media !=nil){
-                                        UIView *temp = [[UIView alloc]initWithFrame:imageView.frame];
-                                        [temp setBackgroundColor:[UIColor blackColor]];
-                                        [temp setAlpha:0.3];
-                                        [imageView addSubview:temp];
-                                        UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-                                        [button addTarget:self
-                                                   action:@selector(video:)
-                                         forControlEvents:UIControlEventTouchUpInside];
-                                        [button setImage:[UIImage imageNamed:@"dtacplay_play_video"]  forState:UIControlStateNormal];
-                                        button.frame = CGRectMake(0, 0, imageView.frame.size.width, imageView.frame.size.height);
-                                        [imageView addSubview:button];
-                                    }
-
+                                [self setFrameContent];
+                            }
+                            else{
+                                UIImage* image = [UIImage imageNamed:@"default_image_01_L.jpg"];
+                                [imageView setImage:image];
+                                
+                                [imageView setFrame:CGRectMake(0, 0, width, (width*image.size.height)/ image.size.width  )];
+                                [imageView setContentMode:UIViewContentModeScaleAspectFit];
+                                [self setFrameContent];
+                                
+                                if(article.media !=nil){
+                                    UIView *temp = [[UIView alloc]initWithFrame:imageView.frame];
+                                    [temp setBackgroundColor:[UIColor blackColor]];
+                                    [temp setAlpha:0.3];
+                                    [imageView addSubview:temp];
+                                    UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+                                    [button addTarget:self
+                                               action:@selector(video:)
+                                     forControlEvents:UIControlEventTouchUpInside];
+                                    [button setImage:[UIImage imageNamed:@"dtacplay_play_video"]  forState:UIControlStateNormal];
+                                    button.frame = CGRectMake(0, 0, imageView.frame.size.width, imageView.frame.size.height);
+                                    [imageView addSubview:button];
                                 }
                                 
-                            }];
+                            }
+                            
+                        }];
     
     imageView.userInteractionEnabled = YES;
     UITapGestureRecognizer *pgr = [[UITapGestureRecognizer alloc]
@@ -315,7 +318,7 @@
     [view setFrame:CGRectMake(self.view.frame.size.width-100,0, 100, 30)];
     view.tag = 1;
     view.parentView = self;
-   // NSArray *keys = [NSArray arrayWithObjects:@"title", @"description", @"imageURL", @"contentURL", nil];
+    // NSArray *keys = [NSArray arrayWithObjects:@"title", @"description", @"imageURL", @"contentURL", nil];
     
     NSString *url;
     switch (article.subCateID) {
@@ -326,13 +329,14 @@
             url = [NSString stringWithFormat: @"%@entvdo/%@?m=share",DOMAIN_WEBSITE,article.contentID];
             break;
         default:
+            url = [NSString stringWithFormat: @"%@entstar/%@?m=share",DOMAIN_WEBSITE,article.contentID];
             break;
     }
     
     [view setValueForShareTitle:article.title Description:article.descriptionContent ImageUrl:article.images.imageL ContentURL:url Category:[article.cateID intValue] SubCategoryType:article.subCateID contentID:[article.contentID intValue]];
     [view setBackgroundColor:[UIColor clearColor]];
     [self.content.contentArray addObject:view];
-
+    
     /////
     //    UILabel *label=[[UILabel alloc] initWithFrame:CGRectMake(10,0, screenWidth-20, 30)];
     //    if ( IDIOM == IPAD ) {
@@ -349,102 +353,109 @@
     //    label.tag = 99;
     //    [self.content.contentArray addObject:label];
     /////
- 
+    
     
     if(article.feedID == nil){
         if(article.descriptionContent != nil){
-        RTLabel *textView = [[RTLabel alloc]initWithFrame:CGRectMake(0, 0, scrollViewWidth-20, 1000)];
-        
-        textView.delegate = self;
-        textView.textColor =[UIColor colorWithHexString:DEFAULT_TEXT_COLOR];
-        textView.backgroundColor = [UIColor clearColor];
-        textView.userInteractionEnabled = YES;
-        // UIFont *test = textView.font;//time news roman 12 pixel
-        [textView setFont:[UIFont fontWithName:@"HelveticaNeue" size:IDIOM==IPAD ? 18: 16]];
-        textView.tag =80;
-        [textView setText:article.descriptionContent];
-        //textView.text = para.descriptionContent;
-        [textView setNeedsDisplay];
-        
-        [textView setFrame:CGRectMake(0, 0, textView.frame.size.width, textView.optimumSize.height+20)];
-        [self.content.contentArray addObject:textView];
+            RTLabel *textView = [[RTLabel alloc]initWithFrame:CGRectMake(0, 0, scrollViewWidth-20, 1000)];
+            
+            textView.delegate = self;
+            textView.textColor =[UIColor colorWithHexString:DEFAULT_TEXT_COLOR];
+            textView.backgroundColor = [UIColor clearColor];
+            textView.userInteractionEnabled = YES;
+            // UIFont *test = textView.font;//time news roman 12 pixel
+            [textView setFont:[UIFont fontWithName:@"HelveticaNeue" size:IDIOM==IPAD ? 18: 16]];
+            textView.tag =80;
+            [textView setText:article.descriptionContent];
+            //textView.text = para.descriptionContent;
+            [textView setNeedsDisplay];
+            
+            [textView setFrame:CGRectMake(0, 0, textView.frame.size.width, textView.optimumSize.height+20)];
+            [self.content.contentArray addObject:textView];
         }
         [hud setHidden:YES];
-            int i = 1;
-            for(ParagraphContent *para in article.subContent){
-                if(para.descriptionContent != nil){
-                    RTLabel *textView = [[RTLabel alloc]initWithFrame:CGRectMake(0, 0, scrollViewWidth-20, 100)];
-        
-                    textView.delegate = self;
-                    textView.textColor =[UIColor colorWithHexString:DEFAULT_TEXT_COLOR];
-                    textView.backgroundColor = [UIColor clearColor];
-                    textView.userInteractionEnabled = YES;
-                    // UIFont *test = textView.font;//time news roman 12 pixel
-                    [textView setFont:[UIFont fontWithName:@"HelveticaNeue" size:IDIOM==IPAD ? 18: 16]];
-                    textView.tag =88;
-                    [textView setText:para.descriptionContent];
-        
-                    [textView setFrame:CGRectMake(0, 0, scrollViewWidth, textView.optimumSize.height)];
-                    [textView setNeedsDisplay];
-        
-                    [self.content.contentArray addObject:textView];
-        
-                }
-                if(para.images != nil){
-                    width = screenWidth;
-                    if(image.size.width < width)
-                        imageView = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, width,image.size.height  )];
-                    else
-                        imageView = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, width, (width*image.size.height)/ image.size.width  )];
+        int i = 1;
+        for(ParagraphContent *para in article.subContent){
+            if(para.descriptionContent != nil){
+                RTLabel *textView = [[RTLabel alloc]initWithFrame:CGRectMake(0, 0, scrollViewWidth-20, 100)];
                 
-                        SDWebImageManager *manager = [SDWebImageManager sharedManager];
-                        [manager downloadImageWithURL:[NSURL URLWithString:para.images.imageL]
-                         
-                                              options:0
-                                             progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                                                 // progression tracking code
-                                             }
-                                            completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                                                if (image) {
-                                                    [imageView setImage:image];
-                                                    imageView.tag = 66;
-                                                    float width = scrollViewWidth;
-        
-                                                    [imageView setFrame:CGRectMake(0, 0, width, (width*image.size.height)/ image.size.width  )];
-        
-                                                    [imageView setContentMode:UIViewContentModeScaleAspectFit];
-                                                    [self setFrameContent];
-                                                }
-        
-        
-                                            }];
-                 
-                    imageView.userInteractionEnabled = YES;
-        
-                    UITapGestureRecognizer *pgr = [[UITapGestureRecognizer alloc]
-                                                   initWithTarget:self action:@selector(handlePinch:)];
-                    pgr.delegate = self;
-                    [imageView addGestureRecognizer:pgr];
-                    imageView.tag = i++;
-                    [self.content.contentArray addObject:imageView];
-                }
+                textView.delegate = self;
+                textView.textColor =[UIColor colorWithHexString:DEFAULT_TEXT_COLOR];
+                textView.backgroundColor = [UIColor clearColor];
+                textView.userInteractionEnabled = YES;
+                // UIFont *test = textView.font;//time news roman 12 pixel
+                [textView setFont:[UIFont fontWithName:@"HelveticaNeue" size:IDIOM==IPAD ? 18: 16]];
+                textView.tag =88;
+                [textView setText:para.descriptionContent];
+                
+                [textView setFrame:CGRectMake(0, 0, scrollViewWidth, textView.optimumSize.height)];
+                [textView setNeedsDisplay];
+                
+                [self.content.contentArray addObject:textView];
+                
             }
+            if(para.images != nil){
+                width = screenWidth;
+                if(image.size.width < width)
+                    imageView = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, width,image.size.height  )];
+                else
+                    imageView = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, width, (width*image.size.height)/ image.size.width  )];
+                
+                SDWebImageManager *manager = [SDWebImageManager sharedManager];
+                [manager downloadImageWithURL:[NSURL URLWithString:para.images.imageL]
+                 
+                                      options:0
+                                     progress:^(NSInteger receivedSize, NSInteger expectedSize) {
+                                         // progression tracking code
+                                     }
+                                    completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
+                                        if (image) {
+                                            [imageView setImage:image];
+                                            imageView.tag = 66;
+                                            float width = scrollViewWidth;
+                                            
+                                            [imageView setFrame:CGRectMake(0, 0, width, (width*image.size.height)/ image.size.width  )];
+                                            
+                                            [imageView setContentMode:UIViewContentModeScaleAspectFit];
+                                            [self setFrameContent];
+                                        }
+                                        
+                                        
+                                    }];
+                
+                imageView.userInteractionEnabled = YES;
+                
+                UITapGestureRecognizer *pgr = [[UITapGestureRecognizer alloc]
+                                               initWithTarget:self action:@selector(handlePinch:)];
+                pgr.delegate = self;
+                [imageView addGestureRecognizer:pgr];
+                imageView.tag = i++;
+                [self.content.contentArray addObject:imageView];
+            }
+        }
         
     }
     else{
         NSString *creaditLink =@"";
-//        if([article.feedID integerValue] >=13 && [article.feedID integerValue] <=18 && article.subCateID != 18){
-//            creaditLink = [NSString stringWithFormat:@"<a style=\"color:%@; text-decoration: none;\" href=\"http://m.mono-mobile.com/\">สนับสนุนเนื้อหาโดย MONO</a>",DEFAULT_TEXT_COLOR ];
-//        }
-//        else if([article.feedID integerValue] == 50&& article.subCateID != 18){
-//             creaditLink = [NSString stringWithFormat:@"<a style=\"color:%@; text-decoration: none;\" href=\"http://www.innnews.co.th/\">สนับสนุนเนื้อหาโดย INN News</a>",DEFAULT_TEXT_COLOR ];
-//        }
+        //        if([article.feedID integerValue] >=13 && [article.feedID integerValue] <=18 && article.subCateID != 18){
+        //            creaditLink = [NSString stringWithFormat:@"<a style=\"color:%@; text-decoration: none;\" href=\"http://m.mono-mobile.com/\">สนับสนุนเนื้อหาโดย MONO</a>",DEFAULT_TEXT_COLOR ];
+        //        }
+        //        else if([article.feedID integerValue] == 50&& article.subCateID != 18){
+        //             creaditLink = [NSString stringWithFormat:@"<a style=\"color:%@; text-decoration: none;\" href=\"http://www.innnews.co.th/\">สนับสนุนเนื้อหาโดย INN News</a>",DEFAULT_TEXT_COLOR ];
+        //        }
         if(article.subCateID != 18){
-           // creaditLink = [Manager returnSupporter:[article.feedID intValue]];
+            // creaditLink = [Manager returnSupporter:[article.feedID intValue]];
         }
-        article.descriptionContent = [article.descriptionContent stringByReplacingOccurrencesOfString:@"<iframe[^>]*>" withString:@"" options:NSCaseInsensitiveSearch | NSRegularExpressionSearch range:NSMakeRange(0, [article.descriptionContent length])];
-        article.descriptionContent = [NSString stringWithFormat:@"<style type='text/css'>img {width: %fpx; height: auto;} body{ background-color: f5f5f5; color:424242;}</style>%@ ",scrollViewWidth-20,article.descriptionContent];
-        textWebView = [[UIWebView alloc]initWithFrame:CGRectMake(0, 0, scrollViewWidth, 1000)];
+       
+        article.descriptionContent = [article.descriptionContent stringByReplacingOccurrencesOfString:@"height" withString:@"none" options:NSCaseInsensitiveSearch | NSRegularExpressionSearch range:NSMakeRange(0, [article.descriptionContent length])];
+        article.descriptionContent = [article.descriptionContent stringByReplacingOccurrencesOfString:@"width" withString:@"none" options:NSCaseInsensitiveSearch | NSRegularExpressionSearch range:NSMakeRange(0, [article.descriptionContent length])];
+        article.descriptionContent = [article.descriptionContent stringByReplacingOccurrencesOfString:@"<figure" withString:@"<div" options:NSCaseInsensitiveSearch | NSRegularExpressionSearch range:NSMakeRange(0, [article.descriptionContent length])];
+        
+         article.descriptionContent = [article.descriptionContent stringByReplacingOccurrencesOfString:@"</figure>" withString:@"</div>" options:NSCaseInsensitiveSearch | NSRegularExpressionSearch range:NSMakeRange(0, [article.descriptionContent length])];
+        
+        
+        article.descriptionContent = [NSString stringWithFormat:@"<style type='text/css'>img {max-width: %fpx; height: auto;} iframe {max-width: %fpx; height: auto;} body{ background-color: f5f5f5; color:424242;}</style>%@ ",scrollViewWidth-20,scrollViewWidth-20,article.descriptionContent];
+        textWebView = [[UIWebView alloc]initWithFrame:CGRectMake(0, 0, scrollViewWidth, 2000)];
         [textWebView loadHTMLString:article.descriptionContent baseURL:nil];
         textWebView.tag =78952;
         textWebView.delegate = self;
@@ -453,11 +464,11 @@
         textWebView.scrollView.scrollEnabled = NO;
         textWebView.scrollView.bounces = NO;
         [textWebView setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
-   
+       
     }
     /////
     
-  
+    
     [self setFrameContent];
 }
 #pragma mark RTLabel delegate
@@ -466,18 +477,18 @@
 {
     NSLog(@"did select url %@", url);
     [[UIApplication sharedApplication] openURL:url];
-//    DtacWebViewViewController *webViewDtac = [[DtacWebViewViewController alloc]init];
-//    webViewDtac.url = url;
-//    webViewDtac.themeColor = self.themeColor;
-//    webViewDtac.titlePage = self.titlePage;
-//    UIBarButtonItem *newBackButton =
-//    [[UIBarButtonItem alloc] initWithTitle:@" "
-//                                     style:UIBarButtonItemStyleBordered
-//                                    target:nil
-//                                    action:nil];
-//    [self.navigationItem setBackBarButtonItem:newBackButton];
-//    [newBackButton setTintColor:[UIColor colorWithHexString:SIDE_BAR_COLOR]];
-//    [self.navigationController pushViewController:webViewDtac animated:YES];
+    //    DtacWebViewViewController *webViewDtac = [[DtacWebViewViewController alloc]init];
+    //    webViewDtac.url = url;
+    //    webViewDtac.themeColor = self.themeColor;
+    //    webViewDtac.titlePage = self.titlePage;
+    //    UIBarButtonItem *newBackButton =
+    //    [[UIBarButtonItem alloc] initWithTitle:@" "
+    //                                     style:UIBarButtonItemStyleBordered
+    //                                    target:nil
+    //                                    action:nil];
+    //    [self.navigationItem setBackBarButtonItem:newBackButton];
+    //    [newBackButton setTintColor:[UIColor colorWithHexString:SIDE_BAR_COLOR]];
+    //    [self.navigationController pushViewController:webViewDtac animated:YES];
 }
 -(void)setFrameContent{
     //////
@@ -529,17 +540,16 @@
             y = temp.frame.size.height+temp.frame.origin.y+10;
             
         }
-  
+        
     }
     [contentView setFrame:CGRectMake(0, titleHeader.frame.origin.y+titleHeader.frame.size.height+(IDIOM == IPAD ? 20 : 10), scrollViewWidth, y-10)];
     [self.scrollView addSubview:contentView];
-   [contentView setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
+    [contentView setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
     contentView.layer.masksToBounds = NO;
     contentView.layer.shadowOffset = CGSizeMake(1, 1);
     contentView.layer.shadowRadius = 2;
     contentView.layer.shadowOpacity = 0.5;
-    contentView.layer.shouldRasterize = YES;
-    contentView.layer.rasterizationScale = [UIScreen mainScreen].scale;
+
     
     if(!albumLabel){
         albumLabel=[[UILabel alloc] initWithFrame:CGRectMake(10,_tagList.frame.size.height+_tagList.frame.origin.y+10, screenWidth-20, 30)];
@@ -633,6 +643,7 @@
 -(void)video:(id)sender{
     
     NSURL *url;
+    NSURL *webURL;
     for (NSString * string in article.media){
         if ([string rangeOfString:@".mp4"].location != NSNotFound) {
             url =[NSURL URLWithString:[string stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
@@ -642,11 +653,14 @@
         if ([string rangeOfString:@".3gp"].location != NSNotFound) {
             url =[NSURL URLWithString:[string stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
         }
-         url =[NSURL URLWithString:[string stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+       webURL = [NSURL URLWithString:[string stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     }
-    
+    if(url == nil){
+            [[UIApplication sharedApplication] openURL:webURL];
+    }
+    else{
     [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:ENTERTAINMENT withSubCate:article.subCateID :article.title]}];
-
+    
     movieController = [[MPMoviePlayerViewController alloc] initWithContentURL:url];
     [self presentMoviePlayerViewControllerAnimated:movieController];
     [movieController.moviePlayer play];
@@ -654,11 +668,13 @@
                                              selector:@selector(myMovieFinishedCallback:) // method to call when the notification was pushed
                                                  name:MPMoviePlayerPlaybackDidFinishNotification // notification the observer should listen to
                                                object:movieController.moviePlayer]; // the object that is passed to the method
+        
+    }
 }
 - (void)getBannerCredit:(int)feedID{
     NSString *jsonString =
     [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getSmrtAdsBanner\",\"params\":{ \"smrtAdsRefId\":%@}}",article.smrtAdsRefId];
-
+    
     NSString *valueHeader;
     
     NSMutableURLRequest *requestHTTP = [Manager createRequestHTTP:jsonString cookieValue:valueHeader];
@@ -681,14 +697,26 @@
             
             NSString *supporter = @"";
             
-            if(detail)
+            if(detail){
                 supporter = [Manager returnSupporter:[article.feedID intValue] :detail : link ];
+                
+            }
+            
+            if(article.relateContent){
+               supporter = [NSString stringWithFormat:@"%@ \n <p><h3 style=\"color:%@;font-family: %@;\">ข่าวอื่นๆ ที่น่าสนใจ</h3></p>  <ul>",supporter, COLOR_ENTERTAINMENT,FONT_DTAC_REGULAR];
+                NSString *relatecontent = @"";
+                for(RelateContent *relateArticle in article.relateContent){
+                    relatecontent = [relatecontent stringByAppendingString: [NSString stringWithFormat:@"<li><a style=\"color:%@; text-decoration: none;\" href=\"%@\">%@</a></li>" ,DEFAULT_TEXT_COLOR,relateArticle.link,relateArticle.title]];
+                }
+                
+                supporter = [NSString stringWithFormat:@"%@ %@</ul>",supporter,relatecontent];
+            }
             article.descriptionContent = [NSString stringWithFormat:@"%@ %@",article.descriptionContent,supporter];
             
             
             UIImage *image ;
             if(imageURL != nil)
-            bottomImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, _tagList.frame.size.height+contentView.frame.origin.y + contentView.frame.size.height+10, self.scrollView.frame.size.width, (200*contentView.frame.size.width)/940)];
+                bottomImage = [[UIImageView alloc]initWithFrame:CGRectMake(0, _tagList.frame.size.height+contentView.frame.origin.y + contentView.frame.size.height+10, self.scrollView.frame.size.width, (200*contentView.frame.size.width)/940)];
             [self.scrollView addSubview:bottomImage];
             [bottomImage setContentMode:UIViewContentModeScaleAspectFit];
             [bottomImage setImage:image];
@@ -743,36 +771,33 @@
     }
     NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
     [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
-  
-
+    
+    
 }
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)orientations
                                 duration:(NSTimeInterval)duration{
     orientation = NO;
 }
 -(void)viewDidAppear:(BOOL)animated{
- 
-//    NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
-//    [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
-
+    
+    //    NSNumber *value = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
+    //    [[UIDevice currentDevice] setValue:value forKey:@"orientation"];
+    
 }
 - (void)webViewDidFinishLoad:(UIWebView *)aWebView {
     if ([[aWebView stringByEvaluatingJavaScriptFromString:@"document.readyState"] isEqualToString:@"complete"]) {
         // UIWebView object has fully loaded.
-        if(isFinishLoad == NO){
-            CGRect frame = aWebView.frame;
-            frame.size.height = 1;
-            aWebView.frame = frame;
-            CGSize fittingSize = [aWebView sizeThatFits:CGSizeZero];
-            frame.size = fittingSize;
-            aWebView.frame = frame;
-            [self setFrameContent];
-            
-            NSLog(@"size: %f, %f", fittingSize.width, fittingSize.height);
-            isFinishLoad =YES;
-            
-            [hud hide:YES];
-        }
+        
+        CGRect frame = aWebView.frame;
+        frame.size.height = 1;
+        aWebView.frame = frame;
+        CGSize fittingSize = [aWebView sizeThatFits:CGSizeZero];
+        frame.size = CGSizeMake(fittingSize.width,aWebView.scrollView.contentSize.height);
+        aWebView.frame = frame;
+        [self setFrameContent];
+        NSLog(@"size: %f, %f", fittingSize.width, aWebView.scrollView.contentSize.height);
+        isFinishLoad =YES;
+     
     }
     
 }
@@ -780,8 +805,8 @@
 -(void)movieNaturalSizeAvailable:(NSNotification*)notif
 {
     [_moviePlayer.moviePlayer pause];
-   
-      [[NSURLCache sharedURLCache] removeAllCachedResponses];
+    
+    [[NSURLCache sharedURLCache] removeAllCachedResponses];
     [_moviePlayer.view setHidden:NO];
     float h = (_moviePlayer.moviePlayer.naturalSize.height*scrollViewWidth)/_moviePlayer.moviePlayer.naturalSize.width;
     [contentView setFrame:CGRectMake(0, titleHeader.frame.origin.y+titleHeader.frame.size.height+(IDIOM == IPAD ? 20 : 10), scrollViewWidth, contentView.frame.size.height+h+10)];
@@ -811,7 +836,7 @@
 
 
 -(void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error {
-        [hud hide:YES];
+    [hud hide:YES];
 }
 
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
@@ -822,9 +847,9 @@
         [[UIApplication sharedApplication] openURL:url];
         
     }
-    
+    NSLog(@"Request .......");
     return YES;
-   
+    
 }
 
 - (CGFloat)textViewHeightForAttributedText:(NSAttributedString *)text andWidth:(CGFloat)width
@@ -836,7 +861,7 @@
 }
 //DW taglist Delegate
 - (void)selectedTag:(NSString *)tagName tagIndex:(NSInteger)tagIndex{
-      [self searchByTag:tagName cateID:article.cateID];
+    [self searchByTag:tagName cateID:article.cateID];
 }
 - (void)handlePinch:(UITapGestureRecognizer *)pinchGestureRecognizer
 {
@@ -1108,8 +1133,8 @@
             }
             
             [[Manager sharedManager] setBannerArrayEntertainment:bannerArray];
-            pageControl.numberOfPages = [[Manager sharedManager] bannerArrayEntertainment].count;
-            [_carousel reloadData];
+            bannerView.bannerArray = [[Manager sharedManager] bannerArrayEntertainment];
+            [bannerView.carousel reloadData];
             // [self.collectionView reloadData];
         }
         
@@ -1128,8 +1153,8 @@
         [self getBanner];
     _themeColor = [UIColor colorWithHexString:COLOR_ENTERTAINMENT];
     
-
-
+    
+    
     
     [self.navigationController.navigationBar setTitleTextAttributes:
      @{NSForegroundColorAttributeName:_themeColor,
@@ -1147,88 +1172,13 @@
 
 -(void)runLoop:(NSTimer*)NSTimer{
     
-    if(_carousel)
-        [_carousel scrollToItemAtIndex:self.carousel.currentItemIndex+1 animated:YES];
+    if(bannerView.carousel)
+        [bannerView.carousel scrollToItemAtIndex:bannerView.carousel.currentItemIndex+1 animated:YES];
     
     
     
 }
-#pragma mark -
-#pragma mark iCarousel methods
 
-- (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
-{
-    if([[Manager sharedManager] bannerArrayEntertainment]){
-        return [[Manager sharedManager]bannerArrayEntertainment].count;
-    }
-    else{
-        return [[Manager sharedManager]bannerArray].count;
-    }
-}
-- (NSUInteger)numberOfVisibleItemsInCarousel:(iCarousel *)carousel
-{
-    //limit the number of items views loaded concurrently (for performance reasons)
-    return 4;
-}
-- (void)scrollToItemAtIndex:(NSInteger)index
-                   duration:(NSTimeInterval)scrollDuration{
-    
-    
-}
-- (void)carouselCurrentItemIndexDidChange:(__unused iCarousel *)carousel
-{
-    //NSLog(@"Index: %@", @(self.carousel.currentItemIndex));
-    pageControl.currentPage = self.carousel.currentItemIndex;
-}
-- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
-{
-    UIImageView *viewsImage = [[UIImageView alloc] initWithFrame:_carousel.frame];
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayEntertainment]){
-        temp  = [[Manager sharedManager] bannerArrayEntertainment ][index];
-    }
-    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-    [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-                       
-                          options:0
-                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                             // progression tracking code
-                         }
-                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                            if (image) {
-                                viewsImage.image = image;
-                            }
-                            
-                            
-                            
-                        }];
-    
-    [viewsImage setContentMode:UIViewContentModeScaleToFill];
-    return viewsImage;
-
-}
-- (BOOL)carouselShouldWrap:(iCarousel *)carousel
-{
-    //wrap all carousels
-    return NO;
-}
-- (CGFloat)carousel:(iCarousel *)carousel valueForOption:(iCarouselOption)option withDefault:(CGFloat)value
-{
-    
-    if (option == iCarouselOptionWrap) {
-        return YES;
-    }
-    return value;
-}
-- (void)carousel:(iCarousel *)carousel didSelectItemAtIndex:(NSInteger)index{
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayEntertainment]){
-        temp  = [[Manager sharedManager] bannerArrayEntertainment ][index];
-    }
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:temp.link]];
-}
 //////////
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {

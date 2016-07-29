@@ -12,7 +12,7 @@
 #import "DtacPlayViewController.h"
 #import "ArticleContent.h"
 @interface SportDetailViewController : DtacPlayViewController<iCarouselDataSource,iCarouselDelegate>
-@property (strong, nonatomic) iCarousel *carousel;
+
 @property(strong, nonatomic) ArticleContent *content;
 @property(strong, nonatomic) UIScrollView *scrollView;
 @property(nonatomic,assign )NSString *contentID;

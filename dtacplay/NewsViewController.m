@@ -33,6 +33,8 @@
 #import "BannerImage.h"
 #import "LotteryObject.h"
 #import "LotteryCellCollectionViewCell.h"
+#import "BannerView.h"
+
 @interface NewsViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout>
 {
     NSMutableArray *sizeArray;
@@ -75,13 +77,26 @@
     
     NSMutableArray *lotteryArray;
     
-    int lastStatPage;;
-   
+    int lastStatPage;
+    BannerView *bannerView;
+    
 }
 @property (nonatomic) CGFloat lastContentOffset;
 @end
 
 @implementation NewsViewController
+
+
+-(void)viewWillAppear:(BOOL)animated{
+    if(!timer)
+        timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
+                                                  target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
+}
+-(void)viewWillDisappear:(BOOL)animated{
+    [timer invalidate];
+    timer = nil;
+}
+
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
     if(scrollView.contentOffset.x==0){
@@ -135,9 +150,9 @@
             }
             
             [[Manager sharedManager] setBannerArrayNews:bannerArray];
-            pageControl.numberOfPages = [[Manager sharedManager] bannerArrayNews].count;
-            [_carousel reloadData];
-           // [self.collectionView reloadData];
+            bannerView.bannerArray = [[Manager sharedManager] bannerArrayNews];
+            [bannerView.carousel reloadData];
+            // [self.collectionView reloadData];
         }
         
         //  ...
@@ -156,33 +171,33 @@
     pageArray[current] = [NSNumber numberWithInt:number];
     
     SubCategorry subcate = [self.nameMenu[current] intValue] ;
-//    switch (current) {
-//        case 0:
-//            subcate = NEWS_HOT_NEWS;
-//            break;
-//        case 1:
-//            subcate = NEWS_INTER_NEWS;
-//            break;
-//        case 2:
-//            subcate = NEWS_FINANCE;
-//            break;
-//        case 3:
-//            subcate = NEWS_TECHNOLOGY;
-//            break;
-//        case 4:
-//            subcate = NEWS_LOTTO;
-//            break;
-//            //        case 4:
-//            //            subcate = NEWS_GAS_PRICE;
-//            //            break;
-//            //        case 5:
-//            //            subcate = NEWS_GOLD_PRICE;
-//            //            break;
-//            //
-//        default:
-//            subcate = NEWS_HOT_NEWS;
-//            break;
-//    }
+    //    switch (current) {
+    //        case 0:
+    //            subcate = NEWS_HOT_NEWS;
+    //            break;
+    //        case 1:
+    //            subcate = NEWS_INTER_NEWS;
+    //            break;
+    //        case 2:
+    //            subcate = NEWS_FINANCE;
+    //            break;
+    //        case 3:
+    //            subcate = NEWS_TECHNOLOGY;
+    //            break;
+    //        case 4:
+    //            subcate = NEWS_LOTTO;
+    //            break;
+    //            //        case 4:
+    //            //            subcate = NEWS_GAS_PRICE;
+    //            //            break;
+    //            //        case 5:
+    //            //            subcate = NEWS_GOLD_PRICE;
+    //            //            break;
+    //            //
+    //        default:
+    //            subcate = NEWS_HOT_NEWS;
+    //            break;
+    //    }
     
     NSString *jsonString = [NSString stringWithFormat:@"{\"jsonrpc\":\"2.0\", \"id\":20140317, \"method\":\"getContentBySubCateId\",\"params\":{ \"subCateId\":%ld, \"page\":%d,\"limit\":14 }}",(long)subcate,number];
     
@@ -246,35 +261,35 @@
     [op start];
 }
 -(void)GetContentNEWS:(int)index AndSubcate:(int)subcate{
-
-//    switch (index) {
-//        case 0:
-//            subcate = NEWS_HOT_NEWS;
-//            break;
-//        case 1:
-//            subcate = NEWS_INTER_NEWS;
-//            break;
-//        case 2:
-//            subcate = NEWS_FINANCE;
-//            break;
-//        case 3:
-//            subcate = NEWS_TECHNOLOGY;
-//            break;
-//        case 4:
-//            subcate = NEWS_LOTTO;
-//            break;
-//        case 5:
-//            subcate = NEWS_GAS_PRICE;
-//            break;
-//        case 6:
-//            subcate = NEWS_GOLD_PRICE;
-//            break;
-//            
-//        default:
-//            subcate = NEWS_HOT_NEWS;
-//            break
-//            ;
-//    }
+    
+    //    switch (index) {
+    //        case 0:
+    //            subcate = NEWS_HOT_NEWS;
+    //            break;
+    //        case 1:
+    //            subcate = NEWS_INTER_NEWS;
+    //            break;
+    //        case 2:
+    //            subcate = NEWS_FINANCE;
+    //            break;
+    //        case 3:
+    //            subcate = NEWS_TECHNOLOGY;
+    //            break;
+    //        case 4:
+    //            subcate = NEWS_LOTTO;
+    //            break;
+    //        case 5:
+    //            subcate = NEWS_GAS_PRICE;
+    //            break;
+    //        case 6:
+    //            subcate = NEWS_GOLD_PRICE;
+    //            break;
+    //
+    //        default:
+    //            subcate = NEWS_HOT_NEWS;
+    //            break
+    //            ;
+    //    }
     
     
     NSString *jsonString =
@@ -298,7 +313,7 @@
             NSDictionary *result =[responseObject objectForKey:@"result"] ;
             NSArray * content = [result objectForKey:@"contents"] ;
             
-           // int smrtAdsRefId = [[result objectForKey:@"smrtAdsRefId"] isEqual:[NSNull null] ] ? 0 : [[result objectForKey:@"smrtAdsRefId"]intValue];
+            // int smrtAdsRefId = [[result objectForKey:@"smrtAdsRefId"] isEqual:[NSNull null] ] ? 0 : [[result objectForKey:@"smrtAdsRefId"]intValue];
             
             NSMutableArray*  tempArray ;
             
@@ -418,7 +433,7 @@
         if (![[responseObject objectForKey:@"result"] isEqual:[NSNull null]]) {
             lotteryArray = [[NSMutableArray alloc]init];
             NSDictionary *result =[responseObject objectForKey:@"result"] ;
-             NSArray *array =[result objectForKey:@"lotto"] ;
+            NSArray *array =[result objectForKey:@"lotto"] ;
             for(NSDictionary* lottery in array){
                 LotteryObject *temp = [[LotteryObject alloc]initWithDictionary:lottery];
                 [lotteryArray addObject:temp];
@@ -435,27 +450,27 @@
         [hud hide:YES];
     }];
     [op start];
-
+    
 }
 -(void)setup{
     allObjectArray = [[NSMutableArray alloc]init];
     pageArray = [[NSMutableArray alloc]init];
     lastStatPage = self.indexPage ;
     [Manager savePageView:1 orSubCate:0];
-
+    
     for (int i = 0; i < self.nameMenu.count; i++) {
         [allObjectArray addObject:[[NSMutableArray alloc]init]];
         [pageArray addObject:[NSNumber numberWithInt:1]];
     }
     
     for (int i = 0; i < self.nameMenu.count; i++) {
-       
+        
         if([self.nameMenu[i] intValue] != NEWS_LOTTERRY ||[self.nameMenu[i] intValue] != NEWS_GAS_PRICE  || [self.nameMenu[i] intValue] == NEWS_GOLD_PRICE){
             [self GetContentNEWS:i AndSubcate:[self.nameMenu[i] intValue]];
         }
         
     }
-
+    
     [self getLottery];
     [self getOilAndGasPrice];
     //initial submenu
@@ -494,7 +509,7 @@
             [fooCollection registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"SpaceCell"];
         }
         else if([self.nameMenu[i] intValue] == NEWS_WIKI ){
-          
+            
             [fooCollection registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"SpaceCell"];
         }
         [fooCollection registerClass:[UICollectionReusableView class] forSupplementaryViewOfKind:UICollectionElementKindSectionFooter withReuseIdentifier:@"FooterView"];
@@ -537,7 +552,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-     [self setCateID:NEWS];
+    [self setCateID:NEWS];
     if(![[Manager sharedManager]bannerArrayNews])
         [self getBanner];
     // [Manager savePageView:1];
@@ -596,39 +611,19 @@
     imageHeaderColor = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, imageHeader.frame.size.height )];
     
     
-    if(!_carousel)
-        _carousel = [[iCarousel alloc] initWithFrame:CGRectMake(0.0f, 0.0f, imageHeader.frame.size.width, imageHeader.frame.size.height)];
-    _carousel.delegate = self;
-    _carousel.dataSource = self;
-    _carousel.type = iCarouselTypeLinear;
-    _carousel.backgroundColor = [UIColor clearColor];
+    if(!bannerView)
+        bannerView = [[BannerView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, [[Manager sharedManager]bannerHeight] )];
+    bannerView.backgroundColor = [UIColor clearColor];
     //_carousel.
-    [imageHeader addSubview:_carousel];
+    [imageHeader addSubview:bannerView];
     
-    
-    
-    
-    // Page Control
-    if(!pageControl)
-        pageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0.0f, (self.carousel.frame.size.height-20), self.carousel.frame.size.width, 20.0f)];
-    pageControl.numberOfPages = [[Manager sharedManager] bannerArrayNews].count >0  ? [[Manager sharedManager] bannerArrayNews].count : [[Manager sharedManager] bannerArray].count;
-    pageControl.pageIndicatorTintColor = [UIColor colorWithWhite:1 alpha:0.8];
-    pageControl.currentPageIndicatorTintColor = [UIColor colorWithHexString:SIDE_BAR_COLOR];
-    pageControl.userInteractionEnabled = NO;
-    [_carousel addSubview:pageControl];
-    [timer invalidate];
-    timer = nil;
-    timer =  [NSTimer scheduledTimerWithTimeInterval:5.0f
-                                              target:self selector:@selector(runLoop:) userInfo:nil repeats:YES];
-    
-    
-    
-    //            imageHeaderImage = [[JBKenBurnsView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 300 )];
-    //            [imageHeaderImage animateWithImages:@[[UIImage imageNamed:@"banner_dtacplay.png"]]
-    //                             transitionDuration:50
-    //                                   initialDelay:0
-    //                                           loop:YES
-    //                                    isLandscape:YES];
+    if([[Manager sharedManager] bannerArrayNews]){
+        bannerView.bannerArray =  [[Manager sharedManager]bannerArrayNews];
+    }
+    else{
+        bannerView.bannerArray =  [[Manager sharedManager]bannerArray];
+    }
+    [bannerView.carousel reloadData];
     
     [_swipeView addSubview:imageHeader];
     
@@ -695,7 +690,7 @@
     _swipeView.currentPage = self.indexPage;
     currentPage = self.indexPage;
     inmediatelyIndex = self.indexPage;
-
+    
     
 }
 
@@ -722,13 +717,13 @@
 
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
-   if( [self.nameMenu[collectionView.tag] intValue]== NEWS_WIKI  ||[self.nameMenu[collectionView.tag] intValue]== NEWS_FINANCE || [self.nameMenu[collectionView.tag] intValue]== NEWS_HOT_NEWS ||[self.nameMenu[collectionView.tag] intValue]== NEWS_INTER_NEWS ||[self.nameMenu[collectionView.tag] intValue]== NEWS_LOTTO || [self.nameMenu[collectionView.tag] intValue]== NEWS_TECHNOLOGY ){
+    if( [self.nameMenu[collectionView.tag] intValue]== NEWS_WIKI  ||[self.nameMenu[collectionView.tag] intValue]== NEWS_FINANCE || [self.nameMenu[collectionView.tag] intValue]== NEWS_HOT_NEWS ||[self.nameMenu[collectionView.tag] intValue]== NEWS_INTER_NEWS ||[self.nameMenu[collectionView.tag] intValue]== NEWS_LOTTO || [self.nameMenu[collectionView.tag] intValue]== NEWS_TECHNOLOGY ){
         NSArray *object = allObjectArray.count >0 ? allObjectArray[collectionView.tag] : nil;
         return object.count;
     }
-   else if([self.nameMenu[collectionView.tag] intValue]== NEWS_LOTTERRY){
-       return lotteryArray.count;
-   }else{
+    else if([self.nameMenu[collectionView.tag] intValue]== NEWS_LOTTERRY){
+        return lotteryArray.count;
+    }else{
         return 1;
     }
     
@@ -805,13 +800,13 @@
         NSString *identify = @"BlockCollectionViewCell";
         DtacPlayBlockCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
         
-
+        
         [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
-                              placeholderImage:[UIImage imageNamed:@"default_image_01_L.jpg"]
-                                     completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-                                         
-                                     }];
-      
+                          placeholderImage:[UIImage imageNamed:@"default_image_01_L.jpg"]
+                                 completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+                                     
+                                 }];
+        
         
         [cell.label setText:articleTemp.previewTitle];
         
@@ -833,40 +828,40 @@
         ContentPreview *articleTemp = tempArray[indexPath.row];
         
         if(indexPath.row == 0){
-        NSString *identify = @"BlockCollectionViewCell";
-        DtacPlayBlockCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
-        
-        
+            NSString *identify = @"BlockCollectionViewCell";
+            DtacPlayBlockCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
+            
+            
             [cell.imageView sd_setImageWithURL:[NSURL URLWithString:articleTemp.images.imageThumbnailL]
                               placeholderImage:[UIImage imageNamed:@"default_image_01_L.jpg"]
                                      completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
                                          
                                      }];
-        
-        
-        [cell.label setText:articleTemp.previewTitle];
-        
-        
-        cell.layer.masksToBounds = NO;
-        cell.layer.shadowOffset = CGSizeMake(2, 2);
-        cell.layer.shadowRadius = 2;
-        cell.layer.shadowOpacity = 0.5;
-        cell.layer.shouldRasterize = YES;
-        cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
-        
-        [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
-        
-        return cell;
+            
+            
+            [cell.label setText:articleTemp.previewTitle];
+            
+            
+            cell.layer.masksToBounds = NO;
+            cell.layer.shadowOffset = CGSizeMake(2, 2);
+            cell.layer.shadowRadius = 2;
+            cell.layer.shadowOpacity = 0.5;
+            cell.layer.shouldRasterize = YES;
+            cell.layer.rasterizationScale = [UIScreen mainScreen].scale;
+            
+            [cell setBackgroundColor:[UIColor colorWithHexString:BLOCK_COLOR]];
+            
+            return cell;
         }else{
-        
-                NSString *identify = @"SpaceCell";
-                UICollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
-                return cell;
+            
+            NSString *identify = @"SpaceCell";
+            UICollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
+            return cell;
             
         }
     }
     else if([self.nameMenu[collectionView.tag] intValue]== NEWS_LOTTERRY){
-         NSString *identify = @"LotteryCell";
+        NSString *identify = @"LotteryCell";
         LotteryCellCollectionViewCell *cell=[collectionView dequeueReusableCellWithReuseIdentifier:identify forIndexPath:indexPath];
         LotteryObject *obj = lotteryArray[indexPath.section];
         NSLog(@"%@",obj.title);
@@ -916,11 +911,11 @@
         cell.reward_1.text = [NSString stringWithFormat:@"รางวัลละ %@ บาท",[numberFormatter stringFromNumber:[NSNumber numberWithFloat:obj.reward1]]];
         
         cell.number_3_back.text = [obj.numberLast3 stringByReplacingOccurrencesOfString:@" "
-                                                                 withString:@" | "];
+                                                                             withString:@" | "];
         cell.reward_3_back.text = [NSString stringWithFormat:@"รางวัลละ %@ บาท",[numberFormatter stringFromNumber:[NSNumber numberWithFloat:obj.rewardLast3]]];
         
         cell.number_3_front.text = [obj.numberFirst3 stringByReplacingOccurrencesOfString:@" "
-                                                                              withString:@" | "];
+                                                                               withString:@" | "];
         cell.reward_3_front.text = [NSString stringWithFormat:@"รางวัลละ %@ บาท",[numberFormatter stringFromNumber:[NSNumber numberWithFloat:obj.rewardFirst3]]];
         
         cell.number_2.text = obj.numberLast2;
@@ -1272,7 +1267,7 @@
             default:
                 
                 return CGSizeMake(w_2, (self.view.frame.size.height -menuHeight - (w_2*312)/650) > 0 ? self.view.frame.size.height -menuHeight- (w_2*312)/650 : 0 );
-           
+                
                 break;
         }
     }
@@ -1304,8 +1299,8 @@
         self.articleView.themeColor = self.themeColor;
         
         NSString* nameMenu = [Manager getSubcateName:[self.nameMenu[collectionView.tag]  intValue] withThai:YES];
-       
-
+        
+        
         
         self.articleView.titlePage = nameMenu;
         UIBarButtonItem *newBackButton =
@@ -1446,10 +1441,10 @@ referenceSizeForFooterInSection:(NSInteger)section
     self.collectionView = collectionViewArray[currentPage];
     
     if([self.nameMenu[swipeView.currentItemIndex] intValue] == NEWS_LOTTERRY || [self.nameMenu[swipeView.currentItemIndex] intValue] == NEWS_GAS_PRICE ||[self.nameMenu[swipeView.currentItemIndex] intValue] == NEWS_GOLD_PRICE){
-         self.collectionView.showsInfiniteScrolling = NO;
+        self.collectionView.showsInfiniteScrolling = NO;
     }
     else{
-       
+        
         __weak NewsViewController *weakSelf = self;
         
         // setup pull-to-refresh
@@ -1463,28 +1458,26 @@ referenceSizeForFooterInSection:(NSInteger)section
 }
 - (void)swipeViewDidEndDecelerating:(SwipeView *)swipeView{
     if(swipeView.currentItemIndex != lastStatPage){
-
-            [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:NEWS withSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue] :nil]}];
-            
-            [Manager savePageView:0 orSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue]];
-  
+        
+        [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:NEWS withSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue] :nil]}];
+        
+        [Manager savePageView:0 orSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue]];
+        
         lastStatPage = (int)swipeView.currentItemIndex;
     }
-
+    
 }
 - (void)swipeViewDidEndScrollingAnimation:(SwipeView *)swipeView{
-     lastStatPage = (int)swipeView.currentItemIndex;
+    lastStatPage = (int)swipeView.currentItemIndex;
     [self googleTagUpdate:@{@"event": @"openScreen", @"screenName": [Manager returnStringForGoogleTag:NEWS withSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue] :nil]}];
     
     [Manager savePageView:0 orSubCate:[self.nameMenu[swipeView.currentItemIndex] intValue]];
 }
 -(void)runLoop:(NSTimer*)NSTimer{
     
-    if(_carousel)
-        [_carousel scrollToItemAtIndex:self.carousel.currentItemIndex+1 animated:YES];
-    
-    
-    
+    if(bannerView.carousel)
+        [bannerView.carousel scrollToItemAtIndex:bannerView.carousel.currentItemIndex+1 animated:YES];
+
 }
 //-(void)layoutSubviews{
 //    [super layoutSubviews];
@@ -1495,83 +1488,6 @@ referenceSizeForFooterInSection:(NSInteger)section
 {
     NSLog(@"xx");
 }
-#pragma mark -
-#pragma mark iCarousel methods
-
-- (NSInteger)numberOfItemsInCarousel:(iCarousel *)carousel
-{
-    //return the total number of items in the carousel
-    if([[Manager sharedManager] bannerArrayNews]){
-       return [[Manager sharedManager]bannerArrayNews].count;
-    }
-    else{
-       return [[Manager sharedManager]bannerArray].count;
-    }
-    
-}
-- (NSUInteger)numberOfVisibleItemsInCarousel:(iCarousel *)carousel
-{
-    //limit the number of items views loaded concurrently (for performance reasons)
-    return 4;
-}
-- (void)scrollToItemAtIndex:(NSInteger)index
-                   duration:(NSTimeInterval)scrollDuration{
-    
-    
-}
-- (void)carouselCurrentItemIndexDidChange:(__unused iCarousel *)carousel
-{
-    //NSLog(@"Index: %@", @(self.carousel.currentItemIndex));
-    pageControl.currentPage = self.carousel.currentItemIndex;
-}
-- (UIView *)carousel:(iCarousel *)carousel viewForItemAtIndex:(NSInteger)index reusingView:(UIView *)view
-{
-    UIImageView *viewsImage = [[UIImageView alloc] initWithFrame:_carousel.frame];
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    
-    if([[Manager sharedManager] bannerArrayNews]){
-        temp  = [[Manager sharedManager] bannerArrayNews ][index];
-    }
-
-    
-    SDWebImageManager *manager = [SDWebImageManager sharedManager];
-    [manager downloadImageWithURL:[NSURL URLWithString:temp.images.image_r1]
-                       
-                          options:0
-                         progress:^(NSInteger receivedSize, NSInteger expectedSize) {
-                             // progression tracking code
-                         }
-                        completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, BOOL finished, NSURL *imageURL) {
-                            if (image) {
-                                viewsImage.image = image;
-                            }
-                            
-                            
-                            
-                        }];
-    
-    [viewsImage setContentMode:UIViewContentModeScaleToFill];
-    return viewsImage;
-    
-}
-- (BOOL)carouselShouldWrap:(iCarousel *)carousel
-{
-    //wrap all carousels
-    return NO;
-}
-- (CGFloat)carousel:(iCarousel *)carousel valueForOption:(iCarouselOption)option withDefault:(CGFloat)value
-{
-    
-    if (option == iCarouselOptionWrap) {
-        return YES;
-    }
-    return value;
-}
-- (void)carousel:(iCarousel *)carousel didSelectItemAtIndex:(NSInteger)index{
-    Banner *temp  = [[Manager sharedManager] bannerArray ][index];
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:temp.link]];
-}
-
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.

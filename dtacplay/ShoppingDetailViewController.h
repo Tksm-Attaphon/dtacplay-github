@@ -12,7 +12,6 @@
 #import "ShoppingItem.h"
 @interface ShoppingDetailViewController : DtacPlayViewController
 
-@property (strong, nonatomic) iCarousel *carousel;
 @property (strong, nonatomic) iCarousel *shoppingCarousel;
 @property(nonatomic,strong)UICollectionView *collectionView;
 @property (strong, nonatomic) ShoppingItem *shoppingItem;
